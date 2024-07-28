@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Vector;
 //import JDBC.DbController;
 
+import JDBC.DbController;
 import enums.Commands;
 import javafx.scene.control.Alert.AlertType;
 import ocsf.server.*;
@@ -37,7 +38,7 @@ public class BiteMeServer extends AbstractServer
   //TODO: CONNECTION TO DB CONTROLLER
   //TODO DB CONTROLLER
   //static public DbController dbController; 
-  
+  static public DbController dbController;
   private ServerScreenController serverScreenController;
   
   //TO DO ; boolean flag for connection to database 
@@ -45,9 +46,9 @@ public class BiteMeServer extends AbstractServer
   
   //TODO: CONNECTION TO DB CONTROLLER
   //TODO DB CONTROLLER
-  //public void setDbController(DbController dbController) {
-  //this.dbController = dbController;
-	//}
+  public void setDbController(DbController dbController) {
+  this.dbController = dbController;
+	}
 
 
 /**
@@ -89,9 +90,9 @@ public class BiteMeServer extends AbstractServer
   
   //TODO: CONNECTION TO DB CONTROLLER
   //TODO DB CONTROLLER
-//  public DbController getDbController() {
-//	return dbController;
-  //}
+  public DbController getDbController() {
+	return dbController;
+  }
 
 
 /**

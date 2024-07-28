@@ -14,6 +14,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import JDBC.DbController;
+import JDBC.SqlConnection;
 import entites.ClientDetails;
 import server.BiteMeServer;
 import server.NotifyThread;
@@ -94,7 +96,7 @@ public class ServerScreenController {
 		startServer.setDisable(false);
 		stopServer.setDisable(true);
 		disableDataInput(false);
-		imprt.setDisable(true);
+		//imprt.setDisable(true);
 
 	}
 
@@ -114,13 +116,13 @@ public class ServerScreenController {
 		if (!ServerUI.isServerRunning()) {
 			// The server is not running, so start it
 			if (ServerUI.runServer(this.getPort())) {
-				//SqlConnection sqlconn = new SqlConnection(getDbName(), getDbUsername(), getDbPassword());
-				//DbController dbconn = new DbController(sqlconn.connectToDB());
-				//ServerUI.sv.setDbController(dbconn);
+				SqlConnection sqlconn = new SqlConnection(getDbName(), getDbUsername(), getDbPassword());
+				DbController dbconn = new DbController(sqlconn.connectToDB());
+				ServerUI.sv.setDbController(dbconn);
 				ServerUI.sv.setServerScreenController(this);
 				disableDataInput(true);
 				startServer.setDisable(true);
-				imprt.setDisable(false);
+				//imprt.setDisable(false);
 				stopServer.setDisable(false);
 				
 				

@@ -52,7 +52,7 @@
             </Pane>
             <Pane layoutX="15.0" layoutY="90.0">
                <children>
-                  <TextField fx:id="dbNameT" layoutX="78.0" promptText="Enter DB" text="jdbc:mysql://localhost/gonature?serverTimezone=Israel" />
+                  <TextField fx:id="dbNameT" layoutX="78.0" promptText="Enter DB" text="jdbc:mysql://localhost/biteme?serverTimezone=Israel" />
                   <Label alignment="CENTER" layoutX="-5.0" layoutY="4.0" text="DB Name:" textFill="#61a994">
                      <font>
                         <Font name="System Bold Italic" size="12.0" />
@@ -91,7 +91,7 @@
          </effect></Button>
       <Pane prefHeight="70.0" prefWidth="616.0" style="-fx-background-color: #61A994;">
          <children>
-            <Text fill="#1e525b" layoutX="174.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="GoNature Server" wrappingWidth="250.4000000000001">
+            <Text fill="#1e525b" layoutX="174.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="BiteMe Server" wrappingWidth="250.4000000000001">
                <font>
                   <Font name="System Bold Italic" size="32.0" />
                </font>
