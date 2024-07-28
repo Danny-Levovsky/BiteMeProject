@@ -1,11 +1,13 @@
+package customer;
+
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 
 public class OrderSummaryController {
 
-    @FXML
-    private Button btnBack;
+
 
     @FXML
     private Button btnApprove;
@@ -15,9 +17,6 @@ public class OrderSummaryController {
 
     }
 
-    @FXML
-    void getBtnBack(ActionEvent event) {
 
-    }
 
 }
