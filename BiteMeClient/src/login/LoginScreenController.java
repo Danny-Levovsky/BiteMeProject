@@ -30,17 +30,12 @@ public class LoginScreenController {
     void getBtnLogin(ActionEvent event) {
 
     }
-
-    @FXML
-    void getBtnDisconnect(ActionEvent event) {
-
-    }
+ 
     
     
-    /*
 	public void start(Stage primaryStage) throws Exception {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/LoginScreen.fxml"));
-    	loader.setController(this); // Set the controller
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/login/LoginScreen.fxml"));
+    	//loader.setController(this); // Set the controller = loads in fxml file
     	Parent root = loader.load();
     	Scene scene = new Scene(root);
     	primaryStage.setTitle("LoginScreen");
@@ -49,12 +44,12 @@ public class LoginScreenController {
     	primaryStage.show();
 	}
 	
-	public void xBtn(ActionEvent event) throws Exception {
+	public void getBtnDisconnect(ActionEvent event) throws Exception {
 		Message disconnectClient = new Message(null,Commands.ClientDisconnect);
 		ClientController.client.sendToServer(disconnectClient);
 		//((Node)event.getSource()).getScene().getWindow().hide();
-		//System.exit(0);
+		System.exit(0);
 	}
-	*/
+	
 
 }
