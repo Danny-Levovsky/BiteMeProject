@@ -2,7 +2,7 @@ package client;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import controller.ConnectionScreenController;
+import login.ConnectionScreenController;
 
 public class ClientUI extends Application { 
 	
