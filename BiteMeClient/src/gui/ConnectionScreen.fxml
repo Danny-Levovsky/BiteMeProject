@@ -21,7 +21,7 @@
             <Font name="System Bold Italic" size="12.0" />
          </font>
       </Label>
-      <TextField fx:id="ipAddressT" layoutX="116.0" layoutY="135.0" promptText="Enter IP" text="localhost" />
+      <TextField fx:id="ipAddressT" layoutX="116.0" layoutY="135.0" promptText="Enter IP" />
       <Label layoutX="78.0" layoutY="170.0" text="Port:" textFill="#1e525b">
          <font>
             <Font name="System Bold Italic" size="12.0" />

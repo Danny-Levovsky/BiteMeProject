@@ -32,7 +32,7 @@
          <children>
             <Pane layoutX="15.0" layoutY="10.0">
                <children>
-                  <TextField fx:id="ipAddressT" layoutX="78.0" promptText="Enter IP " text="localhost" />
+                  <TextField fx:id="ipAddressT" layoutX="78.0" promptText="Enter IP " />
                   <Label alignment="CENTER" layoutX="-5.0" layoutY="4.0" prefHeight="17.0" prefWidth="65.0" text="IP Address:" textFill="#61a994">
                      <font>
                         <Font name="System Bold Italic" size="12.0" />

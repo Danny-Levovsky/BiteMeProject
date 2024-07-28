@@ -14,6 +14,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+
+import java.net.InetAddress;
+
 import JDBC.DbController;
 import JDBC.SqlConnection;
 import entites.ClientDetails;
@@ -56,9 +59,10 @@ public class ServerScreenController {
 	// TODO: Make The X button Functional.
 	// TODO: Make Stop Server Button.
 
-	private String getIpAddress() {
-		return ipAddressT.getText();
-	}
+
+//	private String getIpAddress() {
+//		return ipAddressT.getText();
+//	}
 
 	private String getPort() {
 		return portT.getText();
@@ -172,6 +176,12 @@ public class ServerScreenController {
 		primaryStage.setTitle("Server");
 		primaryStage.setScene(scene);
 		primaryStage.show();
+		 try {
+				String ipAddress = InetAddress.getLocalHost().getHostAddress();
+				ipAddressT.setText(ipAddress);
+			} catch (Exception e) {
+				ipAddressT.setText("Unable to get IP address");
+			}
 		ipT.setCellValueFactory(new PropertyValueFactory<>("ip"));
 		hostT.setCellValueFactory(new PropertyValueFactory<>("hostName"));
 		statusT.setCellValueFactory(new PropertyValueFactory<>("status"));
