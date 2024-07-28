@@ -187,7 +187,6 @@ public class ServerScreenController {
 		statusT.setCellValueFactory(new PropertyValueFactory<>("status"));
 		stopServer.setDisable(true);
 
-		
 	}
 
 }
