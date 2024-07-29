@@ -1,4 +1,4 @@
-package tempForMini;
+package entites;
 import java.time.LocalTime;
 
 //import java.time.LocalTime;

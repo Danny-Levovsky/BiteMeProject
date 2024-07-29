@@ -1,4 +1,4 @@
-package tempForMini;
+package entites;
 
 //Class based on DB's Table
 

@@ -1,4 +1,4 @@
-package tempForMini;
+package entites;
 import enums.OptionType;
 
 //Class based on DB's Table
