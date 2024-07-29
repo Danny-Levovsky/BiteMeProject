@@ -1,4 +1,4 @@
-package tempForMini;
+package entites;
 import enums.ItemSize;
 
 public class Drink extends Dish{

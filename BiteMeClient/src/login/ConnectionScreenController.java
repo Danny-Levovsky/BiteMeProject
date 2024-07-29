@@ -55,7 +55,7 @@ public class ConnectionScreenController {
 	 */
     
     @FXML
-    void getBtnConnect(ActionEvent event) {
+    void getBtnConnect(ActionEvent event) throws Exception {
     	ClientController clientController = new ClientController(getIpAddress(), getPort());
 		clientController.display("Connected");
 		((Node)event.getSource()).getScene().getWindow().hide();
