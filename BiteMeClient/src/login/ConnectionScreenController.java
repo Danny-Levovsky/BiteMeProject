@@ -29,8 +29,8 @@ public class ConnectionScreenController {
 
     
 	public void start(Stage primaryStage) throws Exception {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/ConnectionScreen.fxml"));
-    	loader.setController(this); // Set the controller
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/login/ConnectionScreen.fxml"));
+    	//loader.setController(this); // Set the controller = is set in fxml file
     	Parent root = loader.load();
     	Scene scene = new Scene(root);
     	primaryStage.setTitle("BiteMeClient");
@@ -55,7 +55,7 @@ public class ConnectionScreenController {
 	 */
     
     @FXML
-    void getBtnConnect(ActionEvent event) {
+    void getBtnConnect(ActionEvent event) throws Exception {
     	ClientController clientController = new ClientController(getIpAddress(), getPort());
 		clientController.display("Connected");
 		((Node)event.getSource()).getScene().getWindow().hide();
@@ -73,6 +73,7 @@ public class ConnectionScreenController {
 
     @FXML
     void getBtnExit(ActionEvent event) {
+    	System.exit(0);
 
     }
 

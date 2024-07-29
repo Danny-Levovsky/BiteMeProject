@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.scene.Node;
 
 public class LoginScreenController {
 
@@ -30,17 +31,14 @@ public class LoginScreenController {
     void getBtnLogin(ActionEvent event) {
 
     }
-
+    
     @FXML
-    void getBtnDisconnect(ActionEvent event) {
-
-    }
+    private Button btnBack;
     
     
-    /*
 	public void start(Stage primaryStage) throws Exception {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/LoginScreen.fxml"));
-    	loader.setController(this); // Set the controller
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/login/LoginScreen.fxml"));
+    	//loader.setController(this); // Set the controller = loads in fxml file
     	Parent root = loader.load();
     	Scene scene = new Scene(root);
     	primaryStage.setTitle("LoginScreen");
@@ -49,12 +47,31 @@ public class LoginScreenController {
     	primaryStage.show();
 	}
 	
-	public void xBtn(ActionEvent event) throws Exception {
+	public void getBtnDisconnect(ActionEvent event) throws Exception {
 		Message disconnectClient = new Message(null,Commands.ClientDisconnect);
 		ClientController.client.sendToServer(disconnectClient);
 		//((Node)event.getSource()).getScene().getWindow().hide();
-		//System.exit(0);
+		
 	}
-	*/
+	
+	
+    @FXML
+    void getBtnBack(ActionEvent event) {
+    	
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("/login/ConnectionScreen.fxml")); // Update the path to your FXML
+            Parent previousScreen = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(previousScreen);
+            stage.setScene(scene);
+            stage.setTitle("BiteMeClient");
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+	
 
 }
