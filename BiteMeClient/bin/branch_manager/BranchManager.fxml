@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="302.0" prefWidth="511.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="BranchManagerController">
+   <children>
+      <Label fx:id="txtBranchManagerName" layoutX="14.0" layoutY="14.0" onDragDetected="#updateName" text="Branch Manager Name" />
+      <Button id="btnExit" fx:id="btnLogout" layoutX="45.0" layoutY="31.0" mnemonicParsing="false" onAction="#getBtnLogout" text="Logout" />
+      <Label layoutX="90.0" layoutY="94.0" text="Branch Manager  Menu">
+         <font>
+            <Font name="System Bold" size="29.0" />
+         </font></Label>
+      <Button id="btnExit" fx:id="BtnUpdateClient" layoutX="161.0" layoutY="235.0" mnemonicParsing="false" onAction="#getBtnUpdateClient" text="Update Client" />
+      <Button id="btnExit" fx:id="BtnViewReports" layoutX="310.0" layoutY="177.0" mnemonicParsing="false" onAction="#getBtnViewReports" text="View Reports" />
+      <ComboBox fx:id="monthComboBox" layoutX="136.0" layoutY="177.0" prefHeight="25.0" prefWidth="122.0" promptText="choose month" />
+      <Label layoutX="31.0" layoutY="181.0" text="view reports:" />
+      <Label layoutX="31.0" layoutY="239.0" text="update client:" />
+   </children>
+</AnchorPane>
