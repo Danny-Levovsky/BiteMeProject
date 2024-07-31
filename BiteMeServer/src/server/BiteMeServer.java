@@ -75,10 +75,21 @@ public class BiteMeServer extends AbstractServer
 		  this.serverScreenController.loadTable(newClient);
 		  ClientList.add(client);
 		  break;
+		  
 	  case ClientDisconnect:
 		  ClientDetails removedClient = new ClientDetails(client.getInetAddress().getCanonicalHostName(),client.getInetAddress().getHostAddress(),true);
 		  this.serverScreenController.updateTable(removedClient);
 		  ServerUI.gotResponse = true;
+		  break;
+		  
+	  case getRestaurantPendingOrders:
+		  Object RestaurantPendingOrdersData = dbController.getRestaurantPendingOrders(m.getObj());
+		  // setRestaurantPendingOrders
+		  try {
+			client.sendToClient(new Message(RestaurantPendingOrdersData, Commands.setRestaurantPendingOrders));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		  break;
 
 	  	default:

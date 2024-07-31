@@ -30,7 +30,7 @@ public class ConnectionScreenController {
     
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/login/ConnectionScreen.fxml"));
-    	//loader.setController(this); // Set the controller = is set in fxml file
+    	//loader.setController(this); // Set the controller = is set in FXML file
     	Parent root = loader.load();
     	Scene scene = new Scene(root);
     	primaryStage.setTitle("BiteMeClient");
@@ -60,7 +60,11 @@ public class ConnectionScreenController {
 		clientController.display("Connected");
 		((Node)event.getSource()).getScene().getWindow().hide();
 		LoginScreenController newScreen = new LoginScreenController();
-		newScreen.start(new Stage());
+		try {
+			newScreen.start(new Stage());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
     
     
