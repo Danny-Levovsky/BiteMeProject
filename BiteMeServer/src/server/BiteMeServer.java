@@ -84,7 +84,12 @@ public class BiteMeServer extends AbstractServer
 		  
 	  case getRestaurantPendingOrders:
 		  Object RestaurantPendingOrdersData = dbController.getRestaurantPendingOrders(m.getObj());
-		  client.sendToClient(new Message(RestaurantPendingOrdersData, Commands.setRestaurantPendingOrders));
+		  // setRestaurantPendingOrders
+		  try {
+			client.sendToClient(new Message(RestaurantPendingOrdersData, Commands.setRestaurantPendingOrders));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		  break;
 
 	  	default:
