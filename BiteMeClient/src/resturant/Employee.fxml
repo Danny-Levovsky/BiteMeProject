@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="549.0" prefWidth="633.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="EmployeeController">
+<AnchorPane prefHeight="549.0" prefWidth="633.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="resturant.EmployeeController">
    <children>
       <Label fx:id="txtEmployeeName" layoutX="8.0" layoutY="13.0" onDragDetected="#updateName" text="Employee Name" />
       <Button id="btnExit" fx:id="btnLogout" layoutX="22.0" layoutY="37.0" mnemonicParsing="false" onAction="#getBtnLogout" text="Logout" />
