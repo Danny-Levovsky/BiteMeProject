@@ -5,11 +5,13 @@ import enums.Commands;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import resturant.CertifiedEmployeeController;
 
 public class LoginScreenController {
 
@@ -27,8 +29,10 @@ public class LoginScreenController {
     
     
     @FXML
-    void getBtnLogin(ActionEvent event) {
-
+    void getBtnLogin(ActionEvent event) throws Exception {
+    	((Node) event.getSource()).getScene().getWindow().hide();
+    	CertifiedEmployeeController newScreen = new CertifiedEmployeeController();
+    	newScreen.start(new Stage());
     }
  
     
@@ -48,7 +52,7 @@ public class LoginScreenController {
 		Message disconnectClient = new Message(null,Commands.ClientDisconnect);
 		ClientController.client.sendToServer(disconnectClient);
 		//((Node)event.getSource()).getScene().getWindow().hide();
-		System.exit(0);
+		//System.exit(0);
 	}
 	
 

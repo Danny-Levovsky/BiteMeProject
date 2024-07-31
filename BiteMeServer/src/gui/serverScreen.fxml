@@ -52,7 +52,7 @@
             </Pane>
             <Pane layoutX="15.0" layoutY="90.0">
                <children>
-                  <TextField fx:id="dbNameT" layoutX="78.0" promptText="Enter DB" text="jdbc:mysql://localhost/biteme?serverTimezone=Israel" />
+                  <TextField fx:id="dbNameT" layoutX="78.0" promptText="Enter DB" text="jdbc:mysql://localhost/bite_me?serverTimezone=Israel" />
                   <Label alignment="CENTER" layoutX="-5.0" layoutY="4.0" text="DB Name:" textFill="#61a994">
                      <font>
                         <Font name="System Bold Italic" size="12.0" />
@@ -109,6 +109,14 @@
          </font>
       </Text>
       
+            <Button fx:id="imprt" disable="true" layoutX="400.0" layoutY="369.0" mnemonicParsing="false" onAction="#importBtn" prefHeight="38.0" prefWidth="100.0" style="-fx-background-color: #61A994;" text="Import" textFill="WHITE">
+         <font>
+            <Font name="System Bold Italic" size="14.0" />
+         </font>
+         <effect>
+            <Bloom threshold="0.8" />
+         </effect>
+      </Button>
       
    </children>
 </AnchorPane>
