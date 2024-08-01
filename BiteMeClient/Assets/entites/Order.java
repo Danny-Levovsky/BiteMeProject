@@ -1,4 +1,4 @@
-package tempForMini;
+package entites;
 
 public class Order {
 	

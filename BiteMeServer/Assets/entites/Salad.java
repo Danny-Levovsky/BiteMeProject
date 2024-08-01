@@ -1,4 +1,4 @@
-package tempForMini;
+package entites;
 import enums.SaladType;
 import enums.ItemSize;
 

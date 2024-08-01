@@ -1,4 +1,4 @@
-package tempForMini;
+package entites;
 import enums.MainCourse;
 import enums.GrillOption;
 

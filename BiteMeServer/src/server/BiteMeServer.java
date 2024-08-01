@@ -1,4 +1,3 @@
-
 // This file contains material supporting section 3.7 of the textbook:
 // "Object Oriented Software Engineering" and is issued under the open-source
 // license found at www.lloseng.com 
@@ -75,14 +74,52 @@ public class BiteMeServer extends AbstractServer
 		  this.serverScreenController.loadTable(newClient);
 		  ClientList.add(client);
 		  break;
+		  
 	  case ClientDisconnect:
 		  ClientDetails removedClient = new ClientDetails(client.getInetAddress().getCanonicalHostName(),client.getInetAddress().getHostAddress(),true);
 		  this.serverScreenController.updateTable(removedClient);
 		  ServerUI.gotResponse = true;
 		  break;
+		  
+	 /* case getRestaurantPendingOrders:
+		  Object RestaurantPendingOrdersData = dbController.getRestaurantPendingOrders(m.getObj());
+		  // setRestaurantPendingOrders
+		  try {
+			client.sendToClient(new Message(RestaurantPendingOrdersData, Commands.setRestaurantPendingOrders));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		  break;*/
+	  case CheckUsername:
+          User user = (User) m.getObj();
+          boolean usernameExists = dbController.isUsernameExists(user.getUsername());
+          if (!usernameExists) {
+              try {
+                  client.sendToClient(new Message("username not found", Commands.CheckUsername));
+              } catch (IOException e) {
+                  e.printStackTrace();
+              }
+          } else {
+              boolean passwordCorrect = dbController.isPasswordCorrect(user.getUsername(), user.getPassword());
+              if (!passwordCorrect) {
+                  try {
+                      client.sendToClient(new Message("incorrect password", Commands.CheckUsername));
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  }
+              } else {
+                  User completeUser = dbController.getUserDetails(user.getUsername());
+                  try {
+                      client.sendToClient(new Message(completeUser, Commands.CheckUsername));
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  }
+              }
+          }
+          break;
+
 
 	  	default:
-	  		System.out.println("Shouldn't have gotten here?!?!?!");
 	  		break;	  			  	
 	  }  	  
   }

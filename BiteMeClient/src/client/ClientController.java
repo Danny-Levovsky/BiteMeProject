@@ -1,6 +1,8 @@
 package client;
 
 import java.io.IOException;
+import java.net.ConnectException;
+
 import entites.Message;
 import enums.Commands;
 
@@ -23,9 +25,10 @@ public class ClientController
 	   *
 	   * @param host The host to connect to.
 	   * @param port The port to connect on.
+	 * @throws ConnectException 
 	   */
 	  
-	  public ClientController(String host, int port) 
+	  public ClientController(String host, int port) throws ConnectException 
 	  {
 	    try 
 	    {
@@ -35,8 +38,8 @@ public class ClientController
 	    } 
 	    catch(IOException exception) 
 	    {
-	      System.out.println("Error: Can't setup connection!"+ " Terminating client.");
-	      System.exit(1); 
+	    	throw new ConnectException("Unable to connect to the IP address");
+	      //System.exit(1); 
 	    }
 	  }
 
