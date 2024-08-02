@@ -49,7 +49,7 @@ public class EmployeeController {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/resturant/Employee.fxml"));
     	Parent root = loader.load();
     	Scene scene = new Scene(root);
-    	primaryStage.setTitle("EmployeeScreen");
+    	primaryStage.setTitle("EmployeeWindow");
     	primaryStage.setScene(scene);
     	primaryStage.show();
 	}

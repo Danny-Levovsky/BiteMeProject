@@ -40,7 +40,7 @@ public class ServerScreenController {
 	@FXML
 	private Button stopServer = null;
 	@FXML
-	private Button imprt = null;
+	private Button imprt ;
 
 
 	@FXML
@@ -52,6 +52,8 @@ public class ServerScreenController {
 	private TableColumn hostT;
 	@FXML
 	private TableColumn statusT;
+	
+	
 
 	// TODO: Initilize Client Table.
 	// TODO: Make The X button Functional.
@@ -152,7 +154,7 @@ public class ServerScreenController {
 	
 	//import data from external data
 	public void importBtn(ActionEvent event) {
-	//	ServerUI.sv.dbController.importExternalData();
+		ServerUI.sv.dbController.importExternalData();
 	}
 
 	// Removes the abilty to enter new data while the server has started
