@@ -30,7 +30,7 @@ public class CertifiedEmployeeController {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/resturant/CertifiedEmployee.fxml"));
     	Parent root = loader.load();
     	Scene scene = new Scene(root);
-    	primaryStage.setTitle("CertifiedEmployeeScreen");
+    	primaryStage.setTitle("CertifiedEmployeeWindow");
     	primaryStage.setScene(scene);
     	primaryStage.show();
 	}

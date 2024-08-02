@@ -5,9 +5,13 @@ package customer;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 
 public class CustomerController {
 
@@ -42,5 +46,15 @@ public class CustomerController {
     void updateName(MouseEvent event) {
 
     }
+    
+    
+  	public void start(Stage primaryStage) throws Exception {
+  		FXMLLoader loader = new FXMLLoader(getClass().getResource("/customer/Customer.fxml"));
+      	Parent root = loader.load();
+      	Scene scene = new Scene(root);
+      	primaryStage.setTitle("CustomerWindow");
+      	primaryStage.setScene(scene);
+      	primaryStage.show();
+  	}
 
 }

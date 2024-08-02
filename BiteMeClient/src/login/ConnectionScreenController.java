@@ -55,7 +55,7 @@ public class ConnectionScreenController {
     
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/login/ConnectionScreen.fxml"));
-    	//loader.setController(this); // Set the controller = is set in fxml file
+    	//loader.setController(this); // Set the controller = is set in FXML file
     	Parent root = loader.load();
     	Scene scene = new Scene(root);
     	primaryStage.setTitle("BiteMeClient");

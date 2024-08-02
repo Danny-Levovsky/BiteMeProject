@@ -1,5 +1,8 @@
 package resturant;
 
+import client.ClientController;
+import entites.Message;
+import enums.Commands;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +19,7 @@ import login.LoginScreenController;
 
 public class EmployeeController {
 
+	
     @FXML
     private Label txtEmployeeName; //must replace with employee name 
 
@@ -23,13 +27,13 @@ public class EmployeeController {
     private Button btnLogout;  //disappear if I'm certified employee
 
     @FXML
-    private Button btnOrderRecieved;
+    private Button btnOrderReceived;
 
     @FXML
     private Button btnOrderCompleted;
 
     @FXML
-    private TableView<?> txtTable;
+    private TableView<?> tableView; // need to set entite to save data
 
     @FXML
     private TextField txtOrderID;
@@ -45,11 +49,21 @@ public class EmployeeController {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/resturant/Employee.fxml"));
     	Parent root = loader.load();
     	Scene scene = new Scene(root);
-    	primaryStage.setTitle("EmployeeScreen");
+    	primaryStage.setTitle("EmployeeWindow");
     	primaryStage.setScene(scene);
     	primaryStage.show();
 	}
 	
+    void getTableData() {
+    	// get Table view data with current Pending Restaurant orders according to Restaurant id
+    	Commands command = Commands.getRestaurantPendingOrders;
+    	Message message = new Message(txtRestaurantName, command);
+    	ClientController.client.handleMessageFromClientControllers(message);
+    }
+    
+    void setTable(Object msg) {
+    	tableView = (TableView<?>) msg;
+    }
     @FXML
     void getBtnLogout(ActionEvent event) {
 
@@ -57,12 +71,12 @@ public class EmployeeController {
 
     @FXML
     void getBtnOrderCompleted(ActionEvent event) {
-
+    	// send to server updateRestaurantOrderToStatus(Completed)
     }
 
     @FXML
-    void getBtnOrderRecieved(ActionEvent event) {
-
+    void getBtnOrderReceived(ActionEvent event) {
+    	// send to server updateRestaurantOrderToStatus(Received)
     }
 
     @FXML

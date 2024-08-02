@@ -2,10 +2,14 @@ package ceo;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 
 public class CEOController {
 
@@ -30,7 +34,15 @@ public class CEOController {
     @FXML
     private ComboBox<Integer> quarterComboBox;
     
-    
+	public void start(Stage primaryStage) throws Exception {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("/ceo/CEO.fxml"));
+    	Parent root = loader.load();
+    	Scene scene = new Scene(root);
+    	primaryStage.setTitle("CEOWindow");
+    	primaryStage.setScene(scene);
+    	//RemoveTopBar(primaryStage,root);
+    	primaryStage.show();
+	}
     
     
     

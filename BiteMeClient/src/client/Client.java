@@ -4,7 +4,11 @@ import java.io.IOException;
 
 import entites.Message;
 import enums.Commands;
+import javafx.application.Platform;
+import javafx.stage.Stage;
+import login.LoginScreenController; //**
 import ocsf.client.AbstractClient;
+import resturant.EmployeeController;
 
 
 public class Client extends AbstractClient
@@ -30,6 +34,8 @@ public class Client extends AbstractClient
 	  
 	  //TODO: STATIC IMPORT OF DIFFERENT CONTROLLERS 
 	  //IMPORT CLIENT CONTROLLERS HERE
+	  static public EmployeeController employeeController;
+	  static public LoginScreenController loginController; //** 
 	  //static public WorkerController workerController;
 	  //static public MainScreenController mainScreenController;
 	  //static public BookingController bookingController;
@@ -45,6 +51,7 @@ public class Client extends AbstractClient
 	    
 	    //Initilazing The Contorllers
 	    //IMPORT CLIENT CONTROLLERS HERE
+	    employeeController = new EmployeeController();
 	    //bookingController = new BookingController();
 	    //mainScreenController = new MainScreenController();
 	    //workerController = new WorkerController();
@@ -78,9 +85,22 @@ public class Client extends AbstractClient
 			}
 	         System.exit(0);
 	  		 break;
-	  	default:
-			break;
+	  		 
+	  	 /* case setRestaurantPendingOrders:
+	  		employeeController.updateTable(m.getObj());*/
+	  		
+	  	   case CheckUsername:
+               Platform.runLater(() -> {
+                   if (loginController != null) {
+                       Stage currentStage = (Stage) loginController.txtUserName.getScene().getWindow();
+                       loginController.handleServerResponse(m, currentStage);
+                   } else {
+                       System.err.println("LoginController is not set.");
+                   }
+               });
+               break;
 	    }
+	    
 	  }
 
 	  
@@ -123,4 +143,22 @@ public class Client extends AbstractClient
 	    System.exit(0);
 	  }
 
+
+	public void handleMessageFromClientControllers(Object message) {
+		try
+	    {
+	    	System.out.println("sendtoserver");
+	    	sendToServer(message);
+	    	
+	    }
+	    catch(IOException e)
+	    {
+	      clientUI.display
+	        ("Could not send message to server.  Terminating client.");
+	      quit();
+	    }
+		
+	}
+
 }
+
