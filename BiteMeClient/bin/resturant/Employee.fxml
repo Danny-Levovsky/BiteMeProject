@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="549.0" prefWidth="633.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="EmployeeController">
+<AnchorPane prefHeight="549.0" prefWidth="633.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="resturant.EmployeeController">
    <children>
       <Label fx:id="txtEmployeeName" layoutX="8.0" layoutY="13.0" onDragDetected="#updateName" text="Employee Name" />
       <Button id="btnExit" fx:id="btnLogout" layoutX="22.0" layoutY="37.0" mnemonicParsing="false" onAction="#getBtnLogout" text="Logout" />
@@ -16,9 +16,9 @@
          <font>
             <Font name="System Bold" size="29.0" />
          </font></Label>
-      <Button id="btnExit" fx:id="btnOrderRecieved" layoutX="304.0" layoutY="471.0" mnemonicParsing="false" onAction="#getBtnOrderRecieved" text="Order Recieved" />
+      <Button id="btnExit" fx:id="btnOrderReceived" layoutX="304.0" layoutY="471.0" mnemonicParsing="false" onAction="#getBtnOrderReceived" text="Order Recieved" />
       <Button id="btnExit" fx:id="btnOrderCompleted" layoutX="474.0" layoutY="471.0" mnemonicParsing="false" onAction="#getBtnOrderCompleted" text="Order Completed" />
-      <TableView fx:id="txtTable" layoutX="38.0" layoutY="84.0" prefHeight="327.0" prefWidth="558.0">
+      <TableView fx:id="tableView" layoutX="38.0" layoutY="84.0" prefHeight="327.0" prefWidth="558.0">
         <columns>
           <TableColumn prefWidth="75.0" text="C1" />
           <TableColumn prefWidth="75.0" text="C2" />
