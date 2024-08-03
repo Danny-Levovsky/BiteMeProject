@@ -17,5 +17,10 @@ public enum Commands {
 	getRestaurantPendingOrders, //command that request all Restaurant Pending Orders data From DB by restaurant ID through Server, for Employee screen
 	setRestaurantPendingOrders, // command that tells Client to update Restaurant Pending Orders data From DB by restaurant ID to the Employee screen
 	updateRestaurantOrderToStatus, //command that request to update order status in DB table restaurant orders
-	CheckUsername //for Login Process 
+	CheckUsername, //command for Login Process 
+    UpdateLoginStatus, // command for updating login status
+    LogoutUser //  command for logging out
+
+
+
 }

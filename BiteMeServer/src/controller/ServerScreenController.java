@@ -155,9 +155,11 @@ public class ServerScreenController {
 	//import data from external data
 	public void importBtn(ActionEvent event) {
 		ServerUI.sv.dbController.importExternalData();
+		imprt.setDisable(true);
+		
 	}
 
-	// Removes the abilty to enter new data while the server has started
+	// Removes the ability to enter new data while the server has started
 	void disableDataInput(boolean Condition) {
 		ipAddressT.setDisable(Condition);
 		portT.setDisable(Condition);

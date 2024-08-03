@@ -3,6 +3,7 @@ package customer;
 
 
 
+import entites.User;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,7 +17,7 @@ import javafx.stage.Stage;
 public class CustomerController {
 
     @FXML
-    private Label txtCustomerName;  //must replace with customer name 
+    private Label txtCustomerName; 
 
     @FXML
     private Button btnLogout;
@@ -26,6 +27,33 @@ public class CustomerController {
 
     @FXML
     private Button BtnViewOrder;
+    
+    
+    private static User customer;
+
+    
+    public static void setCustomer(User user) {
+        customer = user;
+    }
+    
+    
+  	public void start(Stage primaryStage) throws Exception {
+  		FXMLLoader loader = new FXMLLoader(getClass().getResource("/customer/Customer.fxml"));
+      	Parent root = loader.load();
+      	Scene scene = new Scene(root);
+      	primaryStage.setTitle("CustomerWindow");
+      	primaryStage.setScene(scene);
+      	primaryStage.show();
+  	}
+  	
+    @FXML
+    private void initialize() {
+	  	 //update name
+	    if(customer != null) {
+	    	txtCustomerName.setText(customer.getFirstName() + " " + customer.getLastName());
+	    }
+    }
+    
 
     @FXML
     void getBtnLogout(ActionEvent event) {
@@ -42,19 +70,9 @@ public class CustomerController {
 
     }
 
-    @FXML
-    void updateName(MouseEvent event) {
 
-    }
     
     
-  	public void start(Stage primaryStage) throws Exception {
-  		FXMLLoader loader = new FXMLLoader(getClass().getResource("/customer/Customer.fxml"));
-      	Parent root = loader.load();
-      	Scene scene = new Scene(root);
-      	primaryStage.setTitle("CustomerWindow");
-      	primaryStage.setScene(scene);
-      	primaryStage.show();
-  	}
+
 
 }

@@ -117,8 +117,15 @@ public class BiteMeServer extends AbstractServer
               }
           }
           break;
-
-
+	  case UpdateLoginStatus:
+          int userId = (int) m.getObj();
+          dbController.updateLoginStatus(userId, 1);
+          break;
+      case LogoutUser: 
+          int logoutUserId = (int) m.getObj();
+          dbController.updateLoginStatus(logoutUserId, 0);
+          break;
+          
 	  	default:
 	  		break;	  			  	
 	  }  	  

@@ -1,5 +1,6 @@
 package ceo;
 
+import entites.User;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,7 +15,7 @@ import javafx.stage.Stage;
 public class CEOController {
 
     @FXML
-    private Label txtCEOName; //must replace with CEO name
+    private Label txtCEOName; 
 
     @FXML
     private Button btnLogout;
@@ -34,6 +35,13 @@ public class CEOController {
     @FXML
     private ComboBox<Integer> quarterComboBox;
     
+    private static User ceo;
+
+    
+    public static void setCEO(User user) {
+        ceo = user;
+    }
+    
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/ceo/CEO.fxml"));
     	Parent root = loader.load();
@@ -45,15 +53,19 @@ public class CEOController {
 	}
     
     
-    
     @FXML
-    public void initialize() {
+    private void initialize() {
         // Add month values 1 to 12 to the ComboBox
         for (int i = 1; i <= 12; i++) {
         	monthComboBox.getItems().add(i);
         }
         branchComboBox.getItems().addAll("north", "center", "south");
         quarterComboBox.getItems().addAll(1, 2, 3, 4);
+        
+        //update name
+        if(ceo != null) {
+        	txtCEOName.setText(ceo.getFirstName() + " " + ceo.getLastName());
+        }
     }
 
     @FXML
@@ -71,9 +83,5 @@ public class CEOController {
 
     }
 
-    @FXML
-    void updateName(MouseEvent event) {
-
-    }
 
 }

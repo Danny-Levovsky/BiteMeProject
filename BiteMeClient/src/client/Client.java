@@ -93,7 +93,11 @@ public class Client extends AbstractClient
                Platform.runLater(() -> {
                    if (loginController != null) {
                        Stage currentStage = (Stage) loginController.txtUserName.getScene().getWindow();
-                       loginController.handleServerResponse(m, currentStage);
+                       try {
+						loginController.handleServerResponse(m, currentStage);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
                    } else {
                        System.err.println("LoginController is not set.");
                    }
@@ -161,4 +165,3 @@ public class Client extends AbstractClient
 	}
 
 }
-
