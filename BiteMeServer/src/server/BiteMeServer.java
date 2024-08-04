@@ -125,7 +125,44 @@ public class BiteMeServer extends AbstractServer
           int logoutUserId = (int) m.getObj();
           dbController.updateLoginStatus(logoutUserId, 0);
           break;
+      case  UpdateStatus:
+          Object[] requestData = (Object[]) m.getObj();
+          int userId1 = (int) requestData[0];
+          String branchManagerDistrict = (String) requestData[1];
+          User user1 = dbController.getUserDetailsById(userId1);
           
+          if (user1 == null) {
+              try {
+                  client.sendToClient(new Message("user not found", Commands.UpdateStatus));
+              } catch (IOException e) {
+                  e.printStackTrace();
+              }
+          } else if (!user1.getDistrict().equals(branchManagerDistrict) || !user1.getType().equals("Customer")) {
+              try {
+                  client.sendToClient(new Message("no permission", Commands.UpdateStatus));
+              } catch (IOException e) {
+                  e.printStackTrace();
+              }
+          }
+          else {
+              String customerStatus = dbController.getCustomerStatus(userId1);
+              if (customerStatus.equals("active")) {
+                  try {
+                      client.sendToClient(new Message("user already active", Commands.UpdateStatus));
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  }
+              } else {
+                  dbController.updateCustomerStatus(userId1, "active");
+                  try {
+                      client.sendToClient(new Message("status updated successfully", Commands.UpdateStatus));
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  }
+              }
+          }
+          
+          break;
 	  	default:
 	  		break;	  			  	
 	  }  	  

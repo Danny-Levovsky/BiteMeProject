@@ -145,6 +145,94 @@ public class DbController {
     }
     
     /**
+     * Checks if a user ID exists in the users table in database.
+     * @param userId the user ID to check
+     * @return true if the user ID exists, false otherwise
+     */
+    public boolean isUserIdExists(int userId) {
+        String query = "SELECT COUNT(*) FROM users WHERE ID = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Retrieves the user details for a given user ID.
+     * @param userId the user ID to retrieve details for
+     * @return a User object containing the user's details, or null if the user ID does not exist or an error occurs
+     */
+    public User getUserDetailsById(int userId) {
+        String query = "SELECT * FROM users WHERE ID = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                int id = rs.getInt("ID");
+                String username = rs.getString("UserName");
+                String password = rs.getString("Password");
+                String firstName = rs.getString("FirstName");
+                String lastName = rs.getString("LastName");
+                String email = rs.getString("Email");
+                String phone = rs.getString("Phone");
+                String type = rs.getString("Type");
+                int isLoggedIn = rs.getInt("IsLoggedIn");
+                String district = rs.getString("District");
+
+                return new User(id, username, password, firstName, lastName, email, phone, type, isLoggedIn, district);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Retrieves the status of a customer for a given user ID from customers table in database.
+     * @param userId the user ID of the customer
+     * @return the status of the customer as a String, or null if the user ID does not exist or an error occurs
+     */
+    public String getCustomerStatus(int userId) {
+        String query = "SELECT Status FROM customers WHERE ID = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("Status");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Updates the status of a customer for a given user ID in customers table in database.
+     * @param userId the user ID of the customer
+     * @param status the new status to set for the customer
+     */
+    public void updateCustomerStatus(int userId, String status) {
+        String query = "UPDATE customers SET Status = ? WHERE ID = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, status);
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+ 
+    /**
      * Imports external data into the application database.
      * This method performs multiple data import and update operations on the users, customers,
      * restaurants, and employee tables in bite_me DB
@@ -228,10 +316,7 @@ public class DbController {
                     + "(800, 8), "
                     + "(900, 9)";
             PreparedStatement insertEmployeeStmt = conn.prepareStatement(insertEmployeeQuery);
-            insertEmployeeStmt.executeUpdate();
-
-
-            
+            insertEmployeeStmt.executeUpdate();       
         } catch (SQLException e) {
             e.printStackTrace();
         }

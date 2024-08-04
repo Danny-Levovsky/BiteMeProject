@@ -2,6 +2,7 @@ package client;
 
 import java.io.IOException;
 
+import branch_manager.UpdateClientController;
 import entites.Message;
 import enums.Commands;
 import javafx.application.Platform;
@@ -35,7 +36,10 @@ public class Client extends AbstractClient
 	  //TODO: STATIC IMPORT OF DIFFERENT CONTROLLERS 
 	  //IMPORT CLIENT CONTROLLERS HERE
 	  static public EmployeeController employeeController;
-	  static public LoginScreenController loginController; //** 
+	  static public LoginScreenController loginController; 
+	  static public UpdateClientController updateClientController;
+
+
 	  //static public WorkerController workerController;
 	  //static public MainScreenController mainScreenController;
 	  //static public BookingController bookingController;
@@ -52,6 +56,7 @@ public class Client extends AbstractClient
 	    //Initilazing The Contorllers
 	    //IMPORT CLIENT CONTROLLERS HERE
 	    employeeController = new EmployeeController();
+
 	    //bookingController = new BookingController();
 	    //mainScreenController = new MainScreenController();
 	    //workerController = new WorkerController();
@@ -102,7 +107,18 @@ public class Client extends AbstractClient
                        System.err.println("LoginController is not set.");
                    }
                });
-               break;
+               break;         
+	  	 case  UpdateStatus:
+             Platform.runLater(() -> {
+                 if (updateClientController != null) {
+                     updateClientController.handleServerResponse(m);
+                 }
+             });
+             break;
+
+         default:
+             break;
+  
 	    }
 	    
 	  }

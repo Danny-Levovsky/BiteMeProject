@@ -3,7 +3,6 @@ package branch_manager;
 
 import entites.User;
 import enums.Commands;
-import client.Client;
 import client.ClientController;
 import entites.Message;
 import login.LoginScreenController;
@@ -100,11 +99,20 @@ public class BranchManagerController {
     	
     }
 
+    /**
+     * Handles the update client button action.
+     * This method is triggered when the update client button is clicked.
+     * It hides the current window and opens the update client screen, and
+     * passes branch manager district
+     * @param event the event triggered by the update client button click
+     * @throws Exception if there is an error while opening the update client screen
+     */
     @FXML
-    public void getBtnUpdateClient(ActionEvent event) {
-
-
-
+    public void getBtnUpdateClient(ActionEvent event) throws Exception {
+    	UpdateClientController.setbranchManagerDistrict(branchManager.getDistrict());
+		((Node) event.getSource()).getScene().getWindow().hide();
+		UpdateClientController newScreen = new UpdateClientController();
+		newScreen.start(new Stage());
     }
 
     @FXML

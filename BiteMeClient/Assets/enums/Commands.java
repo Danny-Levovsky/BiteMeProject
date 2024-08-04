@@ -1,16 +1,12 @@
 package enums;
 
-//Server
 
 
-/*
- * this class has various commands for communication between client and server.
+/**
+ * This enum defines various commands for communication between client and server.
  */
-
-
 public enum Commands {
 
-	
 	ClientConnect,      //command to indicates client connection.
 	ClientDisconnect,   //command to indicate client disconnection
 	terminate,		    //command that calls for client disconnection
@@ -19,8 +15,6 @@ public enum Commands {
 	updateRestaurantOrderToStatus, //command that request to update order status in DB table restaurant orders
 	CheckUsername, //command for Login Process 
     UpdateLoginStatus, // command for updating login status
-    LogoutUser //  command for logging out
-
-
-
+    LogoutUser, //  command for logging out
+    UpdateStatus //command for updating customer status
 }
