@@ -82,8 +82,8 @@ public class Client extends AbstractClient
 	         System.exit(0);
 	  		 break;
 	  		 
-	  	  case setRestaurantPendingOrders:
-	  		employeeController.updateTable(m.getObj());
+	  	  case setRestaurantOrders:
+	  		employeeController.setTable(m.getObj());
 	  		  
 	  	default:
 			break;

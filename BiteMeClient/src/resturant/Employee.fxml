@@ -20,8 +20,11 @@
       <Button id="btnExit" fx:id="btnOrderCompleted" layoutX="474.0" layoutY="471.0" mnemonicParsing="false" onAction="#getBtnOrderCompleted" text="Order Completed" />
       <TableView fx:id="tableView" layoutX="38.0" layoutY="84.0" prefHeight="327.0" prefWidth="558.0">
         <columns>
-          <TableColumn prefWidth="75.0" text="C1" />
-          <TableColumn prefWidth="75.0" text="C2" />
+          <TableColumn prefWidth="75.0" text="OrderID" />
+          <TableColumn prefWidth="75.0" text="CustomerNumber" />
+            <TableColumn prefWidth="75.0" text="RestaurantNumber" />
+            <TableColumn prefWidth="75.0" text="RestaurantName" />
+            <TableColumn prefWidth="75.0" text="Status" />
         </columns>
       </TableView>
       <TextField fx:id="txtOrderID" layoutX="107.0" layoutY="471.0" prefHeight="25.0" prefWidth="78.0" />

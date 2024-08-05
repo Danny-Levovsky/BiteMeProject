@@ -2,7 +2,11 @@ package resturant;
 
 import client.ClientController;
 import entites.Message;
+import entites.Order;
+import entites.Order.OrderStatus;
 import enums.Commands;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -35,38 +39,43 @@ public class EmployeeController {
     @FXML
     private Label txtRestaurantName; //must replace with restaurant name 
     
-    
     @FXML
     private Button btnBack;  //appear if I am certified employee 
+    
+    private ObservableList<Order> ordersData = FXCollections.observableArrayList();
 
     void getTableData() {
     	// get Table view data with current Pending Restaurant orders according to Restaurant id
-    	Commands command = Commands.getRestaurantPendingOrders;
+    	Commands command = Commands.getRestaurantOrders;
     	Message message = new Message(txtRestaurantName, command);
     	ClientController.client.handleMessageFromClientControllers(message);
     }
     
-    void setTable(Object msg) {
-    	tableView = (TableView<?>) msg;
+    public void setTable(Object msg) {
+    	ordersData.setAll((Order[]) msg);
     }
+    
     @FXML
     void getBtnLogout(ActionEvent event) {
 
     }
 
+    void updateOrderStatus(Object msg) {
+    	Commands command = Commands.updateOrderStatus;
+    	Message message = new Message(msg, command);
+    	ClientController.client.handleMessageFromClientControllers(message);
+    }
+    
     @FXML
     void getBtnOrderCompleted(ActionEvent event) {
-    	// send to server updateRestaurantOrderToStatus(Completed)
+    	Object[] idAndStatus = {txtOrderID, OrderStatus.READY};
+    	updateOrderStatus(idAndStatus);
     }
 
     @FXML
     void getBtnOrderReceived(ActionEvent event) {
-    	// send to server updateRestaurantOrderToStatus(Received)
-    }
-
-    @FXML
-    void updateName(MouseEvent event) {   //update name for employee + restaurant name 
-
+    	Object[] idAndStatus = {txtOrderID, OrderStatus.RECEIVED};
+    	updateOrderStatus(idAndStatus);
     }
     
     

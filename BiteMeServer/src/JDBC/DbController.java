@@ -1,7 +1,14 @@
 package JDBC;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import entites.Order;
 
 public class DbController {
 	private Connection conn;
@@ -10,31 +17,41 @@ public class DbController {
     public DbController( Connection connection ) {
         this.conn = connection ;
     }
-    public Object getRestaurantPendingOrders(Object obj) {
+    public Object getRestaurantOrders(Object obj) {
 		String restaurantName = (String) obj;
 		
-    	ArrayList<ManagerRequestDetail> requestList = new ArrayList<>();
-	    String query = "SELECT parkName, changeTo, amountTo, requestNumber, changes FROM managerrequest";
-	    try {
-	         PreparedStatement stmt = conn.prepareStatement(query);
-	         ResultSet rs = stmt.executeQuery(); 
+		List<Order> restaurantOrders = new ArrayList<>();
+        
+        String query = "SELECT o.OrderID, o.CustomerNumber, r.RestaurantName, ro.Status, o.RestaurantNumber" +
+                       "FROM orders o " +
+                       "JOIN restaurants r ON o.RestaurantNumber = r.RestaurantNumber " +
+                       "JOIN restaurants_orders ro ON o.OrderID = ro.OrderID " +
+                       "WHERE r.RestaurantName = ? AND ro.Status = 'PENDING' OR 'RECEIVED'";
+        
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, restaurantName);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                int orderNumber = rs.getInt("OrderID");
+                int customerNumber = rs.getInt("CustomerNumber");
+                int restaurantNumber = rs.getInt("RestaurantNumber");
+                String fetchedRestaurantName = rs.getString("RestaurantName");
+                String orderStatus = rs.getString("Status");
 
-	        while (rs.next()) {
-	            String parkName = rs.getString("parkName");
-	            String changeTo = rs.getString("changeTo");
-	            String amountTo = rs.getString("amountTo");
-	            int requestNumber = rs.getInt("requestNumber");
-	            String changes = rs.getString("changes");
+                Order order = new Order(orderNumber, fetchedRestaurantName, restaurantNumber, customerNumber); 
+                order.setOrderStatus(Order.OrderStatus.valueOf(orderStatus));
 
-	            ManagerRequestDetail requestDetail = new ManagerRequestDetail(parkName, changeTo, amountTo);
-	            requestDetail.setRequestNumber(requestNumber);
-	            requestList.add(requestDetail);
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-
-	    return requestList;
-	    	
+                restaurantOrders.add(order);
+            }
+            
+            return restaurantOrders;
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+            	
 }
