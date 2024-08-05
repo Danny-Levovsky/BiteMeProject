@@ -6,7 +6,6 @@ import client.ClientController;
 import entites.Message;
 import entites.User;
 import enums.Commands;
-
 import resturant.CertifiedEmployeeController;
 import resturant.EmployeeController;
 import customer.CustomerController;
@@ -28,7 +27,11 @@ import javafx.stage.Stage;
 
 
 
-
+/**
+ * Controller class for the login screen of the application.
+ * Manages user interactions with the login screen and communicates with the server through client to authenticate users.
+ * @author yosra
+ */
 public class LoginScreenController {
 
     @FXML
@@ -51,15 +54,12 @@ public class LoginScreenController {
     
     private String username, password; 
     
-    
-    /*
-   ((Node) event.getSource()).getScene().getWindow().hide();
-	CertifiedEmployeeController newScreen = new CertifiedEmployeeController();
-	newScreen.start(new Stage());
-*/
 
-
-   
+    /**
+     * Starts the JavaFX application by setting up the primary stage with the login screen. 
+     * @param primaryStage the primary stage for this application, onto which the application scene can be set
+     * @throws Exception if the FXML file cannot be loaded
+     */
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/login/LoginScreen.fxml"));
     	Parent root = loader.load();
@@ -69,7 +69,10 @@ public class LoginScreenController {
     	primaryStage.show();
 	}
 	
-	
+	/**
+     * Initializes the login screen controller.
+     * Disables the back button initially and sets the login controller instance.
+     */
 	@FXML
 	private void initialize() {
 		// Initially disable the back button
@@ -77,7 +80,13 @@ public class LoginScreenController {
 	    Client.loginController = this;  // Set the loginController instance here
 	}
 	
-	
+	/**
+     * Handles the action event for the disconnect button.
+     * Disables the login and disconnect buttons and sends a disconnect message to the server.
+     * @param event the action event triggered by the disconnect button
+     * @throws Exception if there is an error sending the message to the server
+     */
+    @FXML
 	public void getBtnDisconnect(ActionEvent event) throws Exception {
 		//after disconnection the only thing user can do is back
 		btnBack.setDisable(false); 
@@ -87,32 +96,37 @@ public class LoginScreenController {
 		Message disconnectClient = new Message(null,Commands.ClientDisconnect);
 		ClientController.client.sendToServer(disconnectClient);
 	}
-		
+	
+    /**
+     * Handles the action event for the back button.
+     * Loads the connection screen FXML and sets it as the last screen
+     * @param event the action event triggered by the back button
+     */
     @FXML
-    void getBtnBack(ActionEvent event) {
+    public void getBtnBack(ActionEvent event) throws Exception{
     	 if (!btnBack.isDisable()) {
-	        try {
-	            FXMLLoader loader = new FXMLLoader();
-	            loader.setLocation(getClass().getResource("/login/ConnectionScreen.fxml")); // Update the path to your FXML
-	            Parent previousScreen = loader.load();
-	            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-	            Scene scene = new Scene(previousScreen);
-	            stage.setScene(scene);
-	            stage.setTitle("BiteMeClient");
-	            stage.show();
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
+    		 ((Node) event.getSource()).getScene().getWindow().hide();
+    		 ConnectionScreenController newScreen = new ConnectionScreenController();
+    		 newScreen.start(new Stage());
     	 }
     }
     
-    
+    /**
+     * Sets the login message to be displayed on the login screen.
+     * @param msg the login message to be displayed
+     */
     public void loginMsg( String msg) {
     	txtmsg.setText(msg);
     }
     
+    /**
+    * Handles the action event for the login button.
+    * Validates the input fields and sends a login request to the server through client.
+    * @param event the action event triggered by the login button
+    * @throws Exception if there is an error sending the message to the server
+    */
     @FXML
-    void getBtnLogin(ActionEvent event) throws Exception {
+    public void getBtnLogin(ActionEvent event) throws Exception {
     	username =  txtUserName.getText();
     	password =  txtPassword.getText();
     	
@@ -127,7 +141,14 @@ public class LoginScreenController {
         ClientController.client.sendToServer(checkCredentialsMessage);
     }
     
-    public void handleServerResponse(Message message, Stage currentStage) {
+    /**
+     * Handles the server response for the login request.
+     * Processes the server response and performs the appropriate action based on the response.
+     * @param message the message received from the server
+     * @param currentStage the current stage of the application
+     * @throws Exception if there is an error handling the server response
+     */
+    public void handleServerResponse(Message message, Stage currentStage) throws Exception {
         if (message.getCmd() == Commands.CheckUsername) {
             Object response = message.getObj();
             if (response instanceof String) {
@@ -143,26 +164,36 @@ public class LoginScreenController {
                 	loginMsg("user is already logged in");
                 }
                 else {
-                	 openUserSpecificWindow(user, currentStage);
+                	Message updateLoginStatusMessage = new Message(user.getId(), Commands.UpdateLoginStatus);
+                    ClientController.client.sendToServer(updateLoginStatusMessage);
+                	openUserSpecificWindow(user, currentStage);
 
                 }
             }
         }
     }
     
+    /**
+     * Opens a specific window based on the user type.
+     * @param user the user object containing user details
+     * @param currentStage the current stage of the application
+     */
     private void openUserSpecificWindow(User user, Stage currentStage) {
         try {
             currentStage.hide();
             switch (user.getType()) {
                 case "CEO":
+                	CEOController.setCEO(user);
                     CEOController ceoController = new CEOController();
                     ceoController.start(new Stage());
                     break;
                 case "Customer":
+                	CustomerController.setCustomer(user);
                     CustomerController customerController = new CustomerController();
                     customerController.start(new Stage());
                     break;
                 case "Branch Manager":
+                    BranchManagerController.setbranchManager(user);
                     BranchManagerController branchManagerController = new BranchManagerController();
                     branchManagerController.start(new Stage());
                     break;
@@ -184,6 +215,4 @@ public class LoginScreenController {
             currentStage.show(); // Show the login stage again in case of an error
         }
     }
-    
-
 }    

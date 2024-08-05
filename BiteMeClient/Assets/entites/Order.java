@@ -1,6 +1,10 @@
 package entites;
 
-public class Order {
+import java.io.Serializable;
+
+public class Order implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	private int orderNumber;
 	private int customerNumber;
@@ -9,6 +13,8 @@ public class Order {
     private DelieveredOnTime delieveredOnTime;
     private int orderPrice;
     private DeliveryDetail deliveryDetail; 
+    
+    private String orderDateTime;  //used to approve receiving order 
  // Need to add ArrayList<Dish> or something for Order to hold Dishes??
     
     
@@ -35,6 +41,22 @@ public class Order {
         this.delieveredOnTime = DelieveredOnTime.NULL;
         this.orderPrice = 0;
     }
+    
+    //constructor for approving receiving order
+    public Order(int orderNumber, String orderDateTime) {
+        this.orderNumber = orderNumber;
+        this.orderDateTime = orderDateTime;
+    }
+
+    public int getOrderNumber() {
+        return orderNumber;
+    }
+
+    public String getOrderDateTime() {
+        return orderDateTime;
+    }
+    
+    
 
     public int getRestaurantNumber() {
         return orderNumber;

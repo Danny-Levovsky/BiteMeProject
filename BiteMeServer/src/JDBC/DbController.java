@@ -1,19 +1,35 @@
 package JDBC;
 
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
+import entites.Order;
 import entites.User;
 
+
+
+
+/**
+ * Controller class for database operations related to user management.
+ * @author yosra
+ */
 public class DbController {
+	
 	private Connection conn;
 
-    // Constructor that takes a SqlConnection object
+    /**
+     * Constructs a DbController with the given database connection.
+     * @param connection the database connection
+     */
     public DbController( Connection connection ) {
         this.conn = connection ;
     }
+    
     /*public Object getRestaurantPendingOrders(Object obj) {
 		String restaurantName = (String) obj;
 		
@@ -42,6 +58,11 @@ public class DbController {
 	    	
     }*/
     
+    /**
+     * Checks if a username exists in the database.
+     * @param username the username to check
+     * @return true if the username exists, false otherwise
+     */
     public boolean isUsernameExists(String username) {
         String query = "SELECT COUNT(*) FROM users WHERE UserName = ?";
         try {
@@ -57,6 +78,12 @@ public class DbController {
         return false;
     }
     
+    /**
+     * Checks if the provided password matches the stored password for the given username.
+     * @param username the username to check
+     * @param password the password to verify
+     * @return true if the password is correct, false otherwise
+     */
     public boolean isPasswordCorrect(String username, String password) {
         String query = "SELECT Password FROM users WHERE UserName = ?";
         try {
@@ -73,7 +100,11 @@ public class DbController {
         return false;
     }
     
-    
+    /**
+     * Retrieves user details from the database based on the username.
+     * @param username the username of the user
+     * @return a User object containing user details, or null if the user is not found
+     */
     public User getUserDetails(String username) {
         String query = "SELECT * FROM users WHERE UserName = ?";
         try {
@@ -99,32 +130,147 @@ public class DbController {
         return null;
     }
     
+    /**
+     * Updates the login status of a user in the database.
+     * @param userId the ID of the user
+     * @param status the new login status (1 for logged in, 0 for logged out)
+     */
+    public void updateLoginStatus(int userId, int status) {
+        String query = "UPDATE users SET IsLoggedIn = ? WHERE ID = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, status);
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Checks if a user ID exists in the users table in database.
+     * @param userId the user ID to check
+     * @return true if the user ID exists, false otherwise
+     */
+    public boolean isUserIdExists(int userId) {
+        String query = "SELECT COUNT(*) FROM users WHERE ID = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Retrieves the user details for a given user ID.
+     * @param userId the user ID to retrieve details for
+     * @return a User object containing the user's details, or null if the user ID does not exist or an error occurs
+     */
+    public User getUserDetailsById(int userId) {
+        String query = "SELECT * FROM users WHERE ID = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                int id = rs.getInt("ID");
+                String username = rs.getString("UserName");
+                String password = rs.getString("Password");
+                String firstName = rs.getString("FirstName");
+                String lastName = rs.getString("LastName");
+                String email = rs.getString("Email");
+                String phone = rs.getString("Phone");
+                String type = rs.getString("Type");
+                int isLoggedIn = rs.getInt("IsLoggedIn");
+                String district = rs.getString("District");
 
+                return new User(id, username, password, firstName, lastName, email, phone, type, isLoggedIn, district);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Retrieves the status of a customer for a given user ID from customers table in database.
+     * @param userId the user ID of the customer
+     * @return the status of the customer as a String, or null if the user ID does not exist or an error occurs
+     */
+    public String getCustomerStatus(int userId) {
+        String query = "SELECT Status FROM customers WHERE ID = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("Status");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Updates the status of a customer for a given user ID in customers table in database.
+     * @param userId the user ID of the customer
+     * @param status the new status to set for the customer
+     */
+    public void updateCustomerStatus(int userId, String status) {
+        String query = "UPDATE customers SET Status = ? WHERE ID = ?";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, status);
+            stmt.setInt(2, userId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public List<Order> getPendingOrders(int customerId) {
+        List<Order> orders = new ArrayList<>();
+        String query = "SELECT o.OrderID, o.OrderDateTime FROM orders o " +
+                       "JOIN customer_orders co ON o.OrderID = co.OrderID " +
+                       "JOIN customers c ON o.CustomerNumber = c.CustomerNumber " +
+                       "WHERE c.ID = ? AND co.Status = 'pending'";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, customerId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int orderId = rs.getInt("OrderID");
+                String orderDateTime = rs.getString("OrderDateTime");
+                orders.add(new Order(orderId, orderDateTime));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+    
+
+    /**
+     * Imports external data into the application database.
+     * This method performs multiple data import and update operations on the users, customers,
+     * restaurants, and employee tables in bite_me DB
+     */
     public void importExternalData() {
         try {
-            // Clear the target table
-            String clearUsersTableQuery = "TRUNCATE TABLE bite_me.users";
-            PreparedStatement clearUsersTableStmt = conn.prepareStatement(clearUsersTableQuery);
-            clearUsersTableStmt.executeUpdate();
 
             // Import data from user_management.users to bite_me.users
             String importUsersQuery = "INSERT INTO bite_me.users (ID, UserName, Password, FirstName, LastName, Email, Phone, Type, IsLoggedIn, District) "
                     + "SELECT ID, UserName, Password, FirstName, LastName, Email, Phone, Type, IsLoggedIn, District FROM user_management.users";
             PreparedStatement importStmt = conn.prepareStatement(importUsersQuery);
             importStmt.executeUpdate();
-
-            // Create customers table
-            String createCustomersTableQuery = "CREATE TABLE IF NOT EXISTS bite_me.customers ("
-                    + "CustomerNumber INT AUTO_INCREMENT PRIMARY KEY, "
-                    + "ID INT, "
-                    + "Credit INT DEFAULT 0, "
-                    + "IsBusiness TINYINT, "
-                    + "PaymentCardNumber INT, "
-                    + "PaymentCardDate VARCHAR(10), "
-                    + "Status VARCHAR(10) DEFAULT 'locked', "
-                    + "FOREIGN KEY (ID) REFERENCES users(ID))";
-            PreparedStatement createCustomersTableStmt = conn.prepareStatement(createCustomersTableQuery);
-            createCustomersTableStmt.executeUpdate();
 
             // Insert into customers table
             String insertCustomersQuery = "INSERT INTO bite_me.customers (ID, IsBusiness, PaymentCardNumber, PaymentCardDate) VALUES "
@@ -159,15 +305,6 @@ public class DbController {
             PreparedStatement updateCustomersStmt3 = conn.prepareStatement(updateCustomersQuery3);
             updateCustomersStmt3.executeUpdate();
 
-            // Create restaurants table
-            String createRestaurantsTableQuery = "CREATE TABLE IF NOT EXISTS bite_me.restaurants ("
-                    + "RestaurantNumber INT AUTO_INCREMENT PRIMARY KEY, "
-                    + "RestaurantName VARCHAR(45) DEFAULT NULL, "
-                    + "MenuID INT, "
-                    + "District VARCHAR(45) DEFAULT NULL, "
-                    + "FOREIGN KEY (MenuID) REFERENCES bite_me.menus(MenuID))";
-            PreparedStatement createRestaurantsTableStmt = conn.prepareStatement(createRestaurantsTableQuery);
-            createRestaurantsTableStmt.executeUpdate();
 
             // Insert into restaurants table
             String insertRestaurantsQuery = "INSERT INTO bite_me.restaurants (RestaurantName, MenuID, District) VALUES "
@@ -183,15 +320,6 @@ public class DbController {
             PreparedStatement insertRestaurantsStmt = conn.prepareStatement(insertRestaurantsQuery);
             insertRestaurantsStmt.executeUpdate();
 
-            // Create employee table
-            String createEmployeeTableQuery = "CREATE TABLE IF NOT EXISTS bite_me.employee ("
-                    + "EmployeeNumber INT AUTO_INCREMENT PRIMARY KEY, "
-                    + "ID INT, "
-                    + "RestaurantNumber INT, "
-                    + "FOREIGN KEY (ID) REFERENCES bite_me.users(ID), "
-                    + "FOREIGN KEY (RestaurantNumber) REFERENCES bite_me.restaurants(RestaurantNumber))";
-            PreparedStatement createEmployeeTableStmt = conn.prepareStatement(createEmployeeTableQuery);
-            createEmployeeTableStmt.executeUpdate();
 
             // Insert into employee table
             String insertEmployeeQuery = "INSERT INTO bite_me.employee (ID, RestaurantNumber) VALUES "
@@ -214,44 +342,7 @@ public class DbController {
                     + "(800, 8), "
                     + "(900, 9)";
             PreparedStatement insertEmployeeStmt = conn.prepareStatement(insertEmployeeQuery);
-            insertEmployeeStmt.executeUpdate();
-
-            // Create orders table
-            String createOrdersTableQuery = "CREATE TABLE IF NOT EXISTS bite_me.orders ("
-                    + "OrderID INT AUTO_INCREMENT PRIMARY KEY, "
-                    + "CustomerNumber INT, "
-                    + "RestaurantNumber INT, "
-                    + "TotalPrice INT, "
-                    + "Salad INT, "
-                    + "MainCourse INT, "
-                    + "Dessert INT, "
-                    + "Drink INT, "
-                    + "IsDelivery TINYINT, "
-                    + "IsEarlyOrder TINYINT, "
-                    + "RequestedDateTime DATETIME, "
-                    + "OrderDateTime DATETIME, "
-                    + "ReceivedDateTime DATETIME, "
-                    + "FOREIGN KEY (CustomerNumber) REFERENCES customers(CustomerNumber), "
-                    + "FOREIGN KEY (RestaurantNumber) REFERENCES restaurants(RestaurantNumber))";
-            PreparedStatement createOrdersTableStmt = conn.prepareStatement(createOrdersTableQuery);
-            createOrdersTableStmt.executeUpdate();
-
-            // Create customer_orders table
-            String createCustomerOrdersTableQuery = "CREATE TABLE IF NOT EXISTS bite_me.customer_orders ("
-                    + "OrderID INT, "
-                    + "Status VARCHAR(45), "
-                    + "FOREIGN KEY (OrderID) REFERENCES orders(OrderID))";
-            PreparedStatement createCustomerOrdersTableStmt = conn.prepareStatement(createCustomerOrdersTableQuery);
-            createCustomerOrdersTableStmt.executeUpdate();
-
-            // Create restaurants_orders table
-            String createRestaurantsOrdersTableQuery = "CREATE TABLE IF NOT EXISTS bite_me.restaurants_orders ("
-                    + "OrderID INT, "
-                    + "Status VARCHAR(45), "
-                    + "FOREIGN KEY (OrderID) REFERENCES orders(OrderID))";
-            PreparedStatement createRestaurantsOrdersTableStmt = conn.prepareStatement(createRestaurantsOrdersTableQuery);
-            createRestaurantsOrdersTableStmt.executeUpdate();
-            
+            insertEmployeeStmt.executeUpdate();       
         } catch (SQLException e) {
             e.printStackTrace();
         }
