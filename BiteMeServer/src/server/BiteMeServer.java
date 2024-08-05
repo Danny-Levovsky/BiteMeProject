@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 //import JDBC.DbController;
 
@@ -162,6 +163,15 @@ public class BiteMeServer extends AbstractServer
               }
           }
           
+          break;
+      case getPendingOrders:
+          int customerId = (int) m.getObj();
+          List<Order> pendingOrders = dbController.getPendingOrders(customerId);
+          try {
+              client.sendToClient(new Message(pendingOrders, Commands.getPendingOrders));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
           break;
 	  	default:
 	  		break;	  			  	

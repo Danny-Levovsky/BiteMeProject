@@ -16,5 +16,6 @@ public enum Commands {
 	CheckUsername, //command for Login Process 
     UpdateLoginStatus, // command for updating login status
     LogoutUser, //  command for logging out
-    UpdateStatus //command for updating customer status
+    UpdateStatus, //command for updating customer status
+    getPendingOrders //command for customer to approve receiving order 
 }

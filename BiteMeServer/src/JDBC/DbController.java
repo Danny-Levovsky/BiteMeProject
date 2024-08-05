@@ -5,7 +5,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
+import entites.Order;
 import entites.User;
 
 
@@ -231,7 +234,30 @@ public class DbController {
             e.printStackTrace();
         }
     }
- 
+    
+    public List<Order> getPendingOrders(int customerId) {
+        List<Order> orders = new ArrayList<>();
+        String query = "SELECT o.OrderID, o.OrderDateTime FROM orders o " +
+                       "JOIN customer_orders co ON o.OrderID = co.OrderID " +
+                       "JOIN customers c ON o.CustomerNumber = c.CustomerNumber " +
+                       "WHERE c.ID = ? AND co.Status = 'pending'";
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, customerId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int orderId = rs.getInt("OrderID");
+                String orderDateTime = rs.getString("OrderDateTime");
+                orders.add(new Order(orderId, orderDateTime));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+    
+
     /**
      * Imports external data into the application database.
      * This method performs multiple data import and update operations on the users, customers,
