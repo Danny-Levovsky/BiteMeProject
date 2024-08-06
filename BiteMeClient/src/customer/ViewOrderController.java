@@ -5,6 +5,7 @@ import client.ClientController;
 import entites.Message;
 import entites.Order;
 import enums.Commands;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,19 +18,28 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.util.List;
+
+
+
 
 public class ViewOrderController {
 
     @FXML
     private Button btnBack;
+    
+    @FXML
+    private Button btnReceived;
 
     @FXML
     private Label txtMsg;
+    
+    @FXML
+    private TextField txtId1; // customer inserts order id here 
 
     @FXML
     private TableView<Order> table;
@@ -39,8 +49,9 @@ public class ViewOrderController {
 
     @FXML
     private TableColumn<Order, String> txtDate;
-
-    private static int id;
+    
+    private int orderId; //for saving the order Id that customer wants to approve receiving
+    private static int id; //customer id 
 
     /**
      * Sets the ID for the view order controller.
@@ -69,6 +80,7 @@ public class ViewOrderController {
     @FXML
     private void initialize() {
         Client.viewOrderController = this; // Set the viewOrderController instance here
+        
         txtId.setCellValueFactory(new PropertyValueFactory<>("orderNumber"));
         txtDate.setCellValueFactory(new PropertyValueFactory<>("orderDateTime"));
         try {
@@ -90,12 +102,17 @@ public class ViewOrderController {
 
     /**
      * Updates the table with the list of orders.
-     *
      * @param orders the list of orders to display
      */
     public void updateOrderTable(List<Order> orders) {
         ObservableList<Order> orderList = FXCollections.observableArrayList(orders);
         table.setItems(orderList);
+        
+        if (table.getItems().isEmpty()) {
+            appearingMsg("you don't have orders that need approve receiving");
+            btnReceived.setDisable(true);
+            txtId1.setDisable(true);           
+        }
     }
 
     public void appearingMsg(String msg) {
@@ -103,8 +120,13 @@ public class ViewOrderController {
     }
 
     @FXML
-    void getBtnApprove(ActionEvent event) {
-        // Handle approval action
+    void getBtnReceived(ActionEvent event) {
+    	try {
+    	    orderId = Integer.parseInt(txtId1.getText());
+
+    	} catch (NumberFormatException e) {
+    		appearingMsg("you can only insert an integer");
+    	}
     }
 
     /**

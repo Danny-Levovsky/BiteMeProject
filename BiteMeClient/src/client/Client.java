@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import branch_manager.UpdateClientController;
+import customer.CustomerController;
 import customer.ViewOrderController;
 import entites.Message;
 import entites.Order;
@@ -39,6 +40,8 @@ public class Client extends AbstractClient {
 	static public LoginScreenController loginController;
 	static public UpdateClientController updateClientController;
 	static public ViewOrderController viewOrderController;
+	static public CustomerController customerController;
+	
 
 	// static public WorkerController workerController;
 	// static public MainScreenController mainScreenController;
@@ -110,6 +113,13 @@ public class Client extends AbstractClient {
 			Platform.runLater(() -> {
 				if (updateClientController != null) {
 					updateClientController.handleServerResponse(m);
+				}
+			});
+			break;
+		case CheckStatus:	
+			Platform.runLater(() -> {
+				if (customerController != null) {
+					customerController.handleServerResponse(m);
 				}
 			});
 			break;

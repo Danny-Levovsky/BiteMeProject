@@ -173,6 +173,14 @@ public class BiteMeServer extends AbstractServer
               e.printStackTrace();
           }
           break;
+      case CheckStatus:	
+    	  int id = (int) m.getObj();
+    	  String status = dbController.getCustomerStatus(id);
+    	  try {
+			client.sendToClient(new Message(status,Commands.CheckStatus));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	  	default:
 	  		break;	  			  	
 	  }  	  

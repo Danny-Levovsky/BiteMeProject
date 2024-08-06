@@ -258,6 +258,10 @@ public class DbController {
     }
     
 
+    
+    
+    
+    
     /**
      * Imports external data into the application database.
      * This method performs multiple data import and update operations on the users, customers,
@@ -306,41 +310,19 @@ public class DbController {
             updateCustomersStmt3.executeUpdate();
 
 
-            // Insert into restaurants table
-            String insertRestaurantsQuery = "INSERT INTO bite_me.restaurants (RestaurantName, MenuID, District) VALUES "
-                    + "('The Savory Spoon Karmiel', 1, 'north'), "
-                    + "('Bistro Belle Vie Haifa', 2, 'north'), "
-                    + "('Harvest Moon Café Nahariyya', 3, 'north'), "
-                    + "('The Savory Spoon Natanya', 1, 'center'), "
-                    + "('Bistro Belle Vie Raanana', 2, 'center'), "
-                    + "('Harvest Moon Café Rehovot', 3, 'center'), "
-                    + "('The Savory Spoon Ashdod', 1, 'south'), "
-                    + "('Bistro Belle Vie Eilat', 2, 'south'), "
-                    + "('Harvest Moon Café Dimona', 3, 'south')";
-            PreparedStatement insertRestaurantsStmt = conn.prepareStatement(insertRestaurantsQuery);
-            insertRestaurantsStmt.executeUpdate();
-
-
             // Insert into employee table
             String insertEmployeeQuery = "INSERT INTO bite_me.employee (ID, RestaurantNumber) VALUES "
                     + "(10, 1), "
                     + "(20, 2), "
                     + "(30, 3), "
                     + "(40, 4), "
-                    + "(50, 5), "
-                    + "(60, 6), "
-                    + "(70, 7), "
-                    + "(80, 8), "
-                    + "(90, 9), "
+                    + "(50, 5), "                    
                     + "(100, 1), "
                     + "(200, 2), "
                     + "(300, 3), "
                     + "(400, 4), "
-                    + "(500, 5), "
-                    + "(600, 6), "
-                    + "(700, 7), "
-                    + "(800, 8), "
-                    + "(900, 9)";
+                    + "(500, 5)";
+
             PreparedStatement insertEmployeeStmt = conn.prepareStatement(insertEmployeeQuery);
             insertEmployeeStmt.executeUpdate();       
         } catch (SQLException e) {
