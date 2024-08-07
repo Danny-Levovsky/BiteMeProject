@@ -82,15 +82,24 @@ public class BiteMeServer extends AbstractServer
 		  ServerUI.gotResponse = true;
 		  break;
 		  
-	 /* case getRestaurantPendingOrders:
-		  Object RestaurantPendingOrdersData = dbController.getRestaurantPendingOrders(m.getObj());
-		  // setRestaurantPendingOrders
+	 /* case getRestaurantOrders:
+		  Object RestaurantOrdersData = dbController.getRestaurantOrders(m.getObj());
+		  // setRestaurantOrders
 		  try {
-			client.sendToClient(new Message(RestaurantPendingOrdersData, Commands.setRestaurantPendingOrders));
+			client.sendToClient(new Message(RestaurantOrdersData, Commands.setRestaurantOrders));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		  break;*/
+		  
+	  case getUserDetails:
+		  User userDetails = dbController.getUserDetails((String)m.getObj());
+          try {
+              client.sendToClient(new Message(userDetails, Commands.setUserDetails));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+		  
 	  case CheckUsername:
           User user = (User) m.getObj();
           boolean usernameExists = dbController.isUsernameExists(user.getUsername());
@@ -118,14 +127,17 @@ public class BiteMeServer extends AbstractServer
               }
           }
           break;
+          
 	  case UpdateLoginStatus:
           int userId = (int) m.getObj();
           dbController.updateLoginStatus(userId, 1);
           break;
+          
       case LogoutUser: 
           int logoutUserId = (int) m.getObj();
           dbController.updateLoginStatus(logoutUserId, 0);
           break;
+          
       case  UpdateStatus:
           Object[] requestData = (Object[]) m.getObj();
           int userId1 = (int) requestData[0];
@@ -164,6 +176,7 @@ public class BiteMeServer extends AbstractServer
           }
           
           break;
+          
       case getPendingOrders:
           int customerId = (int) m.getObj();
           List<Order> pendingOrders = dbController.getPendingOrders(customerId);
@@ -173,6 +186,7 @@ public class BiteMeServer extends AbstractServer
               e.printStackTrace();
           }
           break;
+          
 	  	default:
 	  		break;	  			  	
 	  }  	  
