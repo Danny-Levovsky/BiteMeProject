@@ -1,4 +1,4 @@
-package entites;
+/**package entites;
 import enums.SaladType;
 import enums.ItemSize;
 
@@ -22,3 +22,4 @@ public class Salad extends Dish{
 		return itemSize;
 	}
 }
+**/

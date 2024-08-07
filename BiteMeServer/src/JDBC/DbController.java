@@ -235,6 +235,26 @@ public class DbController {
         }
     }
     
+    //query that gets restaurant names
+    public ArrayList<String> getRestaurantNamesFromDB() {
+        ArrayList<String> restaurantNames = new ArrayList<>();
+        String query = "SELECT RestaurantName FROM restaurants";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                String restaurantName = rs.getString("RestaurantName");
+                restaurantNames.add(restaurantName);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Consider logging the error or throwing a custom exception
+        }
+        
+        return restaurantNames;
+    }
+    
     public List<Order> getPendingOrders(int customerId) {
         List<Order> orders = new ArrayList<>();
         String query = "SELECT o.OrderID, o.OrderDateTime FROM orders o " +

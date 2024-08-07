@@ -1,6 +1,7 @@
 package customer;
 
 import client.ClientController;
+import login.ConnectionScreenController;
 import login.LoginScreenController;
 import entites.Message;
 import entites.User;
@@ -94,9 +95,24 @@ public class CustomerController {
 	}
 
 	@FXML
-	void getBtnNewOrder(ActionEvent event) {
+    void getBtnNewOrder(ActionEvent event) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/customer/NewOrder.fxml"));
+        Parent root = loader.load();
+        NewOrderController newOrderController = loader.getController();
+        
+        // Set the newOrderController in ClientController
+        ClientController.client.setNewOrderController(newOrderController);
 
-	}
+        Stage stage = new Stage();
+        stage.setScene(new Scene(root));
+        stage.setTitle("New Order");
+        
+        // Hide the current window
+        ((Node) event.getSource()).getScene().getWindow().hide();
+        
+        stage.show();
+    }
+
 
 	/**
      * Handles the action for the view order button.

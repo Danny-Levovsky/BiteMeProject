@@ -1,4 +1,4 @@
-package entites;
+/**package entites;
 import enums.ItemSize;
 
 public class Drink extends Dish{
@@ -16,3 +16,4 @@ public class Drink extends Dish{
 	}
 
 }
+**/

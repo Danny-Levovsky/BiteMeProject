@@ -1,14 +1,17 @@
 package client;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import branch_manager.UpdateClientController;
+import customer.NewOrderController;
 import customer.ViewOrderController;
 import entites.Message;
 import entites.Order;
 import enums.Commands;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import login.LoginScreenController; //**
 import ocsf.client.AbstractClient;
@@ -39,6 +42,7 @@ public class Client extends AbstractClient {
 	static public LoginScreenController loginController;
 	static public UpdateClientController updateClientController;
 	static public ViewOrderController viewOrderController;
+	static public NewOrderController newOrderController; //added connection to newordercontroller
 
 	// static public WorkerController workerController;
 	// static public MainScreenController mainScreenController;
@@ -54,6 +58,7 @@ public class Client extends AbstractClient {
 		// Initilazing The Contorllers
 		// IMPORT CLIENT CONTROLLERS HERE
 		employeeController = new EmployeeController();
+		newOrderController = new NewOrderController(); //init newordercontroller
 
 		// bookingController = new BookingController();
 		// mainScreenController = new MainScreenController();
@@ -121,6 +126,16 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+			
+		case gotMyRestaurantList: //NEWORDER - GET REST NAMES
+		    Platform.runLater(() -> {
+		        ArrayList<String> restaurantNames = (ArrayList<String>) m.getObj();
+		        if (newOrderController != null) {
+		            newOrderController.setRestaurantNames(restaurantNames);
+		            System.out.println(restaurantNames); //checking debugging
+		        }
+		    });
+		    break;
 
 		default:
 			break;
@@ -128,6 +143,10 @@ public class Client extends AbstractClient {
 		}
 
 	}
+	
+	public void setNewOrderController(NewOrderController controller) {
+        newOrderController = controller;
+    }
 
 	/**
 	 * This method handles all data coming from the UI

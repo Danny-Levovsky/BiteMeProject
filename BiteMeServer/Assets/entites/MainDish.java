@@ -1,4 +1,4 @@
-package entites;
+/**package entites;
 import enums.MainCourse;
 import enums.GrillOption;
 
@@ -32,3 +32,4 @@ public class MainDish extends Dish{
 
 
 }
+**/

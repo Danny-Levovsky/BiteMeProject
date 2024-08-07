@@ -173,6 +173,20 @@ public class BiteMeServer extends AbstractServer
               e.printStackTrace();
           }
           break;
+      case getRestaurantList: //NEW ORDER - GET REST NAMES
+    	  ArrayList<String> restaurantNames = new ArrayList<>();
+    	  restaurantNames = dbController.getRestaurantNamesFromDB();
+    	  try {
+    	        client.sendToClient(new Message(restaurantNames, Commands.gotMyRestaurantList));
+    	    } catch (IOException e) {
+    	        e.printStackTrace();
+    	    }
+    	    break;
+    	    
+      case getRestaurantMenu: //NEW ORDER - GET REST NAMES
+    	  	System.out.println(m.getObj());
+    	    break;
+    	  
 	  	default:
 	  		break;	  			  	
 	  }  	  
