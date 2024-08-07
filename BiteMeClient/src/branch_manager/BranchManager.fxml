@@ -6,9 +6,9 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="302.0" prefWidth="511.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="BranchManagerController">
+<AnchorPane prefHeight="302.0" prefWidth="511.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="branch_manager.BranchManagerController">
    <children>
-      <Label fx:id="txtBranchManagerName" layoutX="14.0" layoutY="14.0" onDragDetected="#updateName" text="Branch Manager Name" />
+      <Label fx:id="txtBranchManagerName" layoutX="14.0" layoutY="14.0" text="Branch Manager Name" />
       <Button id="btnExit" fx:id="btnLogout" layoutX="45.0" layoutY="31.0" mnemonicParsing="false" onAction="#getBtnLogout" text="Logout" />
       <Label layoutX="90.0" layoutY="94.0" text="Branch Manager  Menu">
          <font>

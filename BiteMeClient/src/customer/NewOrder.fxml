@@ -1,26 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="437.0" prefWidth="621.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="NewOrderController">
-   <children>
-      <ComboBox fx:id="restaurantComboBox" layoutX="181.0" layoutY="33.0" prefWidth="150.0" promptText="choose restaurant" />
-      <TableView layoutX="156.0" layoutY="97.0" prefHeight="200.0" prefWidth="200.0">
-        <columns>
-          <TableColumn prefWidth="75.0" text="C1" />
-          <TableColumn prefWidth="75.0" text="C2" />
-        </columns>
-      </TableView>
-      <Label layoutX="28.0" layoutY="325.0" text="item number:" />
-      <Button fx:id="btnBack" layoutX="21.0" layoutY="378.0" mnemonicParsing="false" onAction="#getBtnBack" text="Back" />
-      <TextField fx:id="txt" layoutX="121.0" layoutY="321.0" />
-      <Button fx:id="btnAddItem" layoutX="343.0" layoutY="321.0" mnemonicParsing="false" onAction="#getBtnAddItem" text="add item" />
-      <Button fx:id="btnFinish" layoutX="497.0" layoutY="378.0" mnemonicParsing="false" onAction="#getBtnFinish" text="finish" />
-   </children>
+<AnchorPane prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="customer.NewOrderController">
+<children>
+<TabPane layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="900.0" tabClosingPolicy="UNAVAILABLE">
+<tabs>
+<Tab text="New Order">
+    <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            <children>
+                <ComboBox fx:id="restaurantComboBox" layoutX="347.0" layoutY="20.0" prefHeight="31.0" prefWidth="206.0" promptText="Choose restaurant" />
+                <TableView fx:id="dishTableView" layoutX="20.0" layoutY="70.0" prefHeight="500.0" prefWidth="860.0">
+                <columns>
+                <TableColumn fx:id="dishTypeColumn" prefWidth="150.0" text="Dish Type" />
+                <TableColumn fx:id="dishNameColumn" prefWidth="200.0" text="Dish Name" />
+                <TableColumn fx:id="dishPriceColumn" prefWidth="100.0" text="Dish Price" />
+                <TableColumn fx:id="specificationsColumn" prefWidth="200.0" text="Specifications" />
+                <TableColumn fx:id="quantityColumn" prefWidth="200.0" text="Quantity" />
+                </columns>
+                </TableView>
+                <Button fx:id="btnAddOrder" layoutX="728.0" layoutY="591.0" mnemonicParsing="false" onAction="#getBtnAddOrder" prefHeight="46.0" prefWidth="111.0" text="Add Order" />
+                <Button fx:id="btnBack" layoutX="47.0" layoutY="590.0" mnemonicParsing="false" onAction="#getBtnBack" prefHeight="48.0" prefWidth="111.0" text="Back" />
+            </children>
+        </AnchorPane>
+    </content>
+</Tab>
+<Tab text="Delivery">
+    <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            <children>
+                <VBox alignment="CENTER" layoutX="150.0" layoutY="30.0" prefWidth="600.0" spacing="15">
+                    <ComboBox fx:id="deliveryTypeComboBox" prefHeight="30.0" prefWidth="258.0" promptText="Select Delivery Type" style="-fx-font-size: 14px;">
+                        <VBox.margin>
+                            <Insets bottom="10.0" />
+                        </VBox.margin>
+                    </ComboBox>
+                    <TextField fx:id="addressField" disable="true" prefWidth="500.0" promptText="Address" style="-fx-font-size: 14px;" />
+                    <Text fx:id="addressErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <TextField fx:id="companyNameField" disable="true" prefWidth="500.0" promptText="Company Name" style="-fx-font-size: 14px;" />
+                    <Text fx:id="companyNameErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <TextField fx:id="userNameField" disable="true" prefWidth="500.0" promptText="User Name" style="-fx-font-size: 14px;" />
+                    <Text fx:id="userNameErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <TextField fx:id="phoneNumberField" disable="true" prefWidth="500.0" promptText="Phone Number" style="-fx-font-size: 14px;" />
+                    <Text fx:id="phoneErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <TextField fx:id="deliveryParticipantsField" managed="false" prefWidth="500.0" promptText="Delivery Participants" style="-fx-font-size: 14px;" visible="false" />
+                    <Text fx:id="deliveryParticipantsErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <HBox alignment="CENTER" spacing="15">
+                        <DatePicker fx:id="deliveryDatePicker" disable="true" prefWidth="240.0" promptText="Delivery Date" style="-fx-font-size: 14px;" />
+                        <ComboBox fx:id="deliveryHourPicker" prefWidth="120" promptText="Hour" style="-fx-font-size: 14px;" />
+                        <ComboBox fx:id="deliveryMinutePicker" prefWidth="120" promptText="Minute" style="-fx-font-size: 14px;" />
+                    </HBox>
+                    <Text fx:id="dateErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <Text fx:id="timeErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <Button fx:id="confirmDeliveryButton" disable="true" onAction="#handleConfirmDelivery" style="-fx-font-size: 14px;" text="Confirm Delivery Details">
+                        <VBox.margin>
+                            <Insets top="10.0" />
+                        </VBox.margin>
+                    </Button>
+                    <Text fx:id="confirmDeliveryText" fill="RED" style="-fx-font-size: 12px;" />
+                </VBox>
+            </children>
+        </AnchorPane>
+    </content>
+</Tab>
+<Tab text="View Order">
+<content>
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+<children>
+<TableView fx:id="orderTableView" layoutX="20.0" layoutY="20.0" prefHeight="500.0" prefWidth="860.0">
+<columns>
+<TableColumn fx:id="orderDishTypeColumn" prefWidth="150.0" text="Dish Type" />
+<TableColumn fx:id="orderDishNameColumn" prefWidth="200.0" text="Dish Name" />
+<TableColumn fx:id="orderDishPriceColumn" prefWidth="100.0" text="Dish Price" />
+<TableColumn fx:id="orderSpecificationsColumn" prefWidth="200.0" text="Specifications" />
+<TableColumn fx:id="orderQuantityColumn" prefWidth="200.0" text="Quantity" />
+</columns>
+</TableView>
+<Text fx:id="orderPriceText" layoutX="53.0" layoutY="549.0" text="Order Price: ₪0.00" />
+<Text fx:id="deliveryFeeText" layoutX="370.0" layoutY="549.0" text="Delivery Fee: ₪0.00" />
+<Text fx:id="totalPriceText" layoutX="640.0" layoutY="549.0" text="Total Price: ₪0.00" />
+<HBox alignment="CENTER" spacing="20" layoutX="20.0" layoutY="588.0" prefWidth="860.0">
+    <Text fx:id="finishErrorText" fill="RED" style="-fx-font-size: 14px;" />
+    <Button fx:id="btnFinish" mnemonicParsing="false" onAction="#getBtnFinish" prefHeight="44.0" prefWidth="111.0" text="Finish" />
+    <Text fx:id="finishErrorText" fill="RED" layoutX="200.0" layoutY="620.0" />
+</HBox>
+</children>
+</AnchorPane>
+</content>
+</Tab>
+</tabs>
+</TabPane>
+</children>
 </AnchorPane>

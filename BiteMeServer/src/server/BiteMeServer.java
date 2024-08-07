@@ -1,4 +1,3 @@
-
 // This file contains material supporting section 3.7 of the textbook:
 // "Object Oriented Software Engineering" and is issued under the open-source
 // license found at www.lloseng.com 
@@ -10,6 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 //import JDBC.DbController;
 
@@ -82,18 +82,98 @@ public class BiteMeServer extends AbstractServer
 		  ServerUI.gotResponse = true;
 		  break;
 		  
-	  case getRestaurantOrders:
-		  Object RestaurantPendingOrdersData = dbController.getRestaurantOrders(m.getObj());
+	 /* case getRestaurantPendingOrders:
+		  Object RestaurantPendingOrdersData = dbController.getRestaurantPendingOrders(m.getObj());
 		  // setRestaurantPendingOrders
 		  try {
-			client.sendToClient(new Message(RestaurantPendingOrdersData, Commands.setRestaurantOrders));
+			client.sendToClient(new Message(RestaurantPendingOrdersData, Commands.setRestaurantPendingOrders));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		  break;
-
+		  break;*/
+	  case CheckUsername:
+          User user = (User) m.getObj();
+          boolean usernameExists = dbController.isUsernameExists(user.getUsername());
+          if (!usernameExists) {
+              try {
+                  client.sendToClient(new Message("username not found", Commands.CheckUsername));
+              } catch (IOException e) {
+                  e.printStackTrace();
+              }
+          } else {
+              boolean passwordCorrect = dbController.isPasswordCorrect(user.getUsername(), user.getPassword());
+              if (!passwordCorrect) {
+                  try {
+                      client.sendToClient(new Message("incorrect password", Commands.CheckUsername));
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  }
+              } else {
+                  User completeUser = dbController.getUserDetails(user.getUsername());
+                  try {
+                      client.sendToClient(new Message(completeUser, Commands.CheckUsername));
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  }
+              }
+          }
+          break;
+	  case UpdateLoginStatus:
+          int userId = (int) m.getObj();
+          dbController.updateLoginStatus(userId, 1);
+          break;
+      case LogoutUser: 
+          int logoutUserId = (int) m.getObj();
+          dbController.updateLoginStatus(logoutUserId, 0);
+          break;
+      case  UpdateStatus:
+          Object[] requestData = (Object[]) m.getObj();
+          int userId1 = (int) requestData[0];
+          String branchManagerDistrict = (String) requestData[1];
+          User user1 = dbController.getUserDetailsById(userId1);
+          
+          if (user1 == null) {
+              try {
+                  client.sendToClient(new Message("user not found", Commands.UpdateStatus));
+              } catch (IOException e) {
+                  e.printStackTrace();
+              }
+          } else if (!user1.getDistrict().equals(branchManagerDistrict) || !user1.getType().equals("Customer")) {
+              try {
+                  client.sendToClient(new Message("no permission", Commands.UpdateStatus));
+              } catch (IOException e) {
+                  e.printStackTrace();
+              }
+          }
+          else {
+              String customerStatus = dbController.getCustomerStatus(userId1);
+              if (customerStatus.equals("active")) {
+                  try {
+                      client.sendToClient(new Message("user already active", Commands.UpdateStatus));
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  }
+              } else {
+                  dbController.updateCustomerStatus(userId1, "active");
+                  try {
+                      client.sendToClient(new Message("status updated successfully", Commands.UpdateStatus));
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  }
+              }
+          }
+          
+          break;
+      case getPendingOrders:
+          int customerId = (int) m.getObj();
+          List<Order> pendingOrders = dbController.getPendingOrders(customerId);
+          try {
+              client.sendToClient(new Message(pendingOrders, Commands.getPendingOrders));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+          break;
 	  	default:
-	  		System.out.println("Shouldn't have gotten here?!?!?!");
 	  		break;	  			  	
 	  }  	  
   }

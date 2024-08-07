@@ -1,7 +1,7 @@
 package controller;
 
-//import JDBC.DbController;
-//import JDBC.SqlConnection;
+import JDBC.DbController;
+import JDBC.SqlConnection;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,8 +17,6 @@ import javafx.stage.Stage;
 
 import java.net.InetAddress;
 
-import JDBC.DbController;
-import JDBC.SqlConnection;
 import entites.ClientDetails;
 import server.BiteMeServer;
 import server.NotifyThread;
@@ -42,7 +40,7 @@ public class ServerScreenController {
 	@FXML
 	private Button stopServer = null;
 	@FXML
-	private Button imprt = null;
+	private Button imprt ;
 
 
 	@FXML
@@ -54,6 +52,8 @@ public class ServerScreenController {
 	private TableColumn hostT;
 	@FXML
 	private TableColumn statusT;
+	
+	
 
 	// TODO: Initilize Client Table.
 	// TODO: Make The X button Functional.
@@ -100,7 +100,7 @@ public class ServerScreenController {
 		startServer.setDisable(false);
 		stopServer.setDisable(true);
 		disableDataInput(false);
-		//imprt.setDisable(true);
+		imprt.setDisable(true);
 
 	}
 
@@ -126,7 +126,7 @@ public class ServerScreenController {
 				ServerUI.sv.setServerScreenController(this);
 				disableDataInput(true);
 				startServer.setDisable(true);
-				//imprt.setDisable(false);
+				imprt.setDisable(false);
 				stopServer.setDisable(false);
 				
 				
@@ -153,11 +153,13 @@ public class ServerScreenController {
 	}
 	
 	//import data from external data
-	//public void importBtn(ActionEvent event) {
-	//	ServerUI.sv.dbController.importExternalData();
-	//}
+	public void importBtn(ActionEvent event) {
+		ServerUI.sv.dbController.importExternalData();
+		imprt.setDisable(true);
+		
+	}
 
-	// Removes the abilty to enter new data while the server has started
+	// Removes the ability to enter new data while the server has started
 	void disableDataInput(boolean Condition) {
 		ipAddressT.setDisable(Condition);
 		portT.setDisable(Condition);
