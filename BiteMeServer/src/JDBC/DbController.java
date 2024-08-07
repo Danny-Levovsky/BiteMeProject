@@ -30,10 +30,10 @@ public class DbController {
         this.conn = connection ;
     }
     
-    public Object getRestaurantOrders(Object obj) {
+    public ArrayList<Order> getRestaurantOrders(Object obj) {
 		String givenRestaurantNumber = (String) obj;
 		
-		List<Order> restaurantOrders = new ArrayList<>();
+		ArrayList<Order> restaurantOrders = new ArrayList<>();
         
         String query = "SELECT *" +
                        "FROM orders o " +
@@ -45,13 +45,14 @@ public class DbController {
             ResultSet rs = stmt.executeQuery();
             
             while (rs.next()) {
-                int orderNumber = rs.getInt("OrderID");
+                int OrderID = rs.getInt("OrderID");
                 int customerNumber = rs.getInt("CustomerNumber");
+                int totalPrice = rs.getInt("TotalPrice");
                 int restaurantNumber = rs.getInt("RestaurantNumber");
                 String fetchedRestaurantName = rs.getString("RestaurantName");
                 String orderStatus = rs.getString("Status");
 
-                Order order = new Order(orderNumber, fetchedRestaurantName, restaurantNumber, customerNumber); 
+                Order order = new Order(OrderID, fetchedRestaurantName, restaurantNumber, customerNumber); 
                 order.setOrderStatus(Order.OrderStatus.valueOf(orderStatus));
 
                 restaurantOrders.add(order);

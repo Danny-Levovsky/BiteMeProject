@@ -82,15 +82,16 @@ public class BiteMeServer extends AbstractServer
 		  ServerUI.gotResponse = true;
 		  break;
 		  
-	 /* case getRestaurantOrders:
-		  Object RestaurantOrdersData = dbController.getRestaurantOrders(m.getObj());
+	  case getRestaurantOrders:
+		  ArrayList<Order> RestaurantOrdersData = dbController.getRestaurantOrders(m.getObj());
 		  // setRestaurantOrders
 		  try {
+			  System.out.println(RestaurantOrdersData);
 			client.sendToClient(new Message(RestaurantOrdersData, Commands.setRestaurantOrders));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		  break;*/
+		  break;
 		  
 	  case getUserDetails:
 		  User userDetails = dbController.getUserDetails((String)m.getObj());

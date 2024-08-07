@@ -1,7 +1,6 @@
 package resturant;
 
 import client.ClientController;
-import customer.CustomerController;
 import entites.Message;
 import entites.Order;
 import entites.User;
@@ -98,6 +97,7 @@ public class EmployeeController {
 		if (restaurant != null) {
 			txtRestaurantName.setText(restaurant.getRestaurantName());
 		}
+		getTableData();
 	}
 	
     void getTableData() {
@@ -133,9 +133,9 @@ public class EmployeeController {
     	Object[] idAndStatus = {txtOrderID, OrderStatus.READY};
     	updateOrderStatus(idAndStatus);
     	
-    	sendTextMassageAndEmailToCustomer();
+    	//sendTextMassageAndEmailToCustomer();
     }
-
+    /*
     void sendTextMassageAndEmailToCustomer() {
     	// Retrieve the order details
         String orderId = txtOrderID.getText();
@@ -148,7 +148,7 @@ public class EmployeeController {
             if (customer != null) {
                 // Create and show the alert
                 Alert alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Notification Sent");
+                alert.setTitle("Notification Sent Simulation");
                 alert.setHeaderText("Text Message and Email Sent to Customer");
                 alert.setContentText(String.format("Text Message and Email sent to:%n" +
                                                    "Name: %s %s%n" +
@@ -177,6 +177,7 @@ public class EmployeeController {
     	User user = new User(); // get user data from Table
     	return user;
 	}
+	*/
 
 	private void showErrorAlert(String message) {
         Alert alert = new Alert(AlertType.ERROR);

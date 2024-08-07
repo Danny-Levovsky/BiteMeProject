@@ -187,24 +187,30 @@ public class LoginScreenController {
                     CEOController ceoController = new CEOController();
                     ceoController.start(new Stage());
                     break;
+                    
                 case "Customer":
                 	CustomerController.setCustomer(user);
                     CustomerController customerController = new CustomerController();
                     customerController.start(new Stage());
                     break;
+                    
                 case "Branch Manager":
                     BranchManagerController.setbranchManager(user);
                     BranchManagerController branchManagerController = new BranchManagerController();
                     branchManagerController.start(new Stage());
                     break;
+                    
                 case "Employee":
+                	EmployeeController.setEmployee(user);
                     EmployeeController employeeController = new EmployeeController();
                     employeeController.start(new Stage());
                     break;
+                    
                 case "Certified Employee":
                     CertifiedEmployeeController certifiedEmployeeController = new CertifiedEmployeeController();
                     certifiedEmployeeController.start(new Stage());
                     break;
+                    
                 default:
                     loginMsg("Unknown user type");
                     currentStage.show(); // Show the login stage again if user type is unknown
