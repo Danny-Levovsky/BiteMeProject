@@ -17,5 +17,7 @@ public enum Commands {
     UpdateLoginStatus, // command for updating login status
     LogoutUser, //  command for logging out
     UpdateStatus, //command for updating customer status
-    getPendingOrders //command for customer to approve receiving order 
+    getPendingOrders, //command for customer to approve receiving order 
+    getDishes,
+    getRestaurantList
 }

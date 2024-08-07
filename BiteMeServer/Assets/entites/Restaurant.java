@@ -1,9 +1,10 @@
 package entites;
 
-//Class based on DB's Table
+import java.io.Serializable;
 
-
-public class Restaurant {
+public class Restaurant implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
     private int restaurantNumber;
     private String restaurantName;
     
@@ -17,6 +18,11 @@ public class Restaurant {
     }
 
     public String getRestaurantName() {
+        return restaurantName;
+    }
+    
+    @Override
+    public String toString() {
         return restaurantName;
     }
 }

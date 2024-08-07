@@ -2,17 +2,20 @@ package client;
 
 import java.io.IOException;
 import java.util.List;
-
-import branch_manager.UpdateClientController;
-import customer.ViewOrderController;
+import javafx.application.Platform;
+import javafx.stage.Stage;
+import entites.Dish;
 import entites.Message;
 import entites.Order;
 import enums.Commands;
-import javafx.application.Platform;
-import javafx.stage.Stage;
+import entites.Restaurant;
+
+import branch_manager.UpdateClientController;
+import customer.ViewOrderController;
 import login.LoginScreenController; //**
 import ocsf.client.AbstractClient;
 import resturant.EmployeeController;
+import customer.NewOrderController;
 
 public class Client extends AbstractClient {
 	// Instance variables **********************************************
@@ -39,6 +42,7 @@ public class Client extends AbstractClient {
 	static public LoginScreenController loginController;
 	static public UpdateClientController updateClientController;
 	static public ViewOrderController viewOrderController;
+	static public NewOrderController NewOrderController;
 
 	// static public WorkerController workerController;
 	// static public MainScreenController mainScreenController;
@@ -54,12 +58,17 @@ public class Client extends AbstractClient {
 		// Initilazing The Contorllers
 		// IMPORT CLIENT CONTROLLERS HERE
 		employeeController = new EmployeeController();
+		
 
 		// bookingController = new BookingController();
 		// mainScreenController = new MainScreenController();
 		// workerController = new WorkerController();
 		// reportController = new ReportController();
 		// to be continued if needed
+	}
+	
+	public static void setNewOrderController(NewOrderController controller) {
+	    NewOrderController = controller;
 	}
 
 	// Instance methods ************************************************
@@ -121,8 +130,47 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+			
+			
+		case getDishes:
+		    System.out.println("Received getDishes response from server");
+		    if (m.getObj() instanceof List<?>) {
+		        List<?> dishes = (List<?>) m.getObj();
+		        if (!dishes.isEmpty() && dishes.get(0) instanceof Dish) {
+		            @SuppressWarnings("unchecked")
+		            List<Dish> dishList = (List<Dish>) dishes;
+		            Platform.runLater(() -> {
+		                if (NewOrderController != null) {
+		                    NewOrderController.updateDishList(dishList);
+		                } else {
+		                    System.err.println("NewOrderController is not set.");
+		                }
+		            });
+		        }
+		    }
+		    break;
+		    
+		case getRestaurantList:
+		    System.out.println("Received getRestaurantList response from server");
+		    if (m.getObj() instanceof List<?>) {
+		        List<?> restaurants = (List<?>) m.getObj();
+		        if (!restaurants.isEmpty() && restaurants.get(0) instanceof Restaurant) {
+		            @SuppressWarnings("unchecked")
+		            List<Restaurant> restaurantList = (List<Restaurant>) restaurants;
+		            Platform.runLater(() -> {
+		                if (NewOrderController != null) {
+		                    NewOrderController.updateRestaurantList(restaurantList);
+		                } else {
+		                    System.err.println("NewOrderController is not set.");
+		                }
+		            });
+		        }
+		    }
+		    break;
+			
 
 		default:
+			System.out.println("Reached default. Did you forget to add case to BiteMeServer.java?");
 			break;
 
 		}

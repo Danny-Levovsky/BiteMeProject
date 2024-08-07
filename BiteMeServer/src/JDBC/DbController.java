@@ -2,14 +2,19 @@ package JDBC;
 
 
 import java.sql.Connection;
+
+import entites.Restaurant;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import entites.Dish;
 import entites.Order;
 import entites.User;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 
 
@@ -256,6 +261,110 @@ public class DbController {
         }
         return orders;
     }
+    
+    public List<Restaurant> getAllRestaurants() {
+        List<Restaurant> restaurants = new ArrayList<>();
+        String query = "SELECT RestaurantNumber, RestaurantName FROM restaurants";
+        
+        System.out.println("Executing query: " + query);
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+        	
+        	System.out.println("Query executed successfully");
+        	
+            while (rs.next()) {
+                int number = rs.getInt("RestaurantNumber");
+                String name = rs.getString("RestaurantName");
+                restaurants.add(new Restaurant(number, name));
+                
+                System.out.println("Retrieved restaurant: " + name + ", " + number);
+            }
+            System.out.println("Total restaurants retrieved: " + restaurants.size());
+        } catch (SQLException e) {
+            System.out.println("Error retrieving restaurants: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return restaurants;
+    }
+       
+    public List<Dish> getAllDishes(int restaurantNumber) {
+        List<Dish> dishes = new ArrayList<>();
+        String query = "SELECT d.dishID, d.DishName, c.Name AS CategoryName, p.Price " +
+                       "FROM dishes d " +
+                       "JOIN categories c ON d.CategoryID = c.CategoryID " +
+                       "JOIN prices p ON d.dishID = p.DishID " +
+                       "WHERE d.RestaurantNumber = ? AND p.Size = 'Regular'";
+
+        System.out.println("Executing query for restaurant " + restaurantNumber + ": " + query);
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, restaurantNumber);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                System.out.println("Query executed successfully");
+
+                while (rs.next()) {
+                    int id = rs.getInt("dishID");
+                    String name = rs.getString("DishName");
+                    String category = rs.getString("CategoryName");
+                    int price = rs.getInt("Price");
+
+                    System.out.println("Retrieved dish: " + id + ", " + name + ", " + category + ", " + price);
+
+                    ObservableList<String> specifications = FXCollections.observableArrayList("Regular", "No Onions", "Extra Dressing");
+
+                    dishes.add(new Dish(id, name, category, price, specifications));
+                }
+
+                System.out.println("Total dishes retrieved: " + dishes.size());
+            }
+        } catch (SQLException e) {
+            System.out.println("Error executing query: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return dishes;
+    }
+    
+    //TEsting method to check response from DB
+    public int countDishes(int restaurantNumber) {
+        String query = "SELECT COUNT(DISTINCT d.dishID) FROM dishes d " +
+                       "JOIN prices p ON d.dishID = p.DishID " +
+                       "WHERE d.RestaurantNumber = ? AND p.Size = 'Regular'";
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, restaurantNumber);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    System.out.println("Number of dishes for restaurant " + restaurantNumber + ": " + count);
+                    return count;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error counting dishes: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+//    private List<String> getSpecificationsForDish(Connection conn, int dishId) throws SQLException {
+//        List<String> specifications = new ArrayList<>();
+//        String query = "SELECT specification FROM dish_specifications WHERE dish_id = ?";
+//        
+//        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+//            pstmt.setInt(1, dishId);
+//            try (ResultSet rs = pstmt.executeQuery()) {
+//                while (rs.next()) {
+//                    specifications.add(rs.getString("specification"));
+//                }
+//            }
+//        }
+//        
+//        return specifications;
+//    }
+    
+    
     
 
     /**

@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -14,19 +15,26 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
-import client.ClientController;
-import entites.Dish;
-import entites.Message;
-import enums.Commands;
+import login.ConnectionScreenController;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashMap; 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;   
 import java.util.Optional;
+
+import entites.Dish;
+import entites.Restaurant;
+import client.Client;
+import client.ClientController;
+import entites.Message;
+import enums.Commands;
+
 public class NewOrderController {
 
 	@FXML private TableView<Dish> dishTableView;
@@ -45,7 +53,7 @@ public class NewOrderController {
     @FXML private Text orderPriceText;
     @FXML private Text deliveryFeeText;
 
-    @FXML private ComboBox<String> restaurantComboBox;
+    @FXML private ComboBox<Restaurant> restaurantComboBox;
     @FXML private Button btnBack;
     @FXML private Button btnAddOrder;
     @FXML private Button btnFinish;
@@ -84,7 +92,7 @@ public class NewOrderController {
     private boolean isAddressValid = false;
     private boolean isPhoneValid = false;
     private boolean orderChanged = false;
-    private String currentRestaurant = null;
+    private Restaurant currentRestaurant = null;
     private boolean showErrorMessages = false;
     private ObservableList<String> restaurantList = FXCollections.observableArrayList("Crusty", "McDonalds", "Burgerking");
     private ObservableList<Dish> dishes = FXCollections.observableArrayList();
@@ -92,24 +100,132 @@ public class NewOrderController {
     private Map<Integer, Integer> orderQuantities = new HashMap<>();
 
     @FXML
-    private void initialize() {
+    private void initialize() throws IOException {
         dishes = FXCollections.observableArrayList();
         orderDishes = FXCollections.observableArrayList();
         orderQuantities = new HashMap<>(); // Move this line here
         restaurantList = FXCollections.observableArrayList("Crusty", "McDonalds", "Burgerking");
         confirmDeliveryButton.setDisable(false);
-
+        
+        Client.NewOrderController = this;  // Set the loginController instance here
+//       Client.setNewOrderController(this);
+        
         setupComboBoxes();
         setupDishTableView();
         setupOrderTableView();
         addListeners();
-        addSampleData();
+//        addSampleData();
+        restaurantComboBox.setPromptText("Choose a restaurant");
+        requestRestaurantsFromServer();
+//        requestDishesFromServer();
         updateButtonStates();
+        
+    }
+    
+    private void addSampleData() {
+    	dishes.addAll(
+    			new Dish(1, "Yerushalmi Salad", "Salad", 40, FXCollections.observableArrayList("Regular", "No Onions", "Extra Dressing")),
+    			new Dish(2, "Tuna Salad", "Salad", 36, FXCollections.observableArrayList("Regular", "Spicy", "Extra Mayo")),
+    			new Dish(5, "Mac and Cheese", "Main Course", 57, FXCollections.observableArrayList("Regular", "Extra Cheese", "With Bacon")),
+    			new Dish(6, "Salmon with Herbs", "Main Course", 97, FXCollections.observableArrayList("Regular", "Lemon Butter", "Cajun Style")),
+    			new Dish(9, "Alfajor", "Dessert", 19, FXCollections.observableArrayList("Regular", "Extra Dulce de Leche", "Chocolate Coated")),
+    			new Dish(13, "Ice Tea", "Drink", 12, FXCollections.observableArrayList("Regular", "No Sugar", "Extra Ice"))
+    			);
+    }
+    
+    private void requestRestaurantsFromServer() {
+        try {
+            Message getRestaurantsMessage = new Message(null, Commands.getRestaurantList);
+            ClientController.client.sendToServer(getRestaurantsMessage);
+        } catch (IOException e) {
+            System.err.println("Error requesting restaurants from server: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    
+    private void requestDishesFromServer(int restaurantNumber) {
+        try {
+            Message getDishesMessage = new Message(restaurantNumber, Commands.getDishes);
+            ClientController.client.sendToServer(getDishesMessage);
+        } catch (IOException e) {
+            System.err.println("Error requesting dishes from server: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    public void updateRestaurantList(List<Restaurant> restaurants) {
+        ObservableList<Restaurant> observableRestaurants = FXCollections.observableArrayList(restaurants);
+        restaurantComboBox.setItems(observableRestaurants);
+    }
+    
+    
+    
+    public void handleServerResponse(Message message) {
+    	System.out.println("Received something from client");
+    	if (message.getCmd() == Commands.getRestaurantList) {
+            Object response = message.getObj();
+            if (response instanceof List<?>) {
+            	System.out.println("Received something from client");
+                List<?> restaurantList = (List<?>) response;
+                if (!restaurantList.isEmpty() && restaurantList.get(0) instanceof Restaurant) {
+                	System.out.println("Received restaurants from client");
+                    Platform.runLater(() -> {
+                        ObservableList<Restaurant> restaurants = FXCollections.observableArrayList((List<Restaurant>) restaurantList);
+                        restaurantComboBox.setItems(restaurants);
+                        restaurantComboBox.setCellFactory(new Callback<ListView<Restaurant>, ListCell<Restaurant>>() {
+                            @Override
+                            public ListCell<Restaurant> call(ListView<Restaurant> param) {
+                                return new ListCell<Restaurant>() {
+                                    @Override
+                                    protected void updateItem(Restaurant item, boolean empty) {
+                                        super.updateItem(item, empty);
+                                        if (item == null || empty) {
+                                            setText(null);
+                                        } else {
+                                            setText(item.getRestaurantName());
+                                        }
+                                    }
+                                };
+                            }
+                        });
+                        restaurantComboBox.setButtonCell(restaurantComboBox.getCellFactory().call(null));
+                    });
+                }
+            }
+        }
+    	else {
+	        if (message.getCmd() == Commands.getDishes) {
+	            Object response = message.getObj();
+	            if (response instanceof List<?>) {
+	                List<?> dishBatch = (List<?>) response;
+	                if (!dishBatch.isEmpty() && dishBatch.get(0) instanceof Dish) {
+	                    Platform.runLater(() -> {
+	                        for (Object obj : dishBatch) {
+	                            dishes.add((Dish) obj);
+	                        }
+	                        dishTableView.setItems(dishes);
+	                        dishTableView.refresh();
+	                    });
+	                } else if (dishBatch.isEmpty()) {
+	                    // This is the final empty batch, signaling end of transmission
+	                    System.out.println("Received all dishes. Total: " + dishes.size());
+	                }
+	            }
+	        }
+	    }
+    }
+    
+    public void updateDishList(List<Dish> dishes) {
+        this.dishes.clear();
+        this.dishes.addAll(dishes);
+        dishTableView.setItems(this.dishes);
+        dishTableView.refresh();
     }
 
     private void setupComboBoxes() {
-        restaurantComboBox.setValue("Choose a restaurant");
-        restaurantComboBox.setItems(restaurantList);
+//        restaurantComboBox.setValue("Choose a restaurant");
+//        restaurantComboBox.setItems(restaurantList);
 
         deliveryTypeComboBox.getItems().addAll("Pickup", "Regular Delivery", "Early Delivery", "Shared Delivery", "Robot Delivery");
 
@@ -237,6 +353,7 @@ public class NewOrderController {
                 } else {
                     currentRestaurant = newVal;
                     updateButtonStates();
+                    requestDishesFromServer(newVal.getRestaurantNumber());
                 }
             }
         });
@@ -262,16 +379,6 @@ public class NewOrderController {
 
     }
 
-    private void addSampleData() {
-        dishes.addAll(
-            new Dish(1, "Yerushalmi Salad", "Salad", 40, FXCollections.observableArrayList("Regular", "No Onions", "Extra Dressing")),
-            new Dish(2, "Tuna Salad", "Salad", 36, FXCollections.observableArrayList("Regular", "Spicy", "Extra Mayo")),
-            new Dish(5, "Mac and Cheese", "Main Course", 57, FXCollections.observableArrayList("Regular", "Extra Cheese", "With Bacon")),
-            new Dish(6, "Salmon with Herbs", "Main Course", 97, FXCollections.observableArrayList("Regular", "Lemon Butter", "Cajun Style")),
-            new Dish(9, "Alfajor", "Dessert", 19, FXCollections.observableArrayList("Regular", "Extra Dulce de Leche", "Chocolate Coated")),
-            new Dish(13, "Ice Tea", "Drink", 12, FXCollections.observableArrayList("Regular", "No Sugar", "Extra Ice"))
-        );
-    }
     
     private void updateButtonStates() {
         boolean restaurantSelected = currentRestaurant != null;
@@ -370,7 +477,7 @@ public class NewOrderController {
         return selectedDateTime.isAfter(now);
     }
     
-    private void showRestaurantChangeConfirmation(String newRestaurant) {
+    private void showRestaurantChangeConfirmation(Restaurant newRestaurant) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Change Restaurant");
         alert.setHeaderText("Changing restaurant will reset your current order.");
@@ -507,8 +614,12 @@ public class NewOrderController {
     }
 
     @FXML
-    void getBtnBack(ActionEvent event) {
-        // Implement back functionality
+    public void getBtnBack(ActionEvent event) throws Exception{
+    	 if (!btnBack.isDisable()) {
+    		 ((Node) event.getSource()).getScene().getWindow().hide();
+    		 CustomerController customerController = new CustomerController();
+             customerController.start(new Stage());
+    	 }
     }
 
     @FXML

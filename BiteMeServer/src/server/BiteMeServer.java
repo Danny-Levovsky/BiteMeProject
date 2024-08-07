@@ -173,7 +173,43 @@ public class BiteMeServer extends AbstractServer
               e.printStackTrace();
           }
           break;
+          
+      case getDishes:
+    	    System.out.println("Received getDishes command");
+    	    int restaurantNumber = (int) m.getObj();
+    	    int dishCount = dbController.countDishes(restaurantNumber);
+    	    if (dishCount > 0) {
+    	        List<Dish> dishes = dbController.getAllDishes(restaurantNumber);
+    	        try {
+    	            client.sendToClient(new Message(dishes, Commands.getDishes));
+    	            System.out.println("Sent " + dishes.size() + " dishes to client");
+    	        } catch (IOException e) {
+    	            System.out.println("Error sending dishes to client: " + e.getMessage());
+    	            e.printStackTrace();
+    	        }
+    	    } else {
+    	        System.out.println("No dishes found for the restaurant");
+    	        try {
+    	            client.sendToClient(new Message(new ArrayList<>(), Commands.getDishes));
+    	        } catch (IOException e) {
+    	            e.printStackTrace();
+    	        }
+    	    }
+    	    break;
+    	    
+      case getRestaurantList:
+          List<Restaurant> restaurants = dbController.getAllRestaurants();
+          try {
+        	  System.out.println("Total restaurants retrieved from DBcontroller: " + restaurants.size());
+              client.sendToClient(new Message(restaurants, Commands.getRestaurantList));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+          break;
+    	    
+    	    
 	  	default:
+	  		System.out.println("Reached default. Did you forget to add case to BiteMeServer.java?");
 	  		break;	  			  	
 	  }  	  
   }
