@@ -92,6 +92,15 @@ public class BiteMeServer extends AbstractServer
 		}
 		  break;
 		  
+	  case updateRestaurantOrderStatus:
+		  dbController.updateRestaurantOrderStatus(m.getObj());
+		  try {
+				client.sendToClient(new Message("update resturant orders table", Commands.updateRestaurantOrdersTable));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		  break;
+		  
 	  case CheckUsername:
           User user = (User) m.getObj();
           boolean usernameExists = dbController.isUsernameExists(user.getUsername());

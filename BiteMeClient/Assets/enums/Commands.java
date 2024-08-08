@@ -18,5 +18,7 @@ public enum Commands {
     LogoutUser, //  command for logging out
     UpdateStatus, //command for updating customer status
     getPendingOrders, //command for customer to approve receiving order
-    updateRestaurantOrderStatus // command from restaurant to update order status
+    updateRestaurantOrderStatus, // command from restaurant to update order status
+    updateCoustomerToContactByCoustomerId, // command from restaurant to update coustomerToContact to send them SMS & Email
+    updateRestaurantOrdersTable // command to tell the employee controller to update restaurant orders table
 }

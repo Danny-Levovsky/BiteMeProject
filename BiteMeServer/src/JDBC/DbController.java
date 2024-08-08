@@ -31,6 +31,11 @@ public class DbController {
         this.conn = connection ;
     }
     
+    public void updateRestaurantOrderStatus(Object obj) {
+    	String orderId = ((String[])obj)[0];	
+    	String status = ((String[])obj)[1];
+	}
+    
     public ArrayList<RestaurantOrder> getRestaurantOrders(Object obj) {
 		String givenRestaurantNumber = (String) obj;
 		

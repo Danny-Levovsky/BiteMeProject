@@ -125,7 +125,7 @@ public class EmployeeController {
 		getTableData();
 	}
 	
-    void getTableData() {
+    public void getTableData() {
     	// get Table view data with current Restaurant orders according to Restaurant id
     	Commands command = Commands.getRestaurantOrders;
     	Message message = new Message(restaurant.getRestaurantNumber(), command);
@@ -155,21 +155,18 @@ public class EmployeeController {
 
     @FXML
     void getBtnOrderCompleted(ActionEvent event) {
-    	Object[] idAndStatus = {txtOrderID, OrderStatus.READY};
-    	updateOrderStatus(idAndStatus);
-    	
-    	//sendTextMassageAndEmailToCustomer();
+    	Object[] orderIdAndStatus = {txtOrderID, OrderStatus.READY};
+    	updateOrderStatus(orderIdAndStatus);
+    	sendTextMassageAndEmailToCustomer();
     }
-    /*
+    
     void sendTextMassageAndEmailToCustomer() {
     	// Retrieve the order details
         String orderId = txtOrderID.getText();
-        
+        int coustomerIdToContact = getCoustomerIdToContactFromTableViewByOrderId(orderId);
+        updateCoustomerToContactByCoustomerId(coustomerIdToContact);
         if (restaurantOrder != null) {
-            // Retrieve customer details (assuming you have a method to get customer by ID)
-            User customer = getCustomerById(order.getCustomerNumber());
-            
-            if (customer != null) {
+            if (coustomerToContact != null) {
                 // Create and show the alert
                 Alert alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("Notification Sent Simulation");
@@ -180,8 +177,8 @@ public class EmployeeController {
                                                    "Email: %s%n" +
                                                    "Order ID: %s%n" +
                                                    "Status: Order is ready for pickup",
-                                                   customer.getFirstName(), customer.getLastName(),
-                                                   customer.getPhone(), customer.getEmail(),
+                                                   coustomerToContact.getFirstName(), coustomerToContact.getLastName(),
+                                                   coustomerToContact.getPhone(), coustomerToContact.getEmail(),
                                                    orderId));
                 alert.showAndWait();
             } else {
@@ -192,13 +189,29 @@ public class EmployeeController {
         }
     }
 
+	private int getCoustomerIdToContactFromTableViewByOrderId(String orderId) {
+		// Iterate through the orders in the orderTable
+	    for (RestaurantOrder order : orderTable.getItems()) {
+	        if (String.valueOf(order.getOrderID()).equals(orderId)) {
+	            // Return the customer number associated with the order
+	            return order.getCustomerNumber();
+	        }
+	    }
+	    // If no matching order is found
+	    return -1;
+	}
+	private void updateCoustomerToContactByCoustomerId(int coustomerId) {
+		Commands command = Commands.updateCoustomerToContactByCoustomerId;
+    	Message message = new Message(coustomerId, command);
+    	ClientController.client.handleMessageFromClientControllers(message);		
+	}
 	private void showErrorAlert(String message) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }*/
+    }
     
     @FXML
     void getBtnOrderReceived(ActionEvent event) {

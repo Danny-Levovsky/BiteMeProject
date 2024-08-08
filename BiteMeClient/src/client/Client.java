@@ -119,7 +119,10 @@ public class Client extends AbstractClient {
 			
 		case setRestaurantOrders:
 			 employeeController.setTable((ArrayList<RestaurantOrder>)m.getObj());
-
+			break;
+			
+		case updateRestaurantOrdersTable:
+			employeeController.getTableData();
 			break;
 			
 		case getPendingOrders:
