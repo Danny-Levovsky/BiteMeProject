@@ -132,7 +132,22 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
-
+		 case UpdateCustomerOrdersStatus:
+             Platform.runLater(() -> {
+                 Object[] orderDetails = (Object[]) m.getObj();
+                 int isEarlyOrder = (int) orderDetails[0];
+                 String dateTime = (String) orderDetails[1];
+                 int totalPrice = (int) orderDetails[2];
+                 if (viewOrderController != null) {
+                     try {
+						viewOrderController.handleServerResponse(isEarlyOrder, dateTime,totalPrice);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+                 }
+             });
+             break;
+             
 
 		default:
 			break;

@@ -184,12 +184,24 @@ public class BiteMeServer extends AbstractServer {
 				Object[] updateData = (Object[]) m.getObj();
 				orderId = (Integer) updateData[0];
 				receivedDateTime = (String) updateData[1];
-				dbController.updateOrderStatus(orderId, receivedDateTime);
+				Object[] orderDetails = dbController.updateOrderStatus(orderId, receivedDateTime);
+				client.sendToClient(new Message(orderDetails, Commands.UpdateCustomerOrdersStatus));
 			} catch (Exception e) {
 				System.err.println("Error processing UpdateCustomerOrdersStatus: " + e.getMessage());
 				e.printStackTrace();
 			}
 			break;
+			case UpdateCredit:
+                try {
+                    Object[] data = (Object[]) m.getObj();
+                    int id1 = (int) data[0];
+                    int orderId = (int) data[1];
+                    int credit = (int) data[2];
+                    dbController.updateCredit(id1, orderId, credit);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
 		default:
 			break;
 		}

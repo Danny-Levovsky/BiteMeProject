@@ -19,6 +19,7 @@ public enum Commands {
     UpdateStatus, //command for updating customer status
     getPendingOrders, //command for customer to approve receiving order 
     CheckStatus, //command for checking customer status
-    UpdateCustomerOrdersStatus //command for updating customer order
+    UpdateCustomerOrdersStatus, //command for updating customer order
+    UpdateCredit //command for updating credit if late delivery
 
 }

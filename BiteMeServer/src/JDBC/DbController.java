@@ -235,6 +235,11 @@ public class DbController {
         }
     }
     
+    /**
+     * Retrieves the pending orders for a given customer.
+     * @param customerId the customer ID
+     * @return a list of pending orders
+     */
     public List<Order> getPendingOrders(int customerId) {
         List<Order> orders = new ArrayList<>();
         String query = "SELECT o.OrderID, o.OrderDateTime FROM orders o " +
@@ -257,9 +262,21 @@ public class DbController {
         return orders;
     }
     
-    public void updateOrderStatus(int orderId, String receivedDateTime) {
+    /**
+     * Updates the status of an order to 'received' and records the received date and time.
+     * Also retrieves the details of the order to calculate any credit if applicable.
+     * @param orderId the order ID
+     * @param receivedDateTime the date and time when the order was received
+     * @return an array containing the early order flag, the relevant date and time, and the total price
+     */
+    public Object[] updateOrderStatus(int orderId, String receivedDateTime) {
         String updateCustomerOrdersQuery = "UPDATE customer_orders SET Status = 'received' WHERE OrderID = ?";
         String updateOrdersQuery = "UPDATE orders SET ReceivedDateTime = ? WHERE OrderID = ?";
+        String selectOrderDetailsQuery = "SELECT IsEarlyOrder, RequestedDateTime, OrderDateTime, TotalPrice FROM orders WHERE OrderID = ?";
+        
+        int isEarlyOrder = 0;
+        String dateTime = "";
+        int totalPrice = 0;
 
         try {
             conn.setAutoCommit(false);
@@ -272,6 +289,20 @@ public class DbController {
             ordersStmt.setString(1, receivedDateTime);
             ordersStmt.setInt(2, orderId);
             ordersStmt.executeUpdate();
+            
+            PreparedStatement selectOrderDetailsStmt = conn.prepareStatement(selectOrderDetailsQuery);
+            selectOrderDetailsStmt.setInt(1, orderId);
+            ResultSet rs = selectOrderDetailsStmt.executeQuery();
+            
+            if (rs.next()) {
+                isEarlyOrder = rs.getInt("IsEarlyOrder");
+                if (isEarlyOrder == 0) {
+                    dateTime = rs.getString("OrderDateTime");
+                } else {
+                    dateTime = rs.getString("RequestedDateTime");
+                }
+                totalPrice = rs.getInt("TotalPrice");
+            }
 
             conn.commit();
         } catch (SQLException e) {
@@ -286,8 +317,62 @@ public class DbController {
             } catch (SQLException e) {
             }
         }
+        return new Object[]{isEarlyOrder, dateTime,totalPrice};
     }
     
+    /**
+     * Updates the credit of a customer based on the delay in order delivery.
+     * @param id the customer ID
+     * @param orderId the order ID
+     * @param credit the amount of credit to be added
+     */
+    public void updateCredit(int id, int orderId, int credit) {
+        String updateOrdersQuery = "UPDATE orders SET IsLate = 1 WHERE OrderID = ?";
+        String selectCurrentCreditQuery = "SELECT Credit FROM customers WHERE ID = ?";
+        String updateCustomersQuery = "UPDATE customers SET Credit = ? WHERE ID = ?";
+
+        try {
+            conn.setAutoCommit(false);
+
+            // Update the orders table
+            PreparedStatement ordersStmt = conn.prepareStatement(updateOrdersQuery);
+            ordersStmt.setInt(1, orderId);
+            ordersStmt.executeUpdate();
+
+            // Get the current credit
+            PreparedStatement selectCreditStmt = conn.prepareStatement(selectCurrentCreditQuery);
+            selectCreditStmt.setInt(1, id);
+            ResultSet rs = selectCreditStmt.executeQuery();
+            int currentCredit = 0;
+            if (rs.next()) {
+                currentCredit = rs.getInt("Credit");
+            }
+
+            // Add the new credit to the current credit
+            int newCredit = currentCredit + credit;
+
+            // Update the customers table
+            PreparedStatement customersStmt = conn.prepareStatement(updateCustomersQuery);
+            customersStmt.setInt(1, newCredit);
+            customersStmt.setInt(2, id);
+            customersStmt.executeUpdate();
+
+            conn.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try {
+                conn.rollback();
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     
     
