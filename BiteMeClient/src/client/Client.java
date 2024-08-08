@@ -1,12 +1,14 @@
 package client;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import branch_manager.UpdateClientController;
 import customer.ViewOrderController;
 import entites.Message;
 import entites.Order;
+import entites.RestaurantOrder;
 import enums.Commands;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -106,6 +108,7 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+			
 		case UpdateStatus:
 			Platform.runLater(() -> {
 				if (updateClientController != null) {
@@ -113,6 +116,12 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+			
+		case setRestaurantOrders:
+			 employeeController.setTable((ArrayList<RestaurantOrder>)m.getObj());
+
+			break;
+			
 		case getPendingOrders:
 			Platform.runLater(() -> {
 				List<Order> orders = (List<Order>) m.getObj();

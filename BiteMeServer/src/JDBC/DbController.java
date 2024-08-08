@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import entites.Order;
+import entites.RestaurantOrder;
 import entites.User;
 
 
@@ -30,33 +31,41 @@ public class DbController {
         this.conn = connection ;
     }
     
-    /*public Object getRestaurantPendingOrders(Object obj) {
-		String restaurantName = (String) obj;
+    public ArrayList<RestaurantOrder> getRestaurantOrders(Object obj) {
+		String givenRestaurantNumber = (String) obj;
 		
-    	ArrayList<ManagerRequestDetail> requestList = new ArrayList<>();
-	    String query = "SELECT parkName, changeTo, amountTo, requestNumber, changes FROM managerrequest";
-	    try {
-	         PreparedStatement stmt = conn.prepareStatement(query);
-	         ResultSet rs = stmt.executeQuery(); 
+		ArrayList<RestaurantOrder> restaurantOrders = new ArrayList<>();
+        
+		String query = "SELECT o.OrderID, o.CustomerNumber, o.IsDelivery, o.OrderDateTime, o.StatusRestaurant, d.DishName, r.Quantity " +
+                "FROM orders o " +
+                "JOIN restaurants_orders r ON o.OrderID = r.OrderID " +
+                "JOIN dishes d ON r.DishID = d.DishID " +
+                "WHERE o.RestaurantNumber = ? " +
+                "AND (o.StatusRestaurant = 'PENDING' OR o.StatusRestaurant = 'RECEIVED')";
 
-	        while (rs.next()) {
-	            String parkName = rs.getString("parkName");
-	            String changeTo = rs.getString("changeTo");
-	            String amountTo = rs.getString("amountTo");
-	            int requestNumber = rs.getInt("requestNumber");
-	            String changes = rs.getString("changes");
+ try (PreparedStatement stmt = conn.prepareStatement(query)) {
+     stmt.setString(1, givenRestaurantNumber);
+     ResultSet rs = stmt.executeQuery();
 
-	            ManagerRequestDetail requestDetail = new ManagerRequestDetail(parkName, changeTo, amountTo);
-	            requestDetail.setRequestNumber(requestNumber);
-	            requestList.add(requestDetail);
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
+     while (rs.next()) {
+         RestaurantOrder restaurantOrder = new RestaurantOrder();
 
-	    return requestList;
+         restaurantOrder.setOrderID(rs.getInt("OrderID"));
+         restaurantOrder.setCustomerNumber(rs.getInt("CustomerNumber"));
+         restaurantOrder.setIsDelivery(rs.getInt("IsDelivery"));
+         restaurantOrder.setOrderDateTime(rs.getString("OrderDateTime"));
+         restaurantOrder.setStatusRestaurant(rs.getString("StatusRestaurant"));
+         restaurantOrder.setDishName(rs.getString("DishName"));
+         restaurantOrder.setQuantity(rs.getInt("Quantity"));
+
+         restaurantOrders.add(restaurantOrder);
+     }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
 	    	
-    }*/
+    }
     
     /**
      * Checks if a username exists in the database.

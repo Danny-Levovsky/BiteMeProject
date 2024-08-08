@@ -8,25 +8,31 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="549.0" prefWidth="633.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="resturant.EmployeeController">
+<AnchorPane prefHeight="646.0" prefWidth="959.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="resturant.EmployeeController">
    <children>
-      <Label fx:id="txtEmployeeName" layoutX="8.0" layoutY="13.0" onDragDetected="#updateName" text="Employee Name" />
+      <Label fx:id="txtEmployeeName" layoutX="8.0" layoutY="13.0" text="Employee Name" />
       <Button id="btnExit" fx:id="btnLogout" layoutX="22.0" layoutY="37.0" mnemonicParsing="false" onAction="#getBtnLogout" text="Logout" />
       <Label layoutX="197.0" layoutY="28.0" text="Orders Window">
          <font>
             <Font name="System Bold" size="29.0" />
          </font></Label>
-      <Button id="btnExit" fx:id="btnOrderReceived" layoutX="304.0" layoutY="471.0" mnemonicParsing="false" onAction="#getBtnOrderReceived" text="Order Recieved" />
-      <Button id="btnExit" fx:id="btnOrderCompleted" layoutX="474.0" layoutY="471.0" mnemonicParsing="false" onAction="#getBtnOrderCompleted" text="Order Completed" />
-      <TableView fx:id="tableView" layoutX="38.0" layoutY="84.0" prefHeight="327.0" prefWidth="558.0">
-        <columns>
-          <TableColumn prefWidth="75.0" text="C1" />
-          <TableColumn prefWidth="75.0" text="C2" />
-        </columns>
-      </TableView>
-      <TextField fx:id="txtOrderID" layoutX="107.0" layoutY="471.0" prefHeight="25.0" prefWidth="78.0" />
-      <Label layoutX="39.0" layoutY="475.0" text="Order ID" />
-      <Label fx:id="txtRestaurantName" layoutX="496.0" layoutY="20.0" onDragDetected="#updateName" text="Restaurant Name" />
-      <Button fx:id="btnBack" layoutX="26.0" layoutY="510.0" mnemonicParsing="false" onAction="#getBtnBack" text="Back" />
+      <Button id="btnExit" fx:id="btnOrderReceived" layoutX="304.0" layoutY="568.0" mnemonicParsing="false" onAction="#getBtnOrderReceived" text="Order Recieved" />
+      <Button id="btnExit" fx:id="btnOrderCompleted" layoutX="474.0" layoutY="568.0" mnemonicParsing="false" onAction="#getBtnOrderCompleted" text="Order Completed" />
+      <TableView fx:id="orderTable" layoutX="22.0" layoutY="123.0" prefHeight="400.0" prefWidth="902.0">
+            <columns>
+            <TableColumn fx:id="orderIdColumn" prefWidth="75.0" text="Order ID" />
+            <TableColumn fx:id="customerNumberColumn" prefWidth="130.0" text="Customer Number" />
+            <TableColumn fx:id="orderDateTimeColumn" prefWidth="135.0" text="Order Date/Time" />
+            <TableColumn fx:id="receivedDateTimeColumn" prefWidth="143.0" text="Received Date/Time" />
+            <TableColumn fx:id="dishNameColumn" prefWidth="118.0" text="Dish Name" />
+            <TableColumn fx:id="quantityColumn" prefWidth="99.0" text="Quantity" />
+            <TableColumn fx:id="IsDeliveryColumn" text="Delivery" />
+            <TableColumn fx:id="orderStatusColumn" prefWidth="106.0" text="Order Status" />
+         </columns>
+        </TableView>
+      <TextField fx:id="txtOrderID" layoutX="107.0" layoutY="568.0" prefHeight="25.0" prefWidth="78.0" />
+      <Label layoutX="39.0" layoutY="572.0" text="Order ID" />
+      <Label fx:id="txtRestaurantName" layoutX="496.0" layoutY="20.0" text="Restaurant Name" />
+      <Button fx:id="btnBack" layoutX="26.0" layoutY="607.0" mnemonicParsing="false" onAction="#getBtnBack" text="Back" />
    </children>
 </AnchorPane>

@@ -1,10 +1,13 @@
 package resturant;
 
+import java.util.ArrayList;
+
 import client.ClientController;
 import entites.Message;
 import entites.Order;
 import entites.Order.OrderStatus;
 import entites.Restaurant;
+import entites.RestaurantOrder;
 import entites.User;
 import enums.Commands;
 import javafx.collections.FXCollections;
@@ -19,8 +22,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import login.LoginScreenController;
@@ -40,19 +45,38 @@ public class EmployeeController {
     @FXML
     private Button btnOrderCompleted;
 
+    
     @FXML
-    private TableView<Order> tableView; // need to set entite to save data
-
+    private TableView<RestaurantOrder> orderTable;
+    @FXML
+    private TableColumn<RestaurantOrder, Integer> orderIdColumn;
+    @FXML
+    private TableColumn<RestaurantOrder, String> customerNumberColumn;
+    @FXML
+    private TableColumn<RestaurantOrder, String> orderDateTimeColumn;
+    @FXML
+    private TableColumn<RestaurantOrder, String> receivedDateTimeColumn;
+    @FXML
+    private TableColumn<RestaurantOrder, String> dishNameColumn;
+    @FXML
+    private TableColumn<RestaurantOrder, Integer> quantityColumn;
+    @FXML
+    private TableColumn<RestaurantOrder, Integer> IsDeliveryColumn;
+    @FXML
+    private TableColumn<RestaurantOrder, String> orderStatusColumn;
+    
+    
     @FXML
     private TextField txtOrderID;
 
     @FXML
     private Label txtRestaurantName; //must replace with restaurant name 
     
-    private ObservableList<Order> ordersData = FXCollections.observableArrayList();
+    private ObservableList<RestaurantOrder> ordersData = FXCollections.observableArrayList();
     
     private static User employee;
     private static Restaurant restaurant;
+    private static RestaurantOrder restaurantOrder;
     private static User coustomerToContact;
     
     @FXML
@@ -87,18 +111,29 @@ public class EmployeeController {
 		if (restaurant != null) {
 			txtRestaurantName.setText(restaurant.getRestaurantName());
 		}
+		
+		orderIdColumn.setCellValueFactory(new PropertyValueFactory<>("orderId"));
+		customerNumberColumn.setCellValueFactory(new PropertyValueFactory<>("customerNumber"));
+		orderDateTimeColumn.setCellValueFactory(new PropertyValueFactory<>("orderDateTime"));
+		receivedDateTimeColumn.setCellValueFactory(new PropertyValueFactory<>("receivedDateTime"));
+		dishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
+		quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+		IsDeliveryColumn.setCellValueFactory(new PropertyValueFactory<>("IsDelivery"));
+		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("orderStatus"));
+
+		
 		getTableData();
 	}
 	
     void getTableData() {
-    	// get Table view data with current Pending Restaurant orders according to Restaurant id
+    	// get Table view data with current Restaurant orders according to Restaurant id
     	Commands command = Commands.getRestaurantOrders;
     	Message message = new Message(restaurant.getRestaurantNumber(), command);
     	ClientController.client.handleMessageFromClientControllers(message);
     }
     
-    void setTable(Object msg) {
-    	ordersData.setAll((Order[]) msg);
+    public void setTable(ArrayList<RestaurantOrder> restaurantOrders) {
+        orderTable.getItems().setAll(restaurantOrders);
     }
     
     @FXML
@@ -109,13 +144,13 @@ public class EmployeeController {
 		((Node) event.getSource()).getScene().getWindow().hide();
 		LoginScreenController newScreen = new LoginScreenController();
 		newScreen.start(new Stage());
-
     }
     
     void updateOrderStatus(Object msg) {
     	Commands command = Commands.updateRestaurantOrderStatus;
     	Message message = new Message(msg, command);
     	ClientController.client.handleMessageFromClientControllers(message);
+    	getTableData();
     }
 
     @FXML
@@ -129,9 +164,8 @@ public class EmployeeController {
     void sendTextMassageAndEmailToCustomer() {
     	// Retrieve the order details
         String orderId = txtOrderID.getText();
-        Order order = getOrderById(orderId);
         
-        if (order != null) {
+        if (restaurantOrder != null) {
             // Retrieve customer details (assuming you have a method to get customer by ID)
             User customer = getCustomerById(order.getCustomerNumber());
             
@@ -157,17 +191,6 @@ public class EmployeeController {
             showErrorAlert("Order not found.");
         }
     }
-    
-    private Order getOrderById(String orderId) {
-		Order order = new Order(); // get order data from Table
-		return order;
-	}
-
-	private User getCustomerById(int customerNumber) {
-    	User user = new User(); // get user data from Table
-    	return user;
-	}
-	*/
 
 	private void showErrorAlert(String message) {
         Alert alert = new Alert(AlertType.ERROR);
@@ -175,7 +198,7 @@ public class EmployeeController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
+    }*/
     
     @FXML
     void getBtnOrderReceived(ActionEvent event) {
