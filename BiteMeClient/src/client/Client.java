@@ -39,8 +39,8 @@ public class Client extends AbstractClient {
 	static public EmployeeController employeeController;
 	static public LoginScreenController loginController;
 	static public UpdateClientController updateClientController;
-	static public ViewOrderController viewOrderController;
 	static public CustomerController customerController;
+	static public ViewOrderController viewOrderController;
 	
 
 	// static public WorkerController workerController;
@@ -72,6 +72,7 @@ public class Client extends AbstractClient {
 	 *
 	 * @param msg The message from the server.
 	 */
+
 	public void handleMessageFromServer(Object msg) {
 		// get the message a message object from the server (getcmd,getobj) while obj is
 		// the data from the server
@@ -131,6 +132,7 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+
 
 		default:
 			break;

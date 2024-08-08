@@ -81,7 +81,8 @@ public class CustomerController {
 			txtCustomerName.setText(customer.getFirstName() + " " + customer.getLastName());
 		}
 		
-		Client.customerController = this; 
+		Client.customerController = this;
+		
 		Message msg = new Message(customer.getId(), Commands. CheckStatus);
         ClientController.client.handleMessageFromClientControllers(msg);
 	}
@@ -117,7 +118,7 @@ public class CustomerController {
      */
 	@FXML
 	void getBtnLogout(ActionEvent event) throws Exception {
-		Message logoutMessage = new Message(CustomerController.customer.getId(), Commands.LogoutUser);
+		Message logoutMessage = new Message(customer.getId(), Commands.LogoutUser);
 		ClientController.client.sendToServer(logoutMessage);
 
 		((Node) event.getSource()).getScene().getWindow().hide();

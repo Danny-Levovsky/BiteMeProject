@@ -15,14 +15,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.InetAddress;
 
 import entites.ClientDetails;
 import server.BiteMeServer;
 import server.NotifyThread;
 import server.ServerUI;
+
 public class ServerScreenController {
-	
+
 	NotifyThread alertThread;
 
 	@FXML
@@ -40,8 +42,7 @@ public class ServerScreenController {
 	@FXML
 	private Button stopServer = null;
 	@FXML
-	private Button imprt ;
-
+	private Button imprt;
 
 	@FXML
 	private TableView<ClientDetails> tableView;
@@ -52,13 +53,10 @@ public class ServerScreenController {
 	private TableColumn hostT;
 	@FXML
 	private TableColumn statusT;
-	
-	
 
 	// TODO: Initilize Client Table.
 	// TODO: Make The X button Functional.
 	// TODO: Make Stop Server Button.
-
 
 //	private String getIpAddress() {
 //		return ipAddressT.getText();
@@ -81,22 +79,23 @@ public class ServerScreenController {
 	}
 
 	public void loadTable(ClientDetails clientDetail) {// Client : {String IP, String Host, String Status}
-		
+
 		tableView.getItems().add(clientDetail);
-	
+
 	}
+
 	public void updateTable(ClientDetails clientDetail) {
 
 		boolean returnVal = tableView.getItems().remove(clientDetail);
-		
 
 	}
 
 	public void stopServerBtn(ActionEvent event) {
-		//Stop the NotifyThread gracefully
-	    alertThread.stopThread(); // Assuming alertThread is accessible here
+		// Stop the NotifyThread gracefully
+		alertThread.stopThread(); // Assuming alertThread is accessible here
 
 		ServerUI.disconnect();
+
 		startServer.setDisable(false);
 		stopServer.setDisable(true);
 		disableDataInput(false);
@@ -116,7 +115,7 @@ public class ServerScreenController {
 	 */
 
 	public void startServerBtn(ActionEvent event) {
-		
+
 		if (!ServerUI.isServerRunning()) {
 			// The server is not running, so start it
 			if (ServerUI.runServer(this.getPort())) {
@@ -128,20 +127,16 @@ public class ServerScreenController {
 				startServer.setDisable(true);
 				imprt.setDisable(false);
 				stopServer.setDisable(false);
-				
-				
-				//setup new thread
+
+				// setup new thread
 				alertThread = new NotifyThread();
-			    Thread thread = new Thread(alertThread); // Create a new thread with NotifyThread as its target
-			    thread.start(); // Start the new thread
-			    
+				Thread thread = new Thread(alertThread); // Create a new thread with NotifyThread as its target
+				thread.start(); // Start the new thread
 
+				// try { Thread.sleep(10000); } catch (InterruptedException e) {
+				// e.printStackTrace(); }
+				// loadTable();
 
-				
-				//try { Thread.sleep(10000); } catch (InterruptedException e) { e.printStackTrace(); }
-				//loadTable();
-				
-			
 			} else {
 				// Handle the case where the server failed to start
 				System.out.println("Failed to start the server.");
@@ -151,12 +146,12 @@ public class ServerScreenController {
 			System.out.println("The server is already running.");
 		}
 	}
-	
-	//import data from external data
+
+	// import data from external data
 	public void importBtn(ActionEvent event) {
 		ServerUI.sv.dbController.importExternalData();
 		imprt.setDisable(true);
-		
+
 	}
 
 	// Removes the ability to enter new data while the server has started
@@ -167,7 +162,7 @@ public class ServerScreenController {
 		dbUsernameT.setDisable(Condition);
 		dbPasswordT.setDisable(Condition);
 	}
-   
+
 	public void start(Stage primaryStage) throws Exception {
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/serverScreen.fxml"));
@@ -178,12 +173,12 @@ public class ServerScreenController {
 		primaryStage.setTitle("Server");
 		primaryStage.setScene(scene);
 		primaryStage.show();
-		 try {
-				String ipAddress = InetAddress.getLocalHost().getHostAddress();
-				ipAddressT.setText(ipAddress);
-			} catch (Exception e) {
-				ipAddressT.setText("Unable to get IP address");
-			}
+		try {
+			String ipAddress = InetAddress.getLocalHost().getHostAddress();
+			ipAddressT.setText(ipAddress);
+		} catch (Exception e) {
+			ipAddressT.setText("Unable to get IP address");
+		}
 		ipT.setCellValueFactory(new PropertyValueFactory<>("ip"));
 		hostT.setCellValueFactory(new PropertyValueFactory<>("hostName"));
 		statusT.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -192,5 +187,3 @@ public class ServerScreenController {
 	}
 
 }
-
-

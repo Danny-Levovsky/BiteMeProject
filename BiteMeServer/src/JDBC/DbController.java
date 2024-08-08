@@ -257,6 +257,37 @@ public class DbController {
         return orders;
     }
     
+    public void updateOrderStatus(int orderId, String receivedDateTime) {
+        String updateCustomerOrdersQuery = "UPDATE customer_orders SET Status = 'received' WHERE OrderID = ?";
+        String updateOrdersQuery = "UPDATE orders SET ReceivedDateTime = ? WHERE OrderID = ?";
+
+        try {
+            conn.setAutoCommit(false);
+
+            PreparedStatement customerOrdersStmt = conn.prepareStatement(updateCustomerOrdersQuery);
+            customerOrdersStmt.setInt(1, orderId);
+            customerOrdersStmt.executeUpdate();
+
+            PreparedStatement ordersStmt = conn.prepareStatement(updateOrdersQuery);
+            ordersStmt.setString(1, receivedDateTime);
+            ordersStmt.setInt(2, orderId);
+            ordersStmt.executeUpdate();
+
+            conn.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try {
+                conn.rollback();
+            } catch (SQLException rollbackEx) {
+            }
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+            }
+        }
+    }
+    
 
     
     

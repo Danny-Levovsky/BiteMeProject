@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Order implements Serializable {
 	
-	private static final long serialVersionUID = 1L;
+	//private static final long serialVersionUID = 1L;
 	
 	private int orderNumber;
 	private int customerNumber;
@@ -15,7 +15,10 @@ public class Order implements Serializable {
     private DeliveryDetail deliveryDetail; 
     
     private String orderDateTime;  //used to approve receiving order 
- // Need to add ArrayList<Dish> or something for Order to hold Dishes??
+    private String requestedDateTime;
+    private int isEarlyOrder;
+    
+    
     
     
     //System creates Order while Customer is in the process of ordering
@@ -42,11 +45,12 @@ public class Order implements Serializable {
         this.orderPrice = 0;
     }
     
-    //constructor for approving receiving order
+    //constructor for approving receiving order to update table
     public Order(int orderNumber, String orderDateTime) {
         this.orderNumber = orderNumber;
         this.orderDateTime = orderDateTime;
     }
+    
 
     public int getOrderNumber() {
         return orderNumber;
@@ -54,6 +58,14 @@ public class Order implements Serializable {
 
     public String getOrderDateTime() {
         return orderDateTime;
+    }
+    
+    public String getRequestedDateTime() {
+        return requestedDateTime;
+    }
+    
+    public int getIsEarlyOrder() {
+        return isEarlyOrder;
     }
     
     
