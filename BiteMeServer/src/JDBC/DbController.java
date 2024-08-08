@@ -6,7 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import entites.Order;
 import entites.User;
@@ -254,6 +256,10 @@ public class DbController {
         
         return restaurantNames;
     }
+
+    
+		
+
     
     public List<Order> getPendingOrders(int customerId) {
         List<Order> orders = new ArrayList<>();
@@ -276,7 +282,48 @@ public class DbController {
         }
         return orders;
     }
-    
+   
+    public ArrayList<Map<String, Object>> getRestaurantMenuFromDB(String restaurantName) {
+        ArrayList<Map<String, Object>> menu = new ArrayList<>();
+        String SQL_QUERY =
+            "SELECT c.name AS dishType, d.dishID AS dishID, d.DishName AS dishName, p.Price AS dishPrice, do.OptionType, do.OptionValue " +
+            "FROM dishes d " +
+            "JOIN categories c ON d.CategoryID = c.CategoryID " +
+            "JOIN prices p ON d.dishID = p.dishID " +
+            "LEFT JOIN dish_options do ON d.dishID = do.dishID " +
+            "WHERE d.RestaurantNumber = ( " +
+            "  SELECT RestaurantNumber " +
+            "  FROM restaurants " +
+            "  WHERE RestaurantName = ? " +
+            ")";
+
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_QUERY)) {
+            stmt.setString(1, restaurantName);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Map<String, Object> dish = new HashMap<>();
+                dish.put("dishID", rs.getString("dishID"));
+                dish.put("dishType", rs.getString("dishType"));
+                dish.put("dishName", rs.getString("dishName"));
+                dish.put("dishPrice", rs.getDouble("dishPrice"));
+
+                Map<String, String> options = new HashMap<>();
+                String optionType = rs.getString("OptionType");
+                String optionValue = rs.getString("OptionValue");
+                if (optionType != null && optionValue != null) {
+                    options.put(optionType, optionValue);
+                }
+                dish.put("dishOptions", options);
+
+                menu.add(dish);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return menu;
+    }
 
     /**
      * Imports external data into the application database.

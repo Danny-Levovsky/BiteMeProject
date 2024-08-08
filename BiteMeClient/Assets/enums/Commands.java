@@ -20,5 +20,6 @@ public enum Commands {
     getPendingOrders, //command for customer to approve receiving order 
     getRestaurantList,
     gotMyRestaurantList,
-    getRestaurantMenu //command to get restaurant menu
+    getRestaurantMenu, //command to get restaurant menu
+    gotMyRestaurantMenu
 }

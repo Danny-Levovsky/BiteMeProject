@@ -3,6 +3,7 @@ package client;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import branch_manager.UpdateClientController;
 import customer.NewOrderController;
@@ -133,6 +134,16 @@ public class Client extends AbstractClient {
 		        if (newOrderController != null) {
 		            newOrderController.setRestaurantNames(restaurantNames);
 		            System.out.println(restaurantNames); //checking debugging
+		        }
+		    });
+		    break;
+		    
+		case gotMyRestaurantMenu: //NEWORDER - GET REST NAMES
+		    Platform.runLater(() -> {
+		        ArrayList<Map<String, Object>> menu = (ArrayList<Map<String, Object>>) m.getObj();
+		        if (newOrderController != null) {
+		            newOrderController.setRestaurantMenu(menu);
+		            System.out.println(menu); //checking debugging
 		        }
 		    });
 		    break;

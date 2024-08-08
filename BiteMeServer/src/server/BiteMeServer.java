@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 //import JDBC.DbController;
 
@@ -64,7 +65,7 @@ public class BiteMeServer extends AbstractServer
   
   public void handleMessageFromClient (Object msg, ConnectionToClient client)
   {
-	  System.out.println(msg);
+	  //System.out.println(msg);
 
 	  Message m = (Message)msg ;
 	  
@@ -183,8 +184,18 @@ public class BiteMeServer extends AbstractServer
     	    }
     	    break;
     	    
-      case getRestaurantMenu: //NEW ORDER - GET REST NAMES
+      case getRestaurantMenu: //NEW ORDER - GET REST MENU
     	  	System.out.println(m.getObj());
+    	  	String restaurantName = (String)m.getObj();
+    	  	ArrayList<Map<String, Object>> menu = new ArrayList<>();
+    	  	menu = dbController.getRestaurantMenuFromDB(restaurantName);
+    	  	System.out.println(menu);
+      	  try {
+      	        client.sendToClient(new Message(menu, Commands.gotMyRestaurantMenu));
+      	    } catch (IOException e) {
+      	        e.printStackTrace();
+      	    }
+      	    
     	    break;
     	  
 	  	default:

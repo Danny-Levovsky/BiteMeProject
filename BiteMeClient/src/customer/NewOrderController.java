@@ -104,11 +104,11 @@ public class NewOrderController {
         requestRestaurantNames();
         
         
-        //setupComboBoxes();
+        setupComboBoxes();
         setupDishTableView();
         setupOrderTableView();
         addListeners();
-        addSampleData();
+        //addSampleData();
         updateButtonStates();
         
         restaurantComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -137,6 +137,42 @@ public class NewOrderController {
         ClientController.client.handleMessageFromClientControllers(message);
     }
     
+    public void setRestaurantMenu(ArrayList<Map<String, Object>> menu) {
+        dishes.clear();
+        orderQuantities.clear();
+        
+        for (Map<String, Object> dish : menu) {
+        	//int dishID = (int) dish.get("dishID");
+            String dishType = (String) dish.get("dishType");
+            String dishName = (String) dish.get("dishName");
+            int dishPrice = ((Number) dish.get("dishPrice")).intValue();
+            Map<String, String> dishOptions = (Map<String, String>) dish.get("dishOptions");
+
+            ObservableList<String> specifications = FXCollections.observableArrayList();
+            for (Map.Entry<String, String> entry : dishOptions.entrySet()) {
+                specifications.add(entry.getKey() + ": " + entry.getValue());
+            }
+
+            Dish newDish = new Dish(
+                0, // Dish ID is not used in this implementation
+                dishName,
+                dishType,
+                dishPrice,
+                specifications
+            );
+            newDish.setSelectedSpecification((String) dishOptions.getOrDefault("None", "None"));
+            dishes.add(newDish);
+            orderQuantities.put(0, 0); // Dish ID is not used, so we can use a fixed key of 0
+        }
+        
+       
+
+        dishTableView.setItems(dishes);
+        dishTableView.refresh();
+        orderChanged = true;
+        updateButtonStates();
+    }
+    
     
     
     /**private void setupComboBoxes() {
@@ -144,7 +180,7 @@ public class NewOrderController {
         restaurantComboBox.setItems(restaurantList);
     }**/
 
-    /**private void setupComboBoxes() {
+    private void setupComboBoxes() {
         restaurantComboBox.setValue("Choose a restaurant");
         restaurantComboBox.setItems(restaurantList);
 
@@ -157,7 +193,7 @@ public class NewOrderController {
         for (int i = 0; i < 60; i += 5) {
             deliveryMinutePicker.getItems().add(String.format("%02d", i));
         }
-    }**/
+    }
 
     private void setupDishTableView() {
         dishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
@@ -299,7 +335,7 @@ public class NewOrderController {
 
     }
 
-    private void addSampleData() {
+    /**private void addSampleData() {
         dishes.addAll(
             new Dish(1, "Yerushalmi Salad", "Salad", 40, FXCollections.observableArrayList("Regular", "No Onions", "Extra Dressing")),
             new Dish(2, "Tuna Salad", "Salad", 36, FXCollections.observableArrayList("Regular", "Spicy", "Extra Mayo")),
@@ -309,6 +345,7 @@ public class NewOrderController {
             new Dish(13, "Ice Tea", "Drink", 12, FXCollections.observableArrayList("Regular", "No Sugar", "Extra Ice"))
         );
     }
+    **/
     
     private void updateButtonStates() {
         boolean restaurantSelected = currentRestaurant != null;
