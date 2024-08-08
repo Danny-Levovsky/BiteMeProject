@@ -1,6 +1,7 @@
 package client;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import branch_manager.UpdateClientController;
@@ -8,6 +9,8 @@ import customer.CustomerController;
 import customer.ViewOrderController;
 import entites.Message;
 import entites.Order;
+import entites.RestaurantOrder;
+import entites.User;
 import enums.Commands;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -56,7 +59,7 @@ public class Client extends AbstractClient {
 
 		// Initilazing The Contorllers
 		// IMPORT CLIENT CONTROLLERS HERE
-		employeeController = new EmployeeController();
+		//employeeController = new EmployeeController();
 
 		// bookingController = new BookingController();
 		// mainScreenController = new MainScreenController();
@@ -147,7 +150,25 @@ public class Client extends AbstractClient {
                  }
              });
              break;
-             
+		 case setRestaurantOrders:
+				Platform.runLater(() -> {
+					List<RestaurantOrder> orders = (List<RestaurantOrder>) m.getObj();
+					if ( employeeController != null) {
+						 employeeController.setTable(orders);
+					}
+				});
+
+			break;
+		 case updateCoustomerToContactByCoustomerId: 
+				Platform.runLater(() -> {
+					User customer = (User) m.getObj();
+					if ( employeeController != null) {
+						 employeeController.sendTextMassageAndEmailToCustomer(customer);
+					}
+				});
+
+			break;
+
 
 		default:
 			break;

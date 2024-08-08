@@ -80,13 +80,7 @@ public class BiteMeServer extends AbstractServer {
 			ServerUI.gotResponse = true;
 			break;
 
-		/*
-		 * case getRestaurantPendingOrders: Object RestaurantPendingOrdersData =
-		 * dbController.getRestaurantPendingOrders(m.getObj()); //
-		 * setRestaurantPendingOrders try { client.sendToClient(new
-		 * Message(RestaurantPendingOrdersData, Commands.setRestaurantPendingOrders)); }
-		 * catch (IOException e) { e.printStackTrace(); } break;
-		 */
+	
 		case CheckUsername:
 			User user = (User) m.getObj();
 			boolean usernameExists = dbController.isUsernameExists(user.getUsername());
@@ -202,6 +196,34 @@ public class BiteMeServer extends AbstractServer {
                     e.printStackTrace();
                 }
                 break;
+			 case getRestaurantOrders:
+				  Object RestaurantOrdersData = dbController.getRestaurantOrders((int)m.getObj());
+				  // setRestaurantPendingOrders
+				  try {
+					client.sendToClient(new Message(RestaurantOrdersData, Commands.setRestaurantOrders));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				  break;
+				  
+			  case updateRestaurantOrderStatus:
+				  Object[] data1 = (Object[]) m.getObj();
+				  int orderId = (int) data1[0];
+				  String status1 = (String) data1[1];
+				  dbController.updateRestaurantOrderStatus(orderId,status1);
+				  break;
+				  
+			  case updateCoustomerToContactByCoustomerId: 
+				  int customerNumber = (int) m.getObj();
+				  User customer = dbController.getCustomerDetailsByNumber(customerNumber);
+				  try {
+						client.sendToClient(new Message(customer, Commands.updateCoustomerToContactByCoustomerId));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				  
+				  
+				  
 		default:
 			break;
 		}

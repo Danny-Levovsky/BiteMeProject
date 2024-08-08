@@ -198,6 +198,7 @@ public class LoginScreenController {
                     branchManagerController.start(new Stage());
                     break;
                 case "Employee":
+                	EmployeeController.setEmployee(user);
                     EmployeeController employeeController = new EmployeeController();
                     employeeController.start(new Stage());
                     break;

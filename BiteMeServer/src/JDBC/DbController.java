@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import entites.Order;
+import entites.RestaurantOrder;
 import entites.User;
 
 
@@ -29,34 +30,6 @@ public class DbController {
     public DbController( Connection connection ) {
         this.conn = connection ;
     }
-    
-    /*public Object getRestaurantPendingOrders(Object obj) {
-		String restaurantName = (String) obj;
-		
-    	ArrayList<ManagerRequestDetail> requestList = new ArrayList<>();
-	    String query = "SELECT parkName, changeTo, amountTo, requestNumber, changes FROM managerrequest";
-	    try {
-	         PreparedStatement stmt = conn.prepareStatement(query);
-	         ResultSet rs = stmt.executeQuery(); 
-
-	        while (rs.next()) {
-	            String parkName = rs.getString("parkName");
-	            String changeTo = rs.getString("changeTo");
-	            String amountTo = rs.getString("amountTo");
-	            int requestNumber = rs.getInt("requestNumber");
-	            String changes = rs.getString("changes");
-
-	            ManagerRequestDetail requestDetail = new ManagerRequestDetail(parkName, changeTo, amountTo);
-	            requestDetail.setRequestNumber(requestNumber);
-	            requestList.add(requestDetail);
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-
-	    return requestList;
-	    	
-    }*/
     
     /**
      * Checks if a username exists in the database.
@@ -375,8 +348,120 @@ public class DbController {
     }
 
     
+    /**
+     * Updates the status of a restaurant order.
+     * @param orderId the order ID
+     * @param status the new status to set
+     */
+    public void updateRestaurantOrderStatus(int orderId, String status) {
+        String query = "UPDATE orders SET StatusRestaurant = ? WHERE OrderID = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, status);
+            stmt.setInt(2, orderId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
     
+    /**
+     * Retrieves the list of restaurant orders for a given employee.
+     * @param employeeId the employee ID
+     * @return a list of restaurant orders
+     */
+    public List<RestaurantOrder> getRestaurantOrders(int employeeId) {
+        List<RestaurantOrder> restaurantOrders = new ArrayList<>();
+        String queryRestaurantNumber = "SELECT RestaurantNumber FROM employee WHERE ID = ?";
+        String queryOrders = "SELECT o.OrderID, o.CustomerNumber, o.IsDelivery, o.OrderDateTime, o.StatusRestaurant, d.DishName, r.Quantity " +
+                "FROM orders o " +
+                "JOIN restaurants_orders r ON o.OrderID = r.OrderID " +
+                "JOIN dishes d ON r.DishID = d.DishID " +
+                "WHERE o.RestaurantNumber = ? " +
+                "AND (o.StatusRestaurant = 'pending' OR o.StatusRestaurant = 'received')";
+
+        try (PreparedStatement stmtRestaurantNumber = conn.prepareStatement(queryRestaurantNumber)) {
+            stmtRestaurantNumber.setInt(1, employeeId);
+            ResultSet rsRestaurantNumber = stmtRestaurantNumber.executeQuery();
+            int givenRestaurantNumber = 0;
+            
+            if (rsRestaurantNumber.next()) {
+                givenRestaurantNumber = rsRestaurantNumber.getInt("RestaurantNumber");
+            } else {
+                // No matching restaurant number found, return empty list
+                return restaurantOrders;
+            }
+
+            try (PreparedStatement stmtOrders = conn.prepareStatement(queryOrders)) {
+                stmtOrders.setInt(1, givenRestaurantNumber);
+                ResultSet rsOrders = stmtOrders.executeQuery();
+
+                while (rsOrders.next()) {
+                    RestaurantOrder restaurantOrder = new RestaurantOrder();
+                    restaurantOrder.setOrderId(rsOrders.getInt("OrderID"));
+                    restaurantOrder.setCustomerNumber(rsOrders.getInt("CustomerNumber"));
+                    restaurantOrder.setIsDelivery(rsOrders.getInt("IsDelivery"));
+                    restaurantOrder.setOrderDateTime(rsOrders.getString("OrderDateTime"));
+                    restaurantOrder.setOrderStatus(rsOrders.getString("StatusRestaurant"));
+                    restaurantOrder.setDishName(rsOrders.getString("DishName"));
+                    restaurantOrder.setQuantity(rsOrders.getInt("Quantity"));
+
+                    restaurantOrders.add(restaurantOrder);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return restaurantOrders;
+    }
     
+    /**
+     * Retrieves the customer details by their customer number.
+     * @param customerNumber the customer number
+     * @return a User object containing the customer details, or null if the customer does not exist
+     */
+    public User getCustomerDetailsByNumber(int customerNumber) {
+        String queryCustomerId = "SELECT ID FROM customers WHERE CustomerNumber = ?";
+        String queryUserDetails = "SELECT * FROM users WHERE ID = ?";
+        int userId = 0;
+
+        try {
+            // Step 1: Get the ID from customers table using CustomerNumber
+            PreparedStatement stmtCustomerId = conn.prepareStatement(queryCustomerId);
+            stmtCustomerId.setInt(1, customerNumber);
+            ResultSet rsCustomerId = stmtCustomerId.executeQuery();
+            if (rsCustomerId.next()) {
+                userId = rsCustomerId.getInt("ID");
+            } else {
+                // No matching customer found
+                return null;
+            }
+
+            // Step 2: Get the user details from users table using the fetched ID
+            PreparedStatement stmtUserDetails = conn.prepareStatement(queryUserDetails);
+            stmtUserDetails.setInt(1, userId);
+            ResultSet rsUserDetails = stmtUserDetails.executeQuery();
+            if (rsUserDetails.next()) {
+                int id = rsUserDetails.getInt("ID");
+                String username = rsUserDetails.getString("UserName");
+                String password = rsUserDetails.getString("Password");
+                String firstName = rsUserDetails.getString("FirstName");
+                String lastName = rsUserDetails.getString("LastName");
+                String email = rsUserDetails.getString("Email");
+                String phone = rsUserDetails.getString("Phone");
+                String type = rsUserDetails.getString("Type");
+                int isLoggedIn = rsUserDetails.getInt("IsLoggedIn");
+                String district = rsUserDetails.getString("District");
+
+                return new User(id, username, password, firstName, lastName, email, phone, type, isLoggedIn, district);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     
     /**
      * Imports external data into the application database.
