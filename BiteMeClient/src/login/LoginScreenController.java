@@ -94,7 +94,7 @@ public class LoginScreenController {
 		btnDisconnect.setDisable(true);
 		
 		Message disconnectClient = new Message(null,Commands.ClientDisconnect);
-		ClientController.client.sendToServer(disconnectClient);
+		ClientController.client.handleMessageFromClientControllers(disconnectClient);
 	}
 	
     /**
@@ -138,7 +138,7 @@ public class LoginScreenController {
     	  // Send a message to the server to check the username and password
         User user = new User(username, password);
         Message checkCredentialsMessage = new Message(user, Commands.CheckUsername);
-        ClientController.client.sendToServer(checkCredentialsMessage);
+        ClientController.client.handleMessageFromClientControllers(checkCredentialsMessage);
     }
     
     /**
@@ -165,7 +165,7 @@ public class LoginScreenController {
                 }
                 else {
                 	Message updateLoginStatusMessage = new Message(user.getId(), Commands.UpdateLoginStatus);
-                    ClientController.client.sendToServer(updateLoginStatusMessage);
+                    ClientController.client.handleMessageFromClientControllers(updateLoginStatusMessage);
                 	openUserSpecificWindow(user, currentStage);
 
                 }

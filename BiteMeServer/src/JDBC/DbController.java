@@ -479,7 +479,7 @@ public class DbController {
 
             // Insert into customers table
             String insertCustomersQuery = "INSERT INTO bite_me.customers (ID, IsBusiness, PaymentCardNumber, PaymentCardDate) VALUES "
-                    + "(11, 0, 963852741, '07/2030'), "
+                    + "(11, 1, 963852741, '07/2030'), "
                     + "(22, 0, 741564951, '03/2025'), "
                     + "(33, 0, 654123841, '01/2026'), "
                     + "(44, 1, 961782346, '06/2028'), "

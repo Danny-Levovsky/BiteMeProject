@@ -119,7 +119,7 @@ public class ViewOrderController {
 	 */
 	private void fetchOrders() throws Exception {
 		Message msg = new Message(id, Commands.getPendingOrders);
-		ClientController.client.sendToServer(msg);
+		ClientController.client.handleMessageFromClientControllers(msg);
 	}
 
 	/**
@@ -171,7 +171,7 @@ public class ViewOrderController {
 
 				Message msg = new Message(new Object[] { orderId, receivedDateTime },
 						Commands.UpdateCustomerOrdersStatus);
-				ClientController.client.sendToServer(msg);
+				ClientController.client.handleMessageFromClientControllers(msg);
 
 				txtId1.clear();
 
@@ -216,7 +216,7 @@ public class ViewOrderController {
 
 		if (credit > 0) {
 			Message msg = new Message(new Object[] { id, orderId, credit }, Commands.UpdateCredit);
-			ClientController.client.sendToServer(msg);
+			ClientController.client.handleMessageFromClientControllers(msg);
 			appearingMsg("sorry for being late you account is credited with " + credit + " NIS");
 		}
 	}

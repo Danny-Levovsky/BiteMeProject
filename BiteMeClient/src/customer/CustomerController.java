@@ -119,7 +119,7 @@ public class CustomerController {
 	@FXML
 	void getBtnLogout(ActionEvent event) throws Exception {
 		Message logoutMessage = new Message(customer.getId(), Commands.LogoutUser);
-		ClientController.client.sendToServer(logoutMessage);
+		ClientController.client.handleMessageFromClientControllers(logoutMessage);
 
 		((Node) event.getSource()).getScene().getWindow().hide();
 		LoginScreenController newScreen = new LoginScreenController();
