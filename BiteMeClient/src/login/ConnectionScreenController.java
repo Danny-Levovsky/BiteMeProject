@@ -36,9 +36,7 @@ public class ConnectionScreenController {
     @FXML
     private TextField portT;
 
-    @FXML
-    private Button btnExit;
-    
+
     @FXML
     private Label errorIPLabel;
     
@@ -126,15 +124,6 @@ public class ConnectionScreenController {
 
 	}
     
-    /**
-     * Handles the action event for the exit button.
-     * Exits the application.
-     * @param event the action event triggered by the exit button
-     */
-    @FXML
-    void getBtnExit(ActionEvent event) {
-	    System.exit(1); 
 
-    }
   
 }

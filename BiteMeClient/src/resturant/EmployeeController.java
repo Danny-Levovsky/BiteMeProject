@@ -26,14 +26,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import login.LoginScreenController;
 
-
-
-
 /**
- * The EmployeeController class handles the restaurant employee UI actions and interactions.
- * This includes initializing the employee window, fetching and displaying orders,
- * and handling button actions for logging out, receiving orders, completing orders,
- * and navigating back to the certified employee screen.
+ * The EmployeeController class handles the restaurant employee UI actions and
+ * interactions. This includes initializing the employee window, fetching and
+ * displaying orders, and handling button actions for logging out, receiving
+ * orders, completing orders, and navigating back to the certified employee
+ * screen.
+ * 
  * @author yosra
  */
 public class EmployeeController {
@@ -73,33 +72,34 @@ public class EmployeeController {
 
 	@FXML
 	private Button btnBack;
-	
-	 @FXML
-	 private TextField txtTime;
 
-	
+	@FXML
+	private TextField txtTime;
 
+	@FXML
+	private Label txtMsg;
 
 	private static User employee;
-	
-	private String btnPressed; 
-	
+
+	private String btnPressed;
+
 	private int isDelivery;
 
-
 	/**
-     * Sets the employee for the controller.
-     * @param user the employee user
-     */
+	 * Sets the employee for the controller.
+	 * 
+	 * @param user the employee user
+	 */
 	public static void setEmployee(User user) {
 		employee = user;
 	}
 
-	 /**
-     * Starts and displays the employee window.
-     * @param primaryStage the primary stage for this application
-     * @throws Exception if there is an error during the loading of the FXML file
-     */
+	/**
+	 * Starts and displays the employee window.
+	 * 
+	 * @param primaryStage the primary stage for this application
+	 * @throws Exception if there is an error during the loading of the FXML file
+	 */
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/resturant/Employee.fxml"));
 		Parent root = loader.load();
@@ -110,12 +110,15 @@ public class EmployeeController {
 	}
 
 	/**
-     * Initializes the controller class. This method is automatically called after
-     * the FXML file has been loaded. It updates the name to this user's name.
-     */
+	 * Initializes the controller class. This method is automatically called after
+	 * the FXML file has been loaded. It updates the name to this user's name.
+	 */
 	@FXML
 	private void initialize() {
-		Client.employeeController = this; // Set the employeeController instance here	
+		Client.employeeController = this; // Set the employeeController instance here
+		
+		btnOrderReceived.setDisable(true);
+		btnOrderCompleted.setDisable(true);
 
 		// update name
 		if (employee != null) {
@@ -129,13 +132,13 @@ public class EmployeeController {
 		quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
 		IsDeliveryColumn.setCellValueFactory(new PropertyValueFactory<>("IsDelivery"));
 		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("orderStatus"));
-
 		getTableData();
-	}
+	}	
 
-	  /**
-     * Fetches the table data with current restaurant orders according to the employee ID.
-     */
+	/**
+	 * Fetches the table data with current restaurant orders according to the
+	 * employee ID.
+	 */
 	public void getTableData() {
 		// get Table view data with current Restaurant orders according to employee id
 		Commands command = Commands.getRestaurantOrders;
@@ -144,23 +147,25 @@ public class EmployeeController {
 	}
 
 	/**
-     * Updates the table with the list of restaurant orders.
-     * @param restaurantOrders the list of restaurant orders to display
-     */
+	 * Updates the table with the list of restaurant orders.
+	 * 
+	 * @param restaurantOrders the list of restaurant orders to display
+	 */
 	public void setTable(List<RestaurantOrder> restaurantOrders) {
 		ObservableList<RestaurantOrder> orderList = FXCollections.observableArrayList(restaurantOrders);
 		orderTable.setItems(orderList);
 	}
 
 	/**
-     * Handles the action for the logout button.
-     * This method is triggered when the logout button is clicked.
-     * It sends a logout request to the server and opens the login screen.
-     * @param event the event triggered by the logout button click
-     * @throws Exception if there is an error while opening the login screen
-     */
+	 * Handles the action for the logout button. This method is triggered when the
+	 * logout button is clicked. It sends a logout request to the server and opens
+	 * the login screen.
+	 * 
+	 * @param event the event triggered by the logout button click
+	 * @throws Exception if there is an error while opening the login screen
+	 */
 	@FXML
-	void getBtnLogout(ActionEvent event) throws Exception {
+	public void getBtnLogout(ActionEvent event) throws Exception {
 		Message logoutMessage = new Message(EmployeeController.employee.getId(), Commands.LogoutUser);
 		ClientController.client.handleMessageFromClientControllers(logoutMessage);
 
@@ -170,53 +175,76 @@ public class EmployeeController {
 	}
 
 	/**
-     * Updates the status of an order.
-     * @param msg the message containing order ID and status
-     */
-	void updateOrderStatus(Object msg) {
+	 * Updates the status of an order.
+	 * 
+	 * @param msg the message containing order ID and status
+	 */
+	public void updateOrderStatus(Object msg) {
 		Commands command = Commands.updateRestaurantOrderStatus;
 		Message message = new Message(msg, command);
 		ClientController.client.handleMessageFromClientControllers(message);
 		getTableData(); // refresh
 		fetchCustomerDetails();
+		btnOrderReceived.setDisable(true);
+		btnOrderCompleted.setDisable(true);
 	}
 
-	 /**
-     * Handles the action for the order received button.
-     * This method is triggered when the order received button is clicked.
-     * It updates the order status to 'received'.
-     * @param event the event triggered by the order received button click
-     */
+	/**
+	 * Handles the action for the order received button. This method is triggered
+	 * when the order received button is clicked. It updates the order status to
+	 * 'received'.
+	 * 
+	 * @param event the event triggered by the order received button click
+	 */
 	@FXML
-	void getBtnOrderReceived(ActionEvent event) {
+	public void getBtnOrderReceived(ActionEvent event) {
 		int orderId = Integer.parseInt(txtOrderID.getText());
 		btnPressed = "received";
-		Object[] idAndStatus = { orderId, btnPressed};
-		updateOrderStatus(idAndStatus);
+		Object[] idAndStatus = { orderId, btnPressed };
+		for (RestaurantOrder order : orderTable.getItems()) {
+			if (Integer.valueOf(order.getOrderId()).equals(orderId)) {
+				if (String.valueOf(order.getOrderStatus()).equals("pending")) {
+					updateOrderStatus(idAndStatus);
+				} else {
+					txtMsg.setText("order status is already received");
+				}
+				break;
+			}
+		}
 	}
 
-    /**
-     * Handles the action for the order completed button.
-     * This method is triggered when the order completed button is clicked.
-     * It updates the order status to 'completed' and fetches the customer details.
-     * @param event the event triggered by the order completed button click
-     */
+	/**
+	 * Handles the action for the order completed button. This method is triggered
+	 * when the order completed button is clicked. It updates the order status to
+	 * 'completed' and fetches the customer details.
+	 * 
+	 * @param event the event triggered by the order completed button click
+	 */
 	@FXML
-	void getBtnOrderCompleted(ActionEvent event) {
-    	int orderId = Integer.parseInt(txtOrderID.getText());
+	public void getBtnOrderCompleted(ActionEvent event) {
+		int orderId = Integer.parseInt(txtOrderID.getText());
 		for (RestaurantOrder order : orderTable.getItems()) {
 			if (Integer.valueOf(order.getOrderId()).equals(orderId)) {
 				isDelivery = order.getIsDelivery();
 			}
 		}
 		btnPressed = "completed";
-		Object[] idAndStatus = { orderId, btnPressed};
-		updateOrderStatus(idAndStatus);
+		Object[] idAndStatus = { orderId, btnPressed };
+		for (RestaurantOrder order : orderTable.getItems()) {
+			if (Integer.valueOf(order.getOrderId()).equals(orderId)) {
+				if (String.valueOf(order.getOrderStatus()).equals("received")) {
+					updateOrderStatus(idAndStatus);
+				} else {
+					txtMsg.setText("first you need to approve receiving");
+				}
+				break;
+			}
+		}
 	}
 
 	/**
-     * Fetches the customer details based on the selected order.
-     */
+	 * Fetches the customer details based on the selected order.
+	 */
 	public void fetchCustomerDetails() {
 		// Retrieve the customer details
 		int orderId = Integer.parseInt(txtOrderID.getText());
@@ -226,10 +254,11 @@ public class EmployeeController {
 	}
 
 	/**
-     * Gets the customer ID to contact from the table view by order ID.
-     * @param orderId the order ID
-     * @return the customer number associated with the order, or -1 if not found
-     */
+	 * Gets the customer ID to contact from the table view by order ID.
+	 * 
+	 * @param orderId the order ID
+	 * @return the customer number associated with the order, or -1 if not found
+	 */
 	private int getCoustomerIdToContactFromTableViewByOrderId(int orderId) {
 		// Iterate through the orders in the orderTable
 		for (RestaurantOrder order : orderTable.getItems()) {
@@ -242,61 +271,68 @@ public class EmployeeController {
 		return -1;
 	}
 
-	 /**
-     * Updates the customer to contact by customer ID.
-     * @param customerNumber the customer number
-     */
+	/**
+	 * Updates the customer to contact by customer ID.
+	 * 
+	 * @param customerNumber the customer number
+	 */
 	private void updateCoustomerToContactByCoustomerId(int customerNumber) {
 		Commands command = Commands.updateCoustomerToContactByCoustomerId;
 		Message message = new Message(customerNumber, command);
 		ClientController.client.handleMessageFromClientControllers(message);
 	}
 
-	  /**
-     * Sends a text message and email to the customer.
-     * @param customer the customer to contact
-     */
+	/**
+	 * Sends a text message and email to the customer.
+	 * 
+	 * @param customer the customer to contact
+	 */
 	public void sendTextMassageAndEmailToCustomer(User customer) {
-	    // Determine the message based on the button pressed
-	    String additionalMessage = "";
-	    if (btnPressed.equals("received")) {
-	        additionalMessage = "Restaurant got your order.";
-	    } else if (btnPressed.equals("completed")) {
-	    	if(isDelivery == 1) {
-	    		additionalMessage = "Restaurant finished working on your order. " +
-						"estimated arrival time " + txtTime.getText();	
-	    	}
-			else {
+		// Determine the message based on the button pressed
+		String additionalMessage = "";
+		if (btnPressed.equals("received")) {
+			additionalMessage = "Restaurant got your order.";
+		} else if (btnPressed.equals("completed")) {
+			if (isDelivery == 1) {
+				additionalMessage = "Restaurant finished working on your order. " + "estimated arrival time "
+						+ txtTime.getText();
+			} else {
 				additionalMessage = "Restaurant finished working on your order and ready for pickup.";
 			}
-	    }
-	    // Create and show the alert
-	    Alert alert = new Alert(AlertType.INFORMATION);
-	    alert.setTitle("Notification Sent");
-	    alert.setHeaderText("Simulation: Text Message and Email Sent to Customer");
-	    alert.setContentText(String.format(
-	            "Text Message and Email sent to:%n" +
-	            "Name: %s %s%n" +
-	            "Phone: %s%n" +
-	            "Email: %s%n%n" +
-	            "%s%n"  , // Placeholder for the additional message
-	            customer.getFirstName(), customer.getLastName(), customer.getPhone(), customer.getEmail(), additionalMessage));
-	    alert.showAndWait();
+		}
+		// Create and show the alert
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Notification Sent");
+		alert.setHeaderText("Simulation: Text Message and Email Sent to Customer");
+		alert.setContentText(String.format(
+				"Text Message and Email sent to:%n" + "Name: %s %s%n" + "Phone: %s%n" + "Email: %s%n%n" + "%s%n", 
+				customer.getFirstName(), customer.getLastName(), customer.getPhone(), customer.getEmail(),
+				additionalMessage));
+		alert.showAndWait();
 	}
 
 	/**
-     * Handles the action for the back button.
-     * This method is triggered when the back button is clicked.
-     * It hides the current window and opens the certified employee screen.
-     * @param event the event triggered by the back button click
-     * @throws Exception if there is an error while opening the certified employee screen
-     */
+	 * Handles the action for the back button. This method is triggered when the
+	 * back button is clicked. It hides the current window and opens the certified
+	 * employee screen.
+	 * 
+	 * @param event the event triggered by the back button click
+	 * @throws Exception if there is an error while opening the certified employee
+	 *                   screen
+	 */
 	@FXML
-	void getBtnBack(ActionEvent event) throws Exception {
+	public void getBtnBack(ActionEvent event) throws Exception {
 		((Node) event.getSource()).getScene().getWindow().hide();
 		CertifiedEmployeeController newScreen = new CertifiedEmployeeController();
 		newScreen.start(new Stage());
 
 	}
+	
+    @FXML
+    public void getTxtOrderID(ActionEvent event) {
+		btnOrderReceived.setDisable(false);
+		btnOrderCompleted.setDisable(false);
+
+    }
 
 }

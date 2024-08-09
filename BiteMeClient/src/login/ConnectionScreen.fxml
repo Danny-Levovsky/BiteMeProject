@@ -31,11 +31,6 @@
             <Font name="System Bold Italic" size="35.0" />
          </font>
       </Text>
-      <Button fx:id="btnExit" layoutX="302.0" layoutY="208.0" mnemonicParsing="false" onAction="#getBtnExit" prefHeight="30.0" prefWidth="74.0" text="Exit" textFill="#1e525b">
-         <font>
-            <Font name="System Bold Italic" size="14.0" />
-         </font>
-      </Button>
       <Label fx:id="errorIPLabel" layoutX="97.0" layoutY="104.0" prefHeight="17.0" prefWidth="230.0" text="Wrong server IP address, please try again." textFill="#f20707" visible="false" />
    </children>
 </AnchorPane>

@@ -29,10 +29,15 @@
             <TableColumn fx:id="orderStatusColumn" prefWidth="106.0" text="Order Status" />
          </columns>
         </TableView>
-      <TextField fx:id="txtOrderID" layoutX="107.0" layoutY="568.0" prefHeight="25.0" prefWidth="78.0" />
+      <TextField fx:id="txtOrderID" layoutX="107.0" layoutY="568.0" onAction="#getTxtOrderID" prefHeight="25.0" prefWidth="78.0" />
       <Label layoutX="39.0" layoutY="572.0" text="Order ID" />
       <Button fx:id="btnBack" layoutX="26.0" layoutY="607.0" mnemonicParsing="false" onAction="#getBtnBack" text="Back" />
       <TextField fx:id="txtTime" layoutX="353.0" layoutY="568.0" />
       <Label layoutX="231.0" layoutY="572.0" text="delivery arrival time:" />
+      <Label fx:id="txtMsg" layoutX="534.0" layoutY="611.0" prefHeight="17.0" prefWidth="312.0" textFill="RED">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>
