@@ -16,6 +16,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import login.LoginScreenController;
+import entites.User;
 
 public class EmployeeController {
 
@@ -44,16 +45,39 @@ public class EmployeeController {
     
     @FXML
     private Button btnBack;  //appear if I am certified employee 
+    
+    private static User employee;
+
+    public static void setEmployee(User user) {
+        employee = user;
+    }
 
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/resturant/Employee.fxml"));
     	Parent root = loader.load();
+        EmployeeController controller = loader.getController();
+        controller.initializeUser();
+        
     	Scene scene = new Scene(root);
     	primaryStage.setTitle("EmployeeWindow");
     	primaryStage.setScene(scene);
     	primaryStage.show();
 	}
 	
+    private void initializeUser() {
+        if (employee != null) {
+            txtEmployeeName.setText(employee.getFirstName() + " " + employee.getLastName());
+        }
+        // Show or hide btnBack based on user type
+        if (employee.getType().equals("Certified Employee")) {
+            btnBack.setVisible(true);
+            btnLogout.setVisible(false);
+        } else {
+            btnBack.setVisible(false);
+            btnLogout.setVisible(true);
+        }
+    } 
+    
     void getTableData() {
     	// get Table view data with current Pending Restaurant orders according to Restaurant id
     	Commands command = Commands.getRestaurantPendingOrders;
@@ -65,8 +89,10 @@ public class EmployeeController {
     	tableView = (TableView<?>) msg;
     }
     @FXML
-    void getBtnLogout(ActionEvent event) {
-
+    void getBtnLogout(ActionEvent event) throws Exception {
+    	((Node) event.getSource()).getScene().getWindow().hide();
+    	LoginScreenController newScreen = new LoginScreenController();
+    	newScreen.start(new Stage());
     }
 
     @FXML

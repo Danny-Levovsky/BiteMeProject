@@ -37,7 +37,7 @@ public class User implements Serializable {
     this.district = district;
     }
     
-    //constructor2 
+    //constructor2
     public User(String username, String password) {
     	this.username = username;
     	this.password = password;

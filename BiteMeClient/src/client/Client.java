@@ -1,6 +1,8 @@
 package client;
 
 import java.io.IOException;
+import resturant.UpdateMenuController;
+
 
 import entites.Message;
 import enums.Commands;
@@ -35,7 +37,8 @@ public class Client extends AbstractClient
 	  //TODO: STATIC IMPORT OF DIFFERENT CONTROLLERS 
 	  //IMPORT CLIENT CONTROLLERS HERE
 	  static public EmployeeController employeeController;
-	  static public LoginScreenController loginController; //** 
+	  static public LoginScreenController loginController;
+	  static public UpdateMenuController updateMenuController;//** 
 	  //static public WorkerController workerController;
 	  //static public MainScreenController mainScreenController;
 	  //static public BookingController bookingController;
@@ -52,6 +55,7 @@ public class Client extends AbstractClient
 	    //Initilazing The Contorllers
 	    //IMPORT CLIENT CONTROLLERS HERE
 	    employeeController = new EmployeeController();
+	    updateMenuController = new UpdateMenuController();
 	    //bookingController = new BookingController();
 	    //mainScreenController = new MainScreenController();
 	    //workerController = new WorkerController();
@@ -83,7 +87,7 @@ public class Client extends AbstractClient
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-	         System.exit(0);
+	         //System.exit(0);
 	  		 break;
 	  		 
 	  	 /* case setRestaurantPendingOrders:
@@ -99,6 +103,22 @@ public class Client extends AbstractClient
                    }
                });
                break;
+               
+	  	 case GetRestaurantDishes:
+         case AddDish:
+         case DeleteDish:
+         case UpdateDishPrice:
+         case GetRestaurantNum:
+         case GetRestaurantName:
+         case CheckDishExists:
+             Platform.runLater(() -> {
+            	    if (UpdateMenuController.getInstance() != null) {
+            	        UpdateMenuController.getInstance().handleServerResponse(m);
+            	    } else {
+            	        System.err.println("UpdateMenuController instance is null.");
+            	    }
+             });
+             break;
 	    }
 	    
 	  }

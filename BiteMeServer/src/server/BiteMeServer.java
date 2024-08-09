@@ -3,12 +3,14 @@
 // license found at www.lloseng.com 
 package server;
 import java.io.*;
+import entites.Message;
 
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 //import JDBC.DbController;
 
@@ -117,7 +119,96 @@ public class BiteMeServer extends AbstractServer
               }
           }
           break;
+	  case UpdateLoginStatus:
+			int userId = (int) m.getObj();
+			dbController.updateLoginStatus(userId, 1);
+			break;
+      case LogoutUser:
+			int logoutUserId = (int) m.getObj();
+			dbController.updateLoginStatus(logoutUserId, 0);
+			break;
+      case GetRestaurantDishes:
+          User employeeUser = (User) m.getObj();
+          List<Object[]> dishes = dbController.getDishesByCertifiedEmployee(employeeUser);
+          try {
+              client.sendToClient(new Message(dishes, Commands.GetRestaurantDishes));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+          break;
 
+      case AddDish:
+          Object[] dishData = (Object[]) m.getObj();
+          Dish newDish = (Dish) dishData[0];
+          Price newPrice = (Price) dishData[1];
+          DishOption newOption = dishData.length > 2 ? (DishOption) dishData[2] : null;
+          boolean added;
+          
+          // Check if a dish with the same name and different size exists
+          Dish existingDish = dbController.findDishByNameAndSize(newDish.getDishName(), newPrice.getSize());
+          if (existingDish != null) {
+        	  added = dbController.insertPriceAndOption(existingDish, newPrice, newOption);
+          }
+          else {
+        	  added = dbController.addDish(newDish, newPrice, newOption);
+          }
+ 
+          try {
+              client.sendToClient(new Message(added ? "Dish added successfully" : "Failed to add dish", Commands.AddDish));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+          break;
+
+      case DeleteDish:
+          Dish dishToDelete = (Dish) m.getObj();
+          boolean deleted = dbController.deleteDish(dishToDelete);
+          try {
+              client.sendToClient(new Message(deleted ? "Dish deleted successfully" : "Failed to delete dish", Commands.DeleteDish));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+          break;
+
+      case UpdateDishPrice:
+          Price priceToUpdate = (Price) m.getObj();
+          boolean updated = dbController.updateDishPrice(priceToUpdate);
+          try {
+              client.sendToClient(new Message(updated ? "Dish price updated successfully" : "Failed to update dish price", Commands.UpdateDishPrice));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+          break;
+      case GetRestaurantNum:
+    	  User employeeRestuarant = (User) m.getObj();
+          int restaurantNumber = dbController.getRestaurantNum(employeeRestuarant);
+          try {
+              client.sendToClient(new Message(restaurantNumber, Commands.GetRestaurantNum));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+          break;
+      case GetRestaurantName:
+    	  User employee_Restuarant = (User) m.getObj();
+          String restaurantName = dbController.getRestaurantName(employee_Restuarant);
+          try {
+              client.sendToClient(new Message(restaurantName, Commands.GetRestaurantName));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+          break;
+      case CheckDishExists:
+          Object[] dish_Data = (Object[]) m.getObj();
+          String dishName = (String) dish_Data[0];
+          String size = (String) dish_Data[1];
+          boolean dishExists = dbController.isDishExists(dishName, size);
+          try {
+              client.sendToClient(new Message(dishExists, Commands.CheckDishExists));
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+          break;
+  
 
 	  	default:
 	  		break;	  			  	

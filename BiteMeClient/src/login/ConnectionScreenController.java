@@ -109,7 +109,7 @@ public class ConnectionScreenController {
 
     @FXML
     void getBtnExit(ActionEvent event) {
-	    System.exit(1); 
+	    System.exit(0); 
 
     }
   

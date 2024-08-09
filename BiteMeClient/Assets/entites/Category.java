@@ -1,7 +1,11 @@
 package entites;
 
+import java.io.Serializable;
+
 //Class based on DB's Table
-public class Category {
+public class Category implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
     private int categoryID;
     private String name;
 

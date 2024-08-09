@@ -2,11 +2,13 @@ package entites;
 
 import java.io.Serializable;
 
+
+
 //Class based on DB's Table
 
 public class User implements Serializable {
 	
-	private static final long serialVersionUID = 1L; 
+	private static final long serialVersionUID = 1L;
 	
     private int id;
     private String username;

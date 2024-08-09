@@ -1,17 +1,20 @@
 package entites;
 
+import java.io.Serializable;
 
 //Class based on DB's Table
 
-public class Dish {
+public class Dish implements Serializable{
+    private static final long serialVersionUID = 1L;
+    
     private int dishID;
-    private int restaurantNumber;
+    private int RestaurantNumber;
     private int categoryId;
     private String dishName;
-    
-    public Dish(int dishID, int restaurantNumber, int categoryId, String dishName) {
+
+    public Dish(int dishID, int RestaurantNumber, int categoryId, String dishName) {
         this.dishID = dishID;
-        this.restaurantNumber = restaurantNumber;
+        this.RestaurantNumber = RestaurantNumber;
         this.categoryId = categoryId;
         this.dishName = dishName;
     }
@@ -20,8 +23,12 @@ public class Dish {
         return dishID;
     }
 
+    public void setDishID(int dishID) {
+        this.dishID = dishID;
+    }
+    
     public int getRestaurantNumber() {
-        return restaurantNumber;
+        return RestaurantNumber;
     }
 
     public int getCategoryId() {

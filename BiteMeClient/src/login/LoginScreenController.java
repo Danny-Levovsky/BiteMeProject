@@ -143,6 +143,8 @@ public class LoginScreenController {
                 	loginMsg("user is already logged in");
                 }
                 else {
+                	 Message updateLoginStatusMessage = new Message(user.getId(), Commands.UpdateLoginStatus);
+                     ClientController.client.handleMessageFromClientControllers(updateLoginStatusMessage);
                 	 openUserSpecificWindow(user, currentStage);
 
                 }
@@ -167,10 +169,12 @@ public class LoginScreenController {
                     branchManagerController.start(new Stage());
                     break;
                 case "Employee":
+                    EmployeeController.setEmployee(user);
                     EmployeeController employeeController = new EmployeeController();
                     employeeController.start(new Stage());
                     break;
                 case "Certified Employee":
+                    CertifiedEmployeeController.setCertifiedEmployee(user);
                     CertifiedEmployeeController certifiedEmployeeController = new CertifiedEmployeeController();
                     certifiedEmployeeController.start(new Stage());
                     break;
