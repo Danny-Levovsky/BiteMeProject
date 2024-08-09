@@ -1,5 +1,6 @@
 package customer;
 
+import client.Client;
 import client.ClientController;
 import login.LoginScreenController;
 import entites.Message;
@@ -38,6 +39,9 @@ public class CustomerController {
 
 	@FXML
 	private Button BtnViewOrder;
+	
+    @FXML
+    private Label txtLocked;
 
 	private static User customer;
 
@@ -64,17 +68,46 @@ public class CustomerController {
 	}
 
 	/**
-     * Initializes the controller class. This method is automatically called after the
-     * FXML file has been loaded.
-     * it update the name to this user's name
-     */
+	 * Initializes the controller class. This method is automatically called after the
+	 * FXML file has been loaded.
+	 * It sets the visibility of the locked label to false, updates the customer name label if the customer is not null,
+	 * sets the current instance of CustomerController in the Client class, and sends a message to the server to check the customer's status.
+	 */
 	@FXML
 	private void initialize() {
+		txtLocked.setVisible(false);
 		// update name
 		if (customer != null) {
 			txtCustomerName.setText(customer.getFirstName() + " " + customer.getLastName());
 		}
+		
+		Client.customerController = this;
+		
+		Message msg = new Message(customer.getId(), Commands. CheckStatus);
+        ClientController.client.handleMessageFromClientControllers(msg);
 	}
+	
+	/**
+	 * Handles the response from the server.
+	 * If the command in the message is CheckStatus, it processes the response.
+	 * If the response indicates that the account is locked, it disables the new order and view order buttons
+	 * and sets the visibility of the locked label to true.
+	 * @param message the message received from the server
+	 */
+	 public void handleServerResponse(Message message) {
+		 if (message.getCmd() == Commands. CheckStatus) {
+    		 Object response = message.getObj();
+    		 if (response instanceof String) {
+                 String responseStr = (String) response;
+                 if (responseStr.equals("locked")) {
+                	 BtnNewOrder.setDisable(true);
+                	 BtnViewOrder.setDisable(true); 
+                	 txtLocked.setVisible(true);
+                	 
+                 }
+    		 }
+		 }
+	 }
 
 	/**
      * Handles the action for the logout button.
@@ -85,8 +118,8 @@ public class CustomerController {
      */
 	@FXML
 	void getBtnLogout(ActionEvent event) throws Exception {
-		Message logoutMessage = new Message(CustomerController.customer.getId(), Commands.LogoutUser);
-		ClientController.client.sendToServer(logoutMessage);
+		Message logoutMessage = new Message(customer.getId(), Commands.LogoutUser);
+		ClientController.client.handleMessageFromClientControllers(logoutMessage);
 
 		((Node) event.getSource()).getScene().getWindow().hide();
 		LoginScreenController newScreen = new LoginScreenController();

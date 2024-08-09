@@ -1,12 +1,16 @@
 package client;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import branch_manager.UpdateClientController;
+import customer.CustomerController;
 import customer.ViewOrderController;
 import entites.Message;
 import entites.Order;
+import entites.RestaurantOrder;
+import entites.User;
 import enums.Commands;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -38,7 +42,9 @@ public class Client extends AbstractClient {
 	static public EmployeeController employeeController;
 	static public LoginScreenController loginController;
 	static public UpdateClientController updateClientController;
+	static public CustomerController customerController;
 	static public ViewOrderController viewOrderController;
+	
 
 	// static public WorkerController workerController;
 	// static public MainScreenController mainScreenController;
@@ -53,7 +59,7 @@ public class Client extends AbstractClient {
 
 		// Initilazing The Contorllers
 		// IMPORT CLIENT CONTROLLERS HERE
-		employeeController = new EmployeeController();
+		//employeeController = new EmployeeController();
 
 		// bookingController = new BookingController();
 		// mainScreenController = new MainScreenController();
@@ -69,6 +75,7 @@ public class Client extends AbstractClient {
 	 *
 	 * @param msg The message from the server.
 	 */
+
 	public void handleMessageFromServer(Object msg) {
 		// get the message a message object from the server (getcmd,getobj) while obj is
 		// the data from the server
@@ -113,6 +120,13 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+		case CheckStatus:	
+			Platform.runLater(() -> {
+				if (customerController != null) {
+					customerController.handleServerResponse(m);
+				}
+			});
+			break;
 		case getPendingOrders:
 			Platform.runLater(() -> {
 				List<Order> orders = (List<Order>) m.getObj();
@@ -121,6 +135,40 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+		 case UpdateCustomerOrdersStatus:
+             Platform.runLater(() -> {
+                 Object[] orderDetails = (Object[]) m.getObj();
+                 int isEarlyOrder = (int) orderDetails[0];
+                 String dateTime = (String) orderDetails[1];
+                 int totalPrice = (int) orderDetails[2];
+                 if (viewOrderController != null) {
+                     try {
+						viewOrderController.handleServerResponse(isEarlyOrder, dateTime,totalPrice);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+                 }
+             });
+             break;
+		 case setRestaurantOrders:
+				Platform.runLater(() -> {
+					List<RestaurantOrder> orders = (List<RestaurantOrder>) m.getObj();
+					if ( employeeController != null) {
+						 employeeController.setTable(orders);
+					}
+				});
+
+			break;
+		 case updateCoustomerToContactByCoustomerId: 
+				Platform.runLater(() -> {
+					User customer = (User) m.getObj();
+					if ( employeeController != null) {
+						 employeeController.sendTextMassageAndEmailToCustomer(customer);
+					}
+				});
+
+			break;
+
 
 		default:
 			break;

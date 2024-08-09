@@ -15,25 +15,23 @@ import entites.Message;
 import enums.Commands;
 import server.BiteMeServer;
 
-
 public class ServerUI extends Application {
 
-	//private static Connection conn = null;
+	// private static Connection conn = null;
 	/*
-	private static final int DEFAULT_PORT = 5555;
-    private static final String DB_URL = "jdbc:mysql://localhost/gonature?serverTimezone=IST";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "Aa123456";
-    */
+	 * private static final int DEFAULT_PORT = 5555; private static final String
+	 * DB_URL = "jdbc:mysql://localhost/gonature?serverTimezone=IST"; private static
+	 * final String DB_USER = "root"; private static final String DB_PASSWORD =
+	 * "Aa123456";
+	 */
 
-    public static BiteMeServer sv=null ;
+	public static BiteMeServer sv = null;
 
-    public static boolean gotResponse = false;
+	public static boolean gotResponse = false;
 
-	public static void main( String args[] ) throws Exception
-	   {   
-		 launch(args);
-	  } // end main
+	public static void main(String args[]) throws Exception {
+		launch(args);
+	} // end main
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -41,94 +39,76 @@ public class ServerUI extends Application {
 		ServerScreenController aFrame = new ServerScreenController();
 		aFrame.start(primaryStage);
 
-
 	}
 
 	public static void disconnect() {
-        if (isServerRunning() == true)
-        {
-            for (ConnectionToClient client : BiteMeServer.ClientList) {
-        		gotResponse = false;
-            	try {
-            		Message msg = new Message(null,Commands.terminate);
-            		client.sendToClient(msg);
-            		while (!gotResponse) {
-            				Thread.sleep(100);
-            		}
-            		client.close();
-                } catch (Exception e) {
-                    e.printStackTrace(); // Handle the exception as needed
-                }
-            }
-        	try {
-        	   sv.stopListening();
-        	   sv.close();
-           } catch (IOException e) {
-                e.printStackTrace();
-            }
-           BiteMeServer.ClientList.clear();
-           System.out.println("Server Disconnected");
-        }
+		if (isServerRunning() == true) {
+			for (ConnectionToClient client : BiteMeServer.ClientList) {
+				gotResponse = false;
+				try {
+					Message msg = new Message(null, Commands.terminate);
+					client.sendToClient(msg);
+					while (!gotResponse) {
+						Thread.sleep(100);
+					}
+					client.close();
+				} catch (Exception e) {
+					e.printStackTrace(); // Handle the exception as needed
+				}
+			}
+			try {
+				sv.stopListening();
+				sv.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			BiteMeServer.ClientList.clear();
+			System.out.println("Server Disconnected");
+		}
+
 	}
 
+	/*
+	 * public static void runServer(String p) { boolean flag = false; int port = 0;
+	 * //Port to listen on try { port = Integer.parseInt(p); //Set port to 5555
+	 * 
+	 * } catch(Throwable t) { System.out.println("ERROR - Could not connect!"); }
+	 * //opening server EchoServer sv = new EchoServer(port);
+	 * 
+	 * try { flag = true; sv.listen(); // Start listening for connections
+	 * 
+	 * } catch (Exception ex) { ex.printStackTrace();
+	 * System.out.println("ERROR - Could not listen for clients!"); flag = false; }
+	 * }
+	 */
 
-
-/*
-	public static void runServer(String p)
-	{
+	public static boolean runServer(String p) {
 		boolean flag = false;
-		 int port = 0; //Port to listen on
-	        try
-	        {
-	        	port = Integer.parseInt(p); //Set port to 5555
-	          
-	        }
-	        catch(Throwable t)
-	        {
-	        	System.out.println("ERROR - Could not connect!");
-	        }
-	    	//opening server
-	        EchoServer sv = new EchoServer(port);
-	        
-	        try {
+		int port = 0; // Port to listen on
+
+		try {
+			port = Integer.parseInt(p); // Set port to the specified value
+
+			// Opening server
+			sv = new BiteMeServer(port);
+
+			try {
+				sv.listen(); // Start listening for connections
+				System.out.println("Server is running on port " + port);
 				flag = true;
-				sv.listen(); // Start listening for connections	
-				
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				System.out.println("ERROR - Could not listen for clients!");
-				flag = false;
 			}
-	}*/
+		} catch (Throwable t) {
+			System.out.println("ERROR - Could not connect!");
+		}
 
-	public static boolean runServer(String p) {
-	    boolean flag = false;
-	    int port = 0; // Port to listen on
-
-	    try {
-	        port = Integer.parseInt(p); // Set port to the specified value
-
-	        // Opening server
-	         sv = new BiteMeServer(port);
-
-	        try {
-	            sv.listen(); // Start listening for connections
-	            System.out.println("Server is running on port " + port);
-	            flag = true;
-	        } catch (Exception ex) {
-	            ex.printStackTrace();
-	            System.out.println("ERROR - Could not listen for clients!");
-	        }
-	    } catch (Throwable t) {
-	        System.out.println("ERROR - Could not connect!");
-	    }
-
-	    return flag;
+		return flag;
 	}
 
 	public static boolean isServerRunning() {
 		return (sv != null && sv.isListening());
 	}
-
 
 }
