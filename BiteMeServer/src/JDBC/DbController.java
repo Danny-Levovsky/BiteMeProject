@@ -73,6 +73,89 @@ public class DbController {
         return false;
     }
     
+    public int[] IncomeReport(int restaurantId, String monthYear, String district) {
+		
+    	String query = "SELECT Week1, Week2, Week3, Week4 " +
+                "FROM income_reports " +
+                "WHERE MonthYear = ? AND District = ? AND RestaurantNumber = ?";
+
+    	try {
+	     PreparedStatement stmt = conn.prepareStatement(query);
+	     stmt.setString(1, monthYear);
+	     stmt.setString(2, district);
+	     stmt.setInt(3, restaurantId);
+	     
+	     ResultSet rs = stmt.executeQuery();
+	     
+	     if (rs.next()) {
+	         int week1 = rs.getInt("Week1");
+	         int week2 = rs.getInt("Week2");
+	         int week3 = rs.getInt("Week3");
+	         int week4 = rs.getInt("Week4");
+	         int[] IncomeReportDataByWeeks = {week1, week2, week3, week4};
+	         return IncomeReportDataByWeeks;
+	     
+	     } else {
+	         String query2 = "INSERT INTO income_reports (MonthYear, District, RestaurantNumber, Week1, Week2, Week3, Week4) " +
+	                         "SELECT ?, ?, ?, " +
+	                         "SUM(CASE WHEN WEEK(RequestedDateTime, 1) = 1 THEN TotalPrice ELSE 0 END) AS Week1, " +
+	                         "SUM(CASE WHEN WEEK(RequestedDateTime, 1) = 2 THEN TotalPrice ELSE 0 END) AS Week2, " +
+	                         "SUM(CASE WHEN WEEK(RequestedDateTime, 1) = 3 THEN TotalPrice ELSE 0 END) AS Week3, " +
+	                         "SUM(CASE WHEN WEEK(RequestedDateTime, 1) = 4 THEN TotalPrice ELSE 0 END) AS Week4 " +
+	                         "FROM orders o " +
+	                         "JOIN customers c ON o.CustomerNumber = c.CustomerNumber " +
+	                         "JOIN users u ON c.ID = u.ID " +
+	                         "WHERE MONTH(RequestedDateTime) = ? AND YEAR(RequestedDateTime) = ? " +
+	                         "AND o.RestaurantNumber = ? " +
+	                         "AND u.District = ? " +
+	                         "GROUP BY o.RestaurantNumber, MONTH(RequestedDateTime), YEAR(RequestedDateTime)";
+	
+	         PreparedStatement stmt2 = conn.prepareStatement(query2);
+	
+	         // Parse the monthYear parameter to extract month and year
+	         String[] monthYearParts = monthYear.split("/");
+	         int month = Integer.parseInt(monthYearParts[0]);
+	         int year = Integer.parseInt(monthYearParts[1]);
+	
+	         // Set parameters for the query
+	         stmt2.setString(1, monthYear);
+	         stmt2.setString(2, district);
+	         stmt2.setInt(3, restaurantId);
+	         stmt2.setInt(4, month);
+	         stmt2.setInt(5, year);
+	         stmt2.setInt(6, restaurantId);
+	         stmt2.setString(7, district);
+	
+	         // Execute the query
+	         stmt2.executeUpdate();
+	
+	         // Retrieve the updated data
+	         rs = stmt.executeQuery();
+	         if (rs.next()) {
+	             int week1 = rs.getInt("Week1");
+	             int week2 = rs.getInt("Week2");
+	             int week3 = rs.getInt("Week3");
+	             int week4 = rs.getInt("Week4");
+	             int[] IncomeReportDataByWeeks = {week1, week2, week3, week4};
+	             return IncomeReportDataByWeeks;
+	         }
+	     }
+	 } catch (SQLException e) {
+	     e.printStackTrace();
+	 
+	 }
+ 
+
+ return new int[0]; // Return an empty array if nothing was found or an error occurred
+}
+         
+            	
+            
+            
+        
+		
+
+    
     /**
      * Retrieves user details from the database based on the username.
      * @param username the username of the user
@@ -523,4 +606,6 @@ public class DbController {
             e.printStackTrace();
         }
     }
+
+	
 }

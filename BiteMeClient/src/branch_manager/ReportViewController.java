@@ -9,7 +9,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import client.ClientController;
 import entites.Message;
+import enums.Commands;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -114,19 +116,22 @@ public class ReportViewController {
 	
 	public void incomeReport() {
 
-		
+		Commands command = Commands.getIncomeReport;
+		Object[] incomeReportData = {restaurantId, monthYear, district};
+		Message message = new Message(incomeReportData, command);
+		ClientController.client.handleMessageFromClientControllers(message);
 		
 	}
 	
-	public void handleServerResponseIncome(Message message) {
+	public void handleServerResponseIncome(int[] incomeReportResultData) {
 		//... 
 		
 		XYChart.Series<String, Number> series1 = new XYChart.Series<>();
 		series1.setName("income report " + monthYear);
-		series1.getData().add(new XYChart.Data<>("week1", 6500));
-		series1.getData().add(new XYChart.Data<>("week2", 8000));
-		series1.getData().add(new XYChart.Data<>("week3",7000 ));
-		series1.getData().add(new XYChart.Data<>("week4",9000 ));
+		series1.getData().add(new XYChart.Data<>("week1", incomeReportResultData[0]));
+		series1.getData().add(new XYChart.Data<>("week2", incomeReportResultData[1]));
+		series1.getData().add(new XYChart.Data<>("week3",incomeReportResultData[2]));
+		series1.getData().add(new XYChart.Data<>("week4",incomeReportResultData[3]));
 		xAxis.setLabel("Week");
 		yAxis.setLabel("NIS");
 		barChart.getData().addAll(series1);

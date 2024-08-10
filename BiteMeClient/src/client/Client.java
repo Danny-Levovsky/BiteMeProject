@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import branch_manager.ReportViewController;
 import branch_manager.UpdateClientController;
 import customer.CustomerController;
 import customer.ViewOrderController;
@@ -44,6 +45,7 @@ public class Client extends AbstractClient {
 	static public UpdateClientController updateClientController;
 	static public CustomerController customerController;
 	static public ViewOrderController viewOrderController;
+	static public ReportViewController reportViewController;
 	
 
 	// static public WorkerController workerController;
@@ -95,9 +97,14 @@ public class Client extends AbstractClient {
 			System.exit(0);
 			break;
 
-		/*
-		 * case setRestaurantPendingOrders: employeeController.updateTable(m.getObj());
-		 */
+		case setIncomeReport:
+			Platform.runLater(() -> {
+				int[] incomeReportResultData = (int[]) m.getObj();
+				if ( reportViewController != null) {
+					reportViewController.handleServerResponseIncome(incomeReportResultData);
+				}
+			});
+			break;
 
 		case CheckUsername:
 			Platform.runLater(() -> {
@@ -113,6 +120,7 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+			
 		case UpdateStatus:
 			Platform.runLater(() -> {
 				if (updateClientController != null) {
@@ -120,6 +128,7 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+			
 		case CheckStatus:	
 			Platform.runLater(() -> {
 				if (customerController != null) {
@@ -127,6 +136,7 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+			
 		case getPendingOrders:
 			Platform.runLater(() -> {
 				List<Order> orders = (List<Order>) m.getObj();
@@ -135,6 +145,7 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+			
 		 case UpdateCustomerOrdersStatus:
              Platform.runLater(() -> {
                  Object[] orderDetails = (Object[]) m.getObj();
@@ -150,6 +161,7 @@ public class Client extends AbstractClient {
                  }
              });
              break;
+             
 		 case setRestaurantOrders:
 				Platform.runLater(() -> {
 					List<RestaurantOrder> orders = (List<RestaurantOrder>) m.getObj();
@@ -159,6 +171,7 @@ public class Client extends AbstractClient {
 				});
 
 			break;
+			
 		 case updateCoustomerToContactByCoustomerId: 
 				Platform.runLater(() -> {
 					User customer = (User) m.getObj();
@@ -168,7 +181,6 @@ public class Client extends AbstractClient {
 				});
 
 			break;
-
 
 		default:
 			break;

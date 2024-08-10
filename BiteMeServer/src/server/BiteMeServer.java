@@ -79,7 +79,6 @@ public class BiteMeServer extends AbstractServer {
 			this.serverScreenController.updateTable(removedClient);
 			ServerUI.gotResponse = true;
 			break;
-
 	
 		case CheckUsername:
 			User user = (User) m.getObj();
@@ -112,10 +111,12 @@ public class BiteMeServer extends AbstractServer {
 			int userId = (int) m.getObj();
 			dbController.updateLoginStatus(userId, 1);
 			break;
+			
 		case LogoutUser:
 			int logoutUserId = (int) m.getObj();
 			dbController.updateLoginStatus(logoutUserId, 0);
 			break;
+			
 		case UpdateStatus:
 			Object[] requestData = (Object[]) m.getObj();
 			int userId1 = (int) requestData[0];
@@ -153,6 +154,7 @@ public class BiteMeServer extends AbstractServer {
 			}
 
 			break;
+			
 		case getPendingOrders:
 			int customerId = (int) m.getObj();
 			List<Order> pendingOrders = dbController.getPendingOrders(customerId);
@@ -162,6 +164,7 @@ public class BiteMeServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
+			
 		case CheckStatus:
 			int id = (int) m.getObj();
 			String status = dbController.getCustomerStatus(id);
@@ -171,6 +174,7 @@ public class BiteMeServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
+			
 		case UpdateCustomerOrdersStatus:
 			try {
 				int orderId;
@@ -185,6 +189,7 @@ public class BiteMeServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
+			
 			case UpdateCredit:
                 try {
                     Object[] data = (Object[]) m.getObj();
@@ -196,6 +201,7 @@ public class BiteMeServer extends AbstractServer {
                     e.printStackTrace();
                 }
                 break;
+                
 			 case getRestaurantOrders:
 				  Object RestaurantOrdersData = dbController.getRestaurantOrders((int)m.getObj());
 				  // setRestaurantPendingOrders
@@ -222,11 +228,23 @@ public class BiteMeServer extends AbstractServer {
 						e.printStackTrace();
 					}
 				  
+			  case getIncomeReport:
+				  Object[] incomeReportData = (Object[]) m.getObj();
+				  int restaurantId = (int) incomeReportData[0];
+				  String monthYear = (String) incomeReportData[1];
+				  String district = (String) incomeReportData[2];
+				  int[] incomeReportResultData = dbController.IncomeReport(restaurantId, monthYear, district);
+				  try {
+						client.sendToClient(new Message(incomeReportResultData, Commands.setIncomeReport));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				  
+				  break;
 				  
-		default:
-			break;
-		}
+				default:
+					break;
+				}
 	}
 
 	// TODO: CONNECTION TO DB CONTROLLER
