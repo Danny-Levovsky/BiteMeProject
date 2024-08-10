@@ -23,11 +23,14 @@ import entites.Message;
 import entites.User;
 import enums.Commands;
 
+import entites.OrderItem;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap; 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;   
 import java.util.Optional;
 public class NewOrderController {
@@ -65,7 +68,7 @@ public class NewOrderController {
     @FXML
 	private Label DrinkLbl;
 
-    @FXML private TableView<Dish> orderTableView;
+    @FXML private TableView<OrderItem> orderTableView;
     @FXML private TableColumn<Dish, String> orderDishTypeColumn;
     @FXML private TableColumn<Dish, String> orderDishNameColumn;
     @FXML private TableColumn<Dish, Integer> orderDishPriceColumn;
@@ -125,6 +128,7 @@ public class NewOrderController {
     private Map<String, Integer> orderQuantitiesMain = new HashMap<>();
     private Map<String, Integer> orderQuantitiesDesert = new HashMap<>();
     private Map<String, Integer> orderQuantitiesDrink = new HashMap<>();
+    private ObservableList<OrderItem> orderItems = FXCollections.observableArrayList();
     private static User customer;
 
     @FXML
@@ -152,10 +156,10 @@ public class NewOrderController {
         
         setupComboBoxes();
         setupDishTableView();
-        setupOrderTableView();
         addListeners();
         //addSampleData();
         updateButtonStates();
+        setupOrderTableView();
         
         restaurantComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !newValue.equals("Choose a restaurant")) {
@@ -601,29 +605,36 @@ public class NewOrderController {
     }
 
     private void setupOrderTableView() {
-        orderDishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
+//        orderDishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
+//        orderDishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
+//        orderDishPriceColumn.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
+//        orderSpecificationsColumn.setCellValueFactory(new PropertyValueFactory<>("selectedSpecification"));
+//        orderQuantityColumn.setCellValueFactory(cellData -> {
+//            Dish dish = cellData.getValue();
+//            return javafx.beans.binding.Bindings.createIntegerBinding(() -> {
+//                switch (dish.getCategoryName()) {
+//                    case "salad":
+//                        return orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
+//                    case "main course":
+//                        return orderQuantitiesMain.getOrDefault(dish.getDishID(), 0);
+//                    case "dessert":
+//                        return orderQuantitiesDesert.getOrDefault(dish.getDishID(), 0);
+//                    case "drink":
+//                        return orderQuantitiesDrink.getOrDefault(dish.getDishID(), 0);
+//                    default:
+//                        return 0;
+//                }
+//            }).asObject();
+//        });
+//
+//        orderTableView.setItems(orderDishes);
+    	orderDishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
         orderDishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
         orderDishPriceColumn.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
         orderSpecificationsColumn.setCellValueFactory(new PropertyValueFactory<>("selectedSpecification"));
-        orderQuantityColumn.setCellValueFactory(cellData -> {
-            Dish dish = cellData.getValue();
-            return javafx.beans.binding.Bindings.createIntegerBinding(() -> {
-                switch (dish.getCategoryName()) {
-                    case "salad":
-                        return orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
-                    case "main course":
-                        return orderQuantitiesMain.getOrDefault(dish.getDishID(), 0);
-                    case "dessert":
-                        return orderQuantitiesDesert.getOrDefault(dish.getDishID(), 0);
-                    case "drink":
-                        return orderQuantitiesDrink.getOrDefault(dish.getDishID(), 0);
-                    default:
-                        return 0;
-                }
-            }).asObject();
-        });
+        orderQuantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
 
-        orderTableView.setItems(orderDishes);
+        orderTableView.setItems(orderItems);
     }
 
     private void addListeners() {
@@ -675,12 +686,23 @@ public class NewOrderController {
             });
         }
 
+//        restaurantComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+//            if (newVal != null && !newVal.equals(currentRestaurant)) {
+//                if (currentRestaurant != null && !orderDishes.isEmpty()) {
+//                    showRestaurantChangeConfirmation(newVal);
+//                } else {
+//                    currentRestaurant = newVal;
+//                    updateButtonStates();
+//                }
+//            }
+//        });
         restaurantComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && !newVal.equals(currentRestaurant)) {
-                if (currentRestaurant != null && !orderDishes.isEmpty()) {
+                if (currentRestaurant != null && !orderItems.isEmpty()) {
                     showRestaurantChangeConfirmation(newVal);
                 } else {
                     currentRestaurant = newVal;
+                    requestRestaurantMenu(newVal);
                     updateButtonStates();
                 }
             }
@@ -812,8 +834,9 @@ public class NewOrderController {
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            resetOrder();
+            resetEntireOrder();
             currentRestaurant = newRestaurant;
+            requestRestaurantMenu(newRestaurant);
         } else {
             restaurantComboBox.setValue(currentRestaurant);
         }
@@ -848,11 +871,14 @@ public class NewOrderController {
     
     private void resetOrder() {
         orderDishes.clear();
+        orderItems.clear();
         orderQuantitiesSalad.clear();
         orderChanged = false;
         deliveryCharge = 0;
         discountPercentage = 0;
+        resetOrderFields();
         updateOrderTotal();
+        updateButtonStates();
         
         // Reset spinners and specifications
         for (Dish dish : dishes1) {
@@ -894,24 +920,10 @@ public class NewOrderController {
     }
     
     private void updateOrderTotal() {
-    	double orderPrice = 0;
-        orderPrice += orderDishes.stream()
-            .filter(dish -> dish.getCategoryName().equals("salad"))
-            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesSalad.get(dish.getDishID()))
+        double orderPrice = orderItems.stream()
+            .mapToDouble(item -> item.getDishPrice() * item.getQuantity())
             .sum();
-        orderPrice += orderDishes.stream()
-            .filter(dish -> dish.getCategoryName().equals("main course"))
-            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesMain.get(dish.getDishID()))
-            .sum();
-        orderPrice += orderDishes.stream()
-            .filter(dish -> dish.getCategoryName().equals("dessert"))
-            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesDesert.get(dish.getDishID()))
-            .sum();
-        orderPrice += orderDishes.stream()
-            .filter(dish -> dish.getCategoryName().equals("drink"))
-            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesDrink.get(dish.getDishID()))
-            .sum();
-        
+
         String deliveryType = deliveryTypeComboBox.getValue();
         double deliveryFee = deliveryCharge;
         if (discountPercentage > 0) {
@@ -920,53 +932,113 @@ public class NewOrderController {
 
         double totalPrice = orderPrice + deliveryFee;
 
-        // Update the text in the View Order tab
         orderPriceText.setText(String.format("Order Price: ₪%.2f", orderPrice));
         deliveryFeeText.setText(String.format("Delivery Fee: ₪%.2f (%s)", deliveryFee, deliveryType != null ? deliveryType : "Not selected"));
         totalPriceText.setText(String.format("Total Price: ₪%.2f", totalPrice));
     }
+    
+//    private void updateOrderTotal() {
+//    	double orderPrice = 0;
+//        orderPrice += orderDishes.stream()
+//            .filter(dish -> dish.getCategoryName().equals("salad"))
+//            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesSalad.get(dish.getDishID()))
+//            .sum();
+//        orderPrice += orderDishes.stream()
+//            .filter(dish -> dish.getCategoryName().equals("main course"))
+//            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesMain.get(dish.getDishID()))
+//            .sum();
+//        orderPrice += orderDishes.stream()
+//            .filter(dish -> dish.getCategoryName().equals("dessert"))
+//            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesDesert.get(dish.getDishID()))
+//            .sum();
+//        orderPrice += orderDishes.stream()
+//            .filter(dish -> dish.getCategoryName().equals("drink"))
+//            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesDrink.get(dish.getDishID()))
+//            .sum();
+//        
+//        String deliveryType = deliveryTypeComboBox.getValue();
+//        double deliveryFee = deliveryCharge;
+//        if (discountPercentage > 0) {
+//            deliveryFee = -orderPrice * discountPercentage;
+//        }
+//
+//        double totalPrice = orderPrice + deliveryFee;
+//
+//        // Update the text in the View Order tab
+//        orderPriceText.setText(String.format("Order Price: ₪%.2f", orderPrice));
+//        deliveryFeeText.setText(String.format("Delivery Fee: ₪%.2f (%s)", deliveryFee, deliveryType != null ? deliveryType : "Not selected"));
+//        totalPriceText.setText(String.format("Total Price: ₪%.2f", totalPrice));
+//    }
 
     @FXML
     void getBtnAddOrder(ActionEvent event) {
+    	List<OrderItem> newItems = new ArrayList<>();
         orderDishes.clear();
         boolean hasItems = false;
         double totalPrice = 0.0;
         for (Dish dish : dishes1) {
-            int quantity = orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
-            if (quantity > 0) {
-                orderDishes.add(dish);
+//            int quantity = orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
+//            if (quantity > 0) {
+//                orderDishes.add(dish);
+//                hasItems = true;
+//                totalPrice += dish.getDishPrice() * quantity;
+//            }
+        	int quantity = orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
+        	if (quantity > 0) {
+                OrderItem item = new OrderItem(dish, dish.getSelectedSpecification(), quantity);
+                newItems.add(item);
                 hasItems = true;
-                totalPrice += dish.getDishPrice() * quantity;
+                totalPrice += item.getDishPrice() * item.getQuantity();
             }
         }
         for (Dish dish : dishes2) {
             int quantity = orderQuantitiesMain.getOrDefault(dish.getDishID(), 0);
-            if (quantity > 0) {
-                orderDishes.add(dish);
+//            if (quantity > 0) {
+//                orderDishes.add(dish);
+//                hasItems = true;
+//                totalPrice += dish.getDishPrice() * quantity;
+//            }
+        	if (quantity > 0) {
+        		OrderItem item = new OrderItem(dish, dish.getSelectedSpecification(), quantity);
+                newItems.add(item);
                 hasItems = true;
-                totalPrice += dish.getDishPrice() * quantity;
+                totalPrice += item.getDishPrice() * item.getQuantity();
             }
         }
         for (Dish dish : dishes3) {
             int quantity = orderQuantitiesDesert.getOrDefault(dish.getDishID(), 0);
+//            if (quantity > 0) {
+//                orderDishes.add(dish);
+//                hasItems = true;
+//                totalPrice += dish.getDishPrice() * quantity;
+//            }
             if (quantity > 0) {
-                orderDishes.add(dish);
+            	OrderItem item = new OrderItem(dish, dish.getSelectedSpecification(), quantity);
+                newItems.add(item);
                 hasItems = true;
-                totalPrice += dish.getDishPrice() * quantity;
+                totalPrice += item.getDishPrice() * item.getQuantity();
             }
         }
         for (Dish dish : dishes4) {
             int quantity = orderQuantitiesDrink.getOrDefault(dish.getDishID(), 0);
+//            if (quantity > 0) {
+//                orderDishes.add(dish);
+//                hasItems = true;
+//                totalPrice += dish.getDishPrice() * quantity;
+//            }
             if (quantity > 0) {
-                orderDishes.add(dish);
+            	OrderItem item = new OrderItem(dish, dish.getSelectedSpecification(), quantity);
+                newItems.add(item);
                 hasItems = true;
-                totalPrice += dish.getDishPrice() * quantity;
+                totalPrice += item.getDishPrice() * item.getQuantity();
             }
         }
         if (!hasItems) {
             errorText.setText("Please add items to order");
         } else {
             errorText.setText("");
+            orderItems.addAll(newItems);
+            resetOrderFields();
         }
         totalPriceText.setText(String.format("Total Price: ₪%.2f", totalPrice));
         orderChanged = false;
@@ -1060,5 +1132,34 @@ public class NewOrderController {
     void getRestaurantList() {
         Message msg = new Message(null, Commands.getRestaurantList);
         ClientController.client.handleMessageFromClientControllers(msg);
+    }
+    
+    private void resetOrderFields() {
+        resetTableFields(dishTableViewSalad, orderQuantitiesSalad);
+        resetTableFields(dishTableViewMainCourse, orderQuantitiesMain);
+        resetTableFields(dishTableViewDesert, orderQuantitiesDesert);
+        resetTableFields(dishTableViewDrink, orderQuantitiesDrink);
+    }
+    
+//    private void resetTableFields(TableView<Dish> tableView, Map<String, Integer> quantityMap) {
+//        for (Dish dish : tableView.getItems()) {
+//            quantityMap.put(dish.getDishID(), 0);
+//            dish.setSelectedSpecification("None");
+//        }
+//        tableView.refresh();
+//    }
+    private void resetTableFields(TableView<Dish> tableView, Map<String, Integer> quantityMap) {
+        for (Dish dish : tableView.getItems()) {
+            quantityMap.put(dish.getDishID(), 0);
+            dish.setSelectedSpecification("None");
+        }
+        tableView.refresh();
+    }
+    
+    private void resetEntireOrder() {
+        orderItems.clear();
+        resetOrderFields();
+        updateOrderTotal();
+        orderChanged = false;
     }
 }

@@ -5,20 +5,34 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class Dish {
-    private final StringProperty dishID;
+	private final StringProperty dishID;
     private final StringProperty dishName;
     private final StringProperty categoryName;
     private final IntegerProperty dishPrice;
     private final ObjectProperty<ObservableList<String>> specifications;
     private final StringProperty selectedSpecification;
+    private final IntegerProperty quantity;
+    
 
     public Dish(String dishID, String dishName, String categoryName, int dishPrice, ObservableList<String> specifications) {
-    	 this.dishID = new SimpleStringProperty(dishID);
+        this.dishID = new SimpleStringProperty(dishID);
         this.dishName = new SimpleStringProperty(dishName);
         this.categoryName = new SimpleStringProperty(categoryName);
         this.dishPrice = new SimpleIntegerProperty(dishPrice);
         this.specifications = new SimpleObjectProperty<>(specifications);
         this.selectedSpecification = new SimpleStringProperty();
+        this.quantity = new SimpleIntegerProperty(0);
+    }
+    
+ // Copy constructor
+    public Dish(Dish other, String selectedSpecification) {
+        this.dishID = new SimpleStringProperty(other.getDishID());
+        this.dishName = new SimpleStringProperty(other.getDishName());
+        this.categoryName = new SimpleStringProperty(other.getCategoryName());
+        this.dishPrice = new SimpleIntegerProperty(other.getDishPrice());
+        this.specifications = new SimpleObjectProperty<>(FXCollections.observableArrayList(other.getSpecifications()));
+        this.selectedSpecification = new SimpleStringProperty(selectedSpecification);
+        this.quantity = new SimpleIntegerProperty(0);
     }
 
     // Getters
@@ -28,6 +42,10 @@ public class Dish {
     public int getDishPrice() { return dishPrice.get(); }
     public ObservableList<String> getSpecifications() { return specifications.get(); }
     public String getSelectedSpecification() { return selectedSpecification.get(); }
+    
+    public int getQuantity() { return quantity.get(); }
+    public IntegerProperty quantityProperty() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity.set(quantity); }
 
     // Property getters
     public StringProperty dishIDProperty() { return dishID; }
