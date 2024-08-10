@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -283,7 +284,7 @@ public class DbController {
         }
         return orders;
     }
-   
+    
     public ArrayList<Map<String, Object>> getRestaurantMenuFromDB(String restaurantName) {
         ArrayList<Map<String, Object>> menu = new ArrayList<>();
         String SQL_QUERY =
@@ -302,23 +303,45 @@ public class DbController {
             stmt.setString(1, restaurantName);
             ResultSet rs = stmt.executeQuery();
 
-            while (rs.next()) {
-                Map<String, Object> dish = new HashMap<>();
-                dish.put("dishID", rs.getString("dishID"));
-                dish.put("dishType", rs.getString("dishType"));
-                dish.put("dishName", rs.getString("dishName"));
-                dish.put("dishPrice", rs.getDouble("dishPrice"));
+            Map<String, Map<String, Object>> dishMap = new HashMap<>();
 
-                Map<String, String> options = new HashMap<>();
+            while (rs.next()) {
+                String dishID = rs.getString("dishID");
+                Map<String, Object> dish = dishMap.computeIfAbsent(dishID, k -> {
+                    Map<String, Object> newDish = new HashMap<>();
+                    try {
+                        newDish.put("dishID", dishID);
+                        newDish.put("dishType", rs.getString("dishType"));
+                        newDish.put("dishName", rs.getString("dishName"));
+                        newDish.put("dishPrice", rs.getDouble("dishPrice"));
+                        newDish.put("dishOptions", new HashMap<String, List<String>>());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    return newDish;
+                });
+
                 String optionType = rs.getString("OptionType");
                 String optionValue = rs.getString("OptionValue");
+                
                 if (optionType != null && optionValue != null) {
-                    options.put(optionType, optionValue);
+                    Map<String, List<String>> options = (Map<String, List<String>>) dish.get("dishOptions");
+                    
+                    if (optionType.equals("cooking_level") && optionValue.startsWith("M, MW, WD")) {
+                        options.computeIfAbsent("Doneness", k -> new ArrayList<>())
+                               .addAll(Arrays.asList("Medium", "Medium Well", "Well Done"));
+                    } else if (optionType.equals("ingredient") && optionValue.startsWith("no ")) {
+                        String ingredient = optionValue.substring(3); // remove "no " prefix
+                        options.computeIfAbsent("Remove", k -> new ArrayList<>())
+                               .add(ingredient);
+                    } else {
+                        options.computeIfAbsent(optionType, k -> new ArrayList<>())
+                               .add(optionValue);
+                    }
                 }
-                dish.put("dishOptions", options);
-
-                menu.add(dish);
             }
+
+            menu.addAll(dishMap.values());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -355,6 +378,48 @@ public class DbController {
     	
     
     
+   
+//    public ArrayList<Map<String, Object>> getRestaurantMenuFromDB(String restaurantName) {
+//        ArrayList<Map<String, Object>> menu = new ArrayList<>();
+//        String SQL_QUERY =
+//            "SELECT c.name AS dishType, d.dishID AS dishID, d.DishName AS dishName, p.Price AS dishPrice, do.OptionType, do.OptionValue " +
+//            "FROM dishes d " +
+//            "JOIN categories c ON d.CategoryID = c.CategoryID " +
+//            "JOIN prices p ON d.dishID = p.dishID " +
+//            "LEFT JOIN dish_options do ON d.dishID = do.dishID " +
+//            "WHERE d.RestaurantNumber = ( " +
+//            "  SELECT RestaurantNumber " +
+//            "  FROM restaurants " +
+//            "  WHERE RestaurantName = ? " +
+//            ")";
+//
+//        try (PreparedStatement stmt = conn.prepareStatement(SQL_QUERY)) {
+//            stmt.setString(1, restaurantName);
+//            ResultSet rs = stmt.executeQuery();
+//
+//            while (rs.next()) {
+//                Map<String, Object> dish = new HashMap<>();
+//                dish.put("dishID", rs.getString("dishID"));
+//                dish.put("dishType", rs.getString("dishType"));
+//                dish.put("dishName", rs.getString("dishName"));
+//                dish.put("dishPrice", rs.getDouble("dishPrice"));
+//
+//                Map<String, String> options = new HashMap<>();
+//                String optionType = rs.getString("OptionType");
+//                String optionValue = rs.getString("OptionValue");
+//                if (optionType != null && optionValue != null) {
+//                    options.put(optionType, optionValue);
+//                }
+//                dish.put("dishOptions", options);
+//
+//                menu.add(dish);
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return menu;
+//    }
 
     /**
      * Imports external data into the application database.
