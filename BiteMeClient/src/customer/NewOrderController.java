@@ -7,19 +7,21 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import client.Client;
 import client.ClientController;
 import entites.Dish;
 import entites.Message;
+import entites.User;
 import enums.Commands;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,12 +32,38 @@ import java.util.Map;
 import java.util.Optional;
 public class NewOrderController {
 
-	@FXML private TableView<Dish> dishTableView;
-    @FXML private TableColumn<Dish, String> dishTypeColumn;
-    @FXML private TableColumn<Dish, String> dishNameColumn;
-    @FXML private TableColumn<Dish, Integer> dishPriceColumn;
-    @FXML private TableColumn<Dish, String> specificationsColumn;
-    @FXML private TableColumn<Dish, Integer> quantityColumn;
+	@FXML private TableView<Dish> dishTableViewSalad;
+    @FXML private TableColumn<Dish, String> dishNameColumnSalad;
+    @FXML private TableColumn<Dish, Integer> dishPriceColumnSalad;
+    @FXML private TableColumn<Dish, String> specificationsColumnSalad;
+    @FXML private TableColumn<Dish, Integer> quantityColumnSalad;
+    
+    @FXML private TableView<Dish> dishTableViewMainCourse;
+    @FXML private TableColumn<Dish, String> dishNameColumnMain;
+    @FXML private TableColumn<Dish, Integer> dishPriceColumnMain;
+    @FXML private TableColumn<Dish, String> specificationsColumnMain;
+    @FXML private TableColumn<Dish, Integer> quantityColumnMain;
+    
+    @FXML private TableView<Dish> dishTableViewDrink;
+    @FXML private TableColumn<Dish, String> dishNameColumnDrink;
+    @FXML private TableColumn<Dish, Integer> dishPriceColumnDrink;
+    @FXML private TableColumn<Dish, String> specificationsColumnDrink;
+    @FXML private TableColumn<Dish, Integer> quantityColumnDrink;
+    
+    @FXML private TableView<Dish> dishTableViewDesert;
+    @FXML private TableColumn<Dish, String> dishNameColumnDesert;
+    @FXML private TableColumn<Dish, Integer> dishPriceColumnDesert;
+    @FXML private TableColumn<Dish, String> specificationsColumnDesert;
+    @FXML private TableColumn<Dish, Integer> quantityColumnDesert;
+    
+    @FXML
+	private Label SaladLbl;
+    @FXML
+	private Label MainCourseLbl;
+    @FXML
+	private Label DesertLbl;
+    @FXML
+	private Label DrinkLbl;
 
     @FXML private TableView<Dish> orderTableView;
     @FXML private TableColumn<Dish, String> orderDishTypeColumn;
@@ -88,17 +116,35 @@ public class NewOrderController {
     private String currentRestaurant = null;
     private boolean showErrorMessages = false;
     private ObservableList<String> restaurantList = FXCollections.observableArrayList();
-    private ObservableList<Dish> dishes = FXCollections.observableArrayList();
+    private ObservableList<Dish> dishes1 = FXCollections.observableArrayList();
+    private ObservableList<Dish> dishes2 = FXCollections.observableArrayList();
+    private ObservableList<Dish> dishes3 = FXCollections.observableArrayList();
+    private ObservableList<Dish> dishes4 = FXCollections.observableArrayList();
     private ObservableList<Dish> orderDishes = FXCollections.observableArrayList();
-    private Map<Integer, Integer> orderQuantities = new HashMap<>();
+    private Map<String, Integer> orderQuantitiesSalad = new HashMap<>();
+    private Map<String, Integer> orderQuantitiesMain = new HashMap<>();
+    private Map<String, Integer> orderQuantitiesDesert = new HashMap<>();
+    private Map<String, Integer> orderQuantitiesDrink = new HashMap<>();
+    private static User customer;
 
     @FXML
     private void initialize() {
-        dishes = FXCollections.observableArrayList();
+    	Client.newOrderController = this;
+    	dishes1 = FXCollections.observableArrayList();
+    	dishes2 = FXCollections.observableArrayList();
+    	dishes3 = FXCollections.observableArrayList();
+    	dishes4 = FXCollections.observableArrayList();
         orderDishes = FXCollections.observableArrayList();
-        orderQuantities = new HashMap<>(); // Move this line here
+        orderQuantitiesSalad = new HashMap<>(); // Move this line here
+        orderQuantitiesMain = new HashMap<>();
+        orderQuantitiesDesert = new HashMap<>();
+        orderQuantitiesDrink = new HashMap<>();
         restaurantList = FXCollections.observableArrayList(); // set list of restaurant names from method
         confirmDeliveryButton.setDisable(false);
+        
+        errorText = new Text();
+        errorText.setFill(Color.RED);
+        errorText.setStyle("-fx-font-size: 12px;");
         
         //request restaurant names
         requestRestaurantNames();
@@ -118,18 +164,25 @@ public class NewOrderController {
         });
     }
     
+    public static void setCustomer(User user) {
+    	customer = user;
+    }
+    
     //implement request for rest names
     public void requestRestaurantNames() {
     	Commands command = Commands.getRestaurantList;
     	Message message = new Message(null,command);
     	ClientController.client.handleMessageFromClientControllers(message);
+    	//System.out.println(customer.getId());
     	
     }
     //implement setting combo box
     public void setRestaurantNames(ArrayList<String> restaurantNames) {
-    	restaurantComboBox.setValue("Choose a restaurant");
-        this.restaurantList = FXCollections.observableArrayList(restaurantNames);
-        restaurantComboBox.setItems(this.restaurantList);
+        Platform.runLater(() -> {
+            restaurantComboBox.setValue("Choose a restaurant");
+            this.restaurantList = FXCollections.observableArrayList(restaurantNames);
+            restaurantComboBox.setItems(this.restaurantList);
+        });
     }
     
     private void requestRestaurantMenu(String restaurantName) {
@@ -138,53 +191,93 @@ public class NewOrderController {
     }
     
     public void setRestaurantMenu(ArrayList<Map<String, Object>> menu) {
-        dishes.clear();
-        orderQuantities.clear();
+        dishes1.clear();
+        orderQuantitiesSalad.clear();
         
+        dishes2.clear();
+        orderQuantitiesMain.clear();
+        
+        dishes3.clear();
+        orderQuantitiesDesert.clear();
+        
+        dishes4.clear();
+        orderQuantitiesDrink.clear();
+        
+        Map<String, Dish> dishMap = new HashMap<>();
+
         for (Map<String, Object> dish : menu) {
-        	//int dishID = (int) dish.get("dishID");
+            String dishID = (String) dish.get("dishID");
             String dishType = (String) dish.get("dishType");
             String dishName = (String) dish.get("dishName");
             int dishPrice = ((Number) dish.get("dishPrice")).intValue();
             Map<String, String> dishOptions = (Map<String, String>) dish.get("dishOptions");
 
-            ObservableList<String> specifications = FXCollections.observableArrayList();
-            for (Map.Entry<String, String> entry : dishOptions.entrySet()) {
-                specifications.add(entry.getKey() + ": " + entry.getValue());
+            // Get or create the Dish object for this dishID
+            Dish newDish;
+            if (dishMap.containsKey(dishID)) {
+                newDish = dishMap.get(dishID);
+            } else {
+                ObservableList<String> specifications = FXCollections.observableArrayList();
+                newDish = new Dish(dishID, dishName, dishType, dishPrice, specifications);
+                dishMap.put(dishID, newDish);
             }
 
-            Dish newDish = new Dish(
-                0, // Dish ID is not used in this implementation
-                dishName,
-                dishType,
-                dishPrice,
-                specifications
-            );
-            newDish.setSelectedSpecification((String) dishOptions.getOrDefault("None", "None"));
-            dishes.add(newDish);
-            orderQuantities.put(0, 0); // Dish ID is not used, so we can use a fixed key of 0
-        }
-        
-       
+            // Add specifications to the existing Dish object
+            for (Map.Entry<String, String> entry : dishOptions.entrySet()) {
+                if (!newDish.getSpecifications().contains(entry.getKey() + ": " + entry.getValue())) {
+                    newDish.getSpecifications().add(entry.getKey() + ": " + entry.getValue());
+                }
+            }
 
-        dishTableView.setItems(dishes);
-        dishTableView.refresh();
+            newDish.setSelectedSpecification((String) dishOptions.getOrDefault("None", "None"));
+        }
+
+        // Categorize dishes into the appropriate lists
+        for (Dish dish : dishMap.values()) {
+            switch (dish.getCategoryName()) {
+                case "salad":
+                    dishes1.add(dish);
+                    orderQuantitiesSalad.put(dish.getDishID(), 0);
+                    break;
+                case "main course":
+                    dishes2.add(dish);
+                    orderQuantitiesMain.put(dish.getDishID(), 0);
+                    break;
+                case "dessert":
+                    dishes3.add(dish);
+                    orderQuantitiesDesert.put(dish.getDishID(), 0);
+                    break;
+                case "drink":
+                    dishes4.add(dish);
+                    orderQuantitiesDrink.put(dish.getDishID(), 0);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Set items and refresh table views
+        dishTableViewSalad.setItems(dishes1);
+        dishTableViewSalad.refresh();
+        
+        dishTableViewMainCourse.setItems(dishes2);
+        dishTableViewMainCourse.refresh();
+        
+        dishTableViewDesert.setItems(dishes3);
+        dishTableViewDesert.refresh();
+        
+        dishTableViewDrink.setItems(dishes4);
+        dishTableViewDrink.refresh();
+        
         orderChanged = true;
         updateButtonStates();
     }
-    
-    
-    
-    /**private void setupComboBoxes() {
-        restaurantComboBox.setValue("Choose a restaurant");
-        restaurantComboBox.setItems(restaurantList);
-    }**/
 
     private void setupComboBoxes() {
         restaurantComboBox.setValue("Choose a restaurant");
         restaurantComboBox.setItems(restaurantList);
 
-        deliveryTypeComboBox.getItems().addAll("Pickup", "Regular Delivery", "Early Delivery", "Shared Delivery", "Robot Delivery");
+        deliveryTypeComboBox.getItems().addAll("Pickup", "Regular Delivery", "Shared Delivery", "Robot Delivery");
 
         // Setup hour and minute pickers
         for (int i = 0; i < 24; i++) {
@@ -196,11 +289,20 @@ public class NewOrderController {
     }
 
     private void setupDishTableView() {
-        dishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
-        dishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
-        dishPriceColumn.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
+        //dishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
+        dishNameColumnSalad.setCellValueFactory(new PropertyValueFactory<>("dishName"));
+        dishPriceColumnSalad.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
+        
+        dishNameColumnMain.setCellValueFactory(new PropertyValueFactory<>("dishName"));
+        dishPriceColumnMain.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
+        
+        dishNameColumnDesert.setCellValueFactory(new PropertyValueFactory<>("dishName"));
+        dishPriceColumnDesert.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
+        
+        dishNameColumnDrink.setCellValueFactory(new PropertyValueFactory<>("dishName"));
+        dishPriceColumnDrink.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
 
-        specificationsColumn.setCellFactory(column -> {
+        specificationsColumnSalad.setCellFactory(column -> {
             return new TableCell<Dish, String>() {
                 private final ComboBox<String> comboBox = new ComboBox<>();
                 
@@ -226,8 +328,89 @@ public class NewOrderController {
                 }
             };
         });
-
-        quantityColumn.setCellFactory(column -> new TableCell<Dish, Integer>() {
+        
+        specificationsColumnMain.setCellFactory(column -> {
+            return new TableCell<Dish, String>() {
+                private final ComboBox<String> comboBox = new ComboBox<>();
+                
+                {
+                    comboBox.setMaxWidth(Double.MAX_VALUE);
+                    comboBox.setStyle("-fx-font-size: 12px;");
+                }
+                
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) {
+                        setGraphic(null);
+                    } else {
+                        Dish dish = getTableView().getItems().get(getIndex());
+                        ObservableList<String> specs = FXCollections.observableArrayList("None");
+                        specs.addAll(dish.getSpecifications());
+                        comboBox.setItems(specs);
+                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : "None");
+                        comboBox.setOnAction(event -> dish.setSelectedSpecification(comboBox.getValue()));
+                        setGraphic(comboBox);
+                    }
+                }
+            };
+        });
+        
+        specificationsColumnDesert.setCellFactory(column -> {
+            return new TableCell<Dish, String>() {
+                private final ComboBox<String> comboBox = new ComboBox<>();
+                
+                {
+                    comboBox.setMaxWidth(Double.MAX_VALUE);
+                    comboBox.setStyle("-fx-font-size: 12px;");
+                }
+                
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) {
+                        setGraphic(null);
+                    } else {
+                        Dish dish = getTableView().getItems().get(getIndex());
+                        ObservableList<String> specs = FXCollections.observableArrayList("None");
+                        specs.addAll(dish.getSpecifications());
+                        comboBox.setItems(specs);
+                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : "None");
+                        comboBox.setOnAction(event -> dish.setSelectedSpecification(comboBox.getValue()));
+                        setGraphic(comboBox);
+                    }
+                }
+            };
+        });
+        
+        specificationsColumnDrink.setCellFactory(column -> {
+            return new TableCell<Dish, String>() {
+                private final ComboBox<String> comboBox = new ComboBox<>();
+                
+                {
+                    comboBox.setMaxWidth(Double.MAX_VALUE);
+                    comboBox.setStyle("-fx-font-size: 12px;");
+                }
+                
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty) {
+                        setGraphic(null);
+                    } else {
+                        Dish dish = getTableView().getItems().get(getIndex());
+                        ObservableList<String> specs = FXCollections.observableArrayList("None");
+                        specs.addAll(dish.getSpecifications());
+                        comboBox.setItems(specs);
+                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : "None");
+                        comboBox.setOnAction(event -> dish.setSelectedSpecification(comboBox.getValue()));
+                        setGraphic(comboBox);
+                    }
+                }
+            };
+        });
+        
+        quantityColumnSalad.setCellFactory(column -> new TableCell<Dish, Integer>() {
             private final Spinner<Integer> spinner = new Spinner<>(0, 100, 0);
 
             {
@@ -241,7 +424,7 @@ public class NewOrderController {
                                 errorText.setText("Please enter a number between 0 and 100 for Quantity");
                             });
                         } else {
-                            orderQuantities.put(dish.getDishID(), newValue);
+                            orderQuantitiesSalad.put(dish.getDishID(), newValue);
                             errorText.setText("");
                         }
                     }
@@ -266,14 +449,155 @@ public class NewOrderController {
                 } else {
                     Dish dish = getTableRow().getItem();
                     if (dish != null) {
-                        spinner.getValueFactory().setValue(orderQuantities.getOrDefault(dish.getDishID(), 0));
+                        spinner.getValueFactory().setValue(orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0));
+                    }
+                    setGraphic(spinner);
+                }
+            }
+        });
+        
+        quantityColumnMain.setCellFactory(column -> new TableCell<Dish, Integer>() {
+            private final Spinner<Integer> spinner = new Spinner<>(0, 100, 0);
+
+            {
+                spinner.setEditable(true);
+                spinner.valueProperty().addListener((obs, oldValue, newValue) -> {
+                    Dish dish = getTableRow().getItem();
+                    if (dish != null) {
+                        if (newValue < 0 || newValue > 100) {
+                            Platform.runLater(() -> {
+                                spinner.getValueFactory().setValue(oldValue);
+                                errorText.setText("Please enter a number between 0 and 100 for Quantity");
+                            });
+                        } else {
+                            orderQuantitiesMain.put(dish.getDishID(), newValue);
+                            errorText.setText("");
+                        }
+                    }
+                    orderChanged = true;
+                    updateButtonStates();
+                });
+
+                // Add a TextFormatter to the Spinner's TextField
+                spinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+                    if (change.getControlNewText().matches("\\d*")) {
+                        return change;
+                    }
+                    return null;
+                }));
+            }
+
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    Dish dish = getTableRow().getItem();
+                    if (dish != null) {
+                        spinner.getValueFactory().setValue(orderQuantitiesMain.getOrDefault(dish.getDishID(), 0));
+                    }
+                    setGraphic(spinner);
+                }
+            }
+        });
+        
+        quantityColumnDesert.setCellFactory(column -> new TableCell<Dish, Integer>() {
+            private final Spinner<Integer> spinner = new Spinner<>(0, 100, 0);
+
+            {
+                spinner.setEditable(true);
+                spinner.valueProperty().addListener((obs, oldValue, newValue) -> {
+                    Dish dish = getTableRow().getItem();
+                    if (dish != null) {
+                        if (newValue < 0 || newValue > 100) {
+                            Platform.runLater(() -> {
+                                spinner.getValueFactory().setValue(oldValue);
+                                errorText.setText("Please enter a number between 0 and 100 for Quantity");
+                            });
+                        } else {
+                            orderQuantitiesDesert.put(dish.getDishID(), newValue);
+                            errorText.setText("");
+                        }
+                    }
+                    orderChanged = true;
+                    updateButtonStates();
+                });
+
+                // Add a TextFormatter to the Spinner's TextField
+                spinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+                    if (change.getControlNewText().matches("\\d*")) {
+                        return change;
+                    }
+                    return null;
+                }));
+            }
+
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    Dish dish = getTableRow().getItem();
+                    if (dish != null) {
+                        spinner.getValueFactory().setValue(orderQuantitiesDesert.getOrDefault(dish.getDishID(), 0));
+                    }
+                    setGraphic(spinner);
+                }
+            }
+        });
+        
+        quantityColumnDrink.setCellFactory(column -> new TableCell<Dish, Integer>() {
+            private final Spinner<Integer> spinner = new Spinner<>(0, 100, 0);
+
+            {
+                spinner.setEditable(true);
+                spinner.valueProperty().addListener((obs, oldValue, newValue) -> {
+                    Dish dish = getTableRow().getItem();
+                    if (dish != null) {
+                        if (newValue < 0 || newValue > 100) {
+                            Platform.runLater(() -> {
+                                spinner.getValueFactory().setValue(oldValue);
+                                errorText.setText("Please enter a number between 0 and 100 for Quantity");
+                            });
+                        } else {
+                            orderQuantitiesDrink.put(dish.getDishID(), newValue);
+                            errorText.setText("");
+                        }
+                    }
+                    orderChanged = true;
+                    updateButtonStates();
+                });
+
+                // Add a TextFormatter to the Spinner's TextField
+                spinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+                    if (change.getControlNewText().matches("\\d*")) {
+                        return change;
+                    }
+                    return null;
+                }));
+            }
+
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    Dish dish = getTableRow().getItem();
+                    if (dish != null) {
+                        spinner.getValueFactory().setValue(orderQuantitiesDrink.getOrDefault(dish.getDishID(), 0));
                     }
                     setGraphic(spinner);
                 }
             }
         });
 
-        dishTableView.setItems(dishes);
+        dishTableViewSalad.setItems(dishes1);
+        dishTableViewMainCourse.setItems(dishes2);
+        dishTableViewDesert.setItems(dishes3);
+        dishTableViewDrink.setItems(dishes4);
     }
 
     private void setupOrderTableView() {
@@ -283,20 +607,68 @@ public class NewOrderController {
         orderSpecificationsColumn.setCellValueFactory(new PropertyValueFactory<>("selectedSpecification"));
         orderQuantityColumn.setCellValueFactory(cellData -> {
             Dish dish = cellData.getValue();
-            return javafx.beans.binding.Bindings.createIntegerBinding(
-                () -> orderQuantities.getOrDefault(dish.getDishID(), 0)).asObject();
+            return javafx.beans.binding.Bindings.createIntegerBinding(() -> {
+                switch (dish.getCategoryName()) {
+                    case "salad":
+                        return orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
+                    case "main course":
+                        return orderQuantitiesMain.getOrDefault(dish.getDishID(), 0);
+                    case "dessert":
+                        return orderQuantitiesDesert.getOrDefault(dish.getDishID(), 0);
+                    case "drink":
+                        return orderQuantitiesDrink.getOrDefault(dish.getDishID(), 0);
+                    default:
+                        return 0;
+                }
+            }).asObject();
         });
 
         orderTableView.setItems(orderDishes);
     }
 
     private void addListeners() {
-        dishTableView.getItems().addListener((ListChangeListener<Dish>) c -> {
+        dishTableViewSalad.getItems().addListener((ListChangeListener<Dish>) c -> {
             orderChanged = true;
             updateButtonStates();
         });
 
-        for (Dish dish : dishes) {
+        for (Dish dish : dishes1) {
+            dish.selectedSpecificationProperty().addListener((obs, oldVal, newVal) -> {
+                orderChanged = true;
+                updateButtonStates();
+            });
+        }
+        
+        dishTableViewMainCourse.getItems().addListener((ListChangeListener<Dish>) c -> {
+            orderChanged = true;
+            updateButtonStates();
+        });
+
+        for (Dish dish : dishes2) {
+            dish.selectedSpecificationProperty().addListener((obs, oldVal, newVal) -> {
+                orderChanged = true;
+                updateButtonStates();
+            });
+        }
+        
+        dishTableViewDesert.getItems().addListener((ListChangeListener<Dish>) c -> {
+            orderChanged = true;
+            updateButtonStates();
+        });
+
+        for (Dish dish : dishes3) {
+            dish.selectedSpecificationProperty().addListener((obs, oldVal, newVal) -> {
+                orderChanged = true;
+                updateButtonStates();
+            });
+        }
+        
+        dishTableViewDrink.getItems().addListener((ListChangeListener<Dish>) c -> {
+            orderChanged = true;
+            updateButtonStates();
+        });
+
+        for (Dish dish : dishes4) {
             dish.selectedSpecificationProperty().addListener((obs, oldVal, newVal) -> {
                 orderChanged = true;
                 updateButtonStates();
@@ -334,18 +706,6 @@ public class NewOrderController {
         deliveryParticipantsField.textProperty().addListener((obs, oldVal, newVal) -> validateDeliveryParticipants());
 
     }
-
-    /**private void addSampleData() {
-        dishes.addAll(
-            new Dish(1, "Yerushalmi Salad", "Salad", 40, FXCollections.observableArrayList("Regular", "No Onions", "Extra Dressing")),
-            new Dish(2, "Tuna Salad", "Salad", 36, FXCollections.observableArrayList("Regular", "Spicy", "Extra Mayo")),
-            new Dish(5, "Mac and Cheese", "Main Course", 57, FXCollections.observableArrayList("Regular", "Extra Cheese", "With Bacon")),
-            new Dish(6, "Salmon with Herbs", "Main Course", 97, FXCollections.observableArrayList("Regular", "Lemon Butter", "Cajun Style")),
-            new Dish(9, "Alfajor", "Dessert", 19, FXCollections.observableArrayList("Regular", "Extra Dulce de Leche", "Chocolate Coated")),
-            new Dish(13, "Ice Tea", "Drink", 12, FXCollections.observableArrayList("Regular", "No Sugar", "Extra Ice"))
-        );
-    }
-    **/
     
     private void updateButtonStates() {
         boolean restaurantSelected = currentRestaurant != null;
@@ -488,18 +848,18 @@ public class NewOrderController {
     
     private void resetOrder() {
         orderDishes.clear();
-        orderQuantities.clear();
+        orderQuantitiesSalad.clear();
         orderChanged = false;
         deliveryCharge = 0;
         discountPercentage = 0;
         updateOrderTotal();
         
         // Reset spinners and specifications
-        for (Dish dish : dishes) {
-            orderQuantities.put(dish.getDishID(), 0);
+        for (Dish dish : dishes1) {
+            orderQuantitiesSalad.put(dish.getDishID(), 0);
             dish.setSelectedSpecification("None");
         }
-        dishTableView.refresh();
+        dishTableViewSalad.refresh();
     }
     
     @FXML
@@ -510,10 +870,6 @@ public class NewOrderController {
                 case "Regular Delivery":
                     deliveryCharge = 25;
                     discountPercentage = 0;
-                    break;
-                case "Early Delivery":
-                    deliveryCharge = 0;
-                    discountPercentage = 0.1; // 10% discount
                     break;
                 case "Shared Delivery":
                     deliveryCharge = 15;
@@ -538,8 +894,22 @@ public class NewOrderController {
     }
     
     private void updateOrderTotal() {
-        double orderPrice = orderDishes.stream()
-            .mapToDouble(dish -> dish.getDishPrice() * orderQuantities.get(dish.getDishID()))
+    	double orderPrice = 0;
+        orderPrice += orderDishes.stream()
+            .filter(dish -> dish.getCategoryName().equals("salad"))
+            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesSalad.get(dish.getDishID()))
+            .sum();
+        orderPrice += orderDishes.stream()
+            .filter(dish -> dish.getCategoryName().equals("main course"))
+            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesMain.get(dish.getDishID()))
+            .sum();
+        orderPrice += orderDishes.stream()
+            .filter(dish -> dish.getCategoryName().equals("dessert"))
+            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesDesert.get(dish.getDishID()))
+            .sum();
+        orderPrice += orderDishes.stream()
+            .filter(dish -> dish.getCategoryName().equals("drink"))
+            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesDrink.get(dish.getDishID()))
             .sum();
         
         String deliveryType = deliveryTypeComboBox.getValue();
@@ -561,8 +931,32 @@ public class NewOrderController {
         orderDishes.clear();
         boolean hasItems = false;
         double totalPrice = 0.0;
-        for (Dish dish : dishes) {
-            int quantity = orderQuantities.getOrDefault(dish.getDishID(), 0);
+        for (Dish dish : dishes1) {
+            int quantity = orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
+            if (quantity > 0) {
+                orderDishes.add(dish);
+                hasItems = true;
+                totalPrice += dish.getDishPrice() * quantity;
+            }
+        }
+        for (Dish dish : dishes2) {
+            int quantity = orderQuantitiesMain.getOrDefault(dish.getDishID(), 0);
+            if (quantity > 0) {
+                orderDishes.add(dish);
+                hasItems = true;
+                totalPrice += dish.getDishPrice() * quantity;
+            }
+        }
+        for (Dish dish : dishes3) {
+            int quantity = orderQuantitiesDesert.getOrDefault(dish.getDishID(), 0);
+            if (quantity > 0) {
+                orderDishes.add(dish);
+                hasItems = true;
+                totalPrice += dish.getDishPrice() * quantity;
+            }
+        }
+        for (Dish dish : dishes4) {
+            int quantity = orderQuantitiesDrink.getOrDefault(dish.getDishID(), 0);
             if (quantity > 0) {
                 orderDishes.add(dish);
                 hasItems = true;
@@ -581,8 +975,10 @@ public class NewOrderController {
     }
 
     @FXML
-    void getBtnBack(ActionEvent event) {
-        // Implement back functionality
+    void getBtnBack(ActionEvent event) throws Exception {
+    	((Node) event.getSource()).getScene().getWindow().hide();
+		CustomerController newScreen = new CustomerController();
+		newScreen.start(new Stage());
     }
 
     @FXML
@@ -594,7 +990,7 @@ public class NewOrderController {
         } else {
             double totalPrice = 0.0;
             for (Dish dish : orderDishes) {
-                int quantity = orderQuantities.get(dish.getDishID());
+                int quantity = orderQuantitiesSalad.get(dish.getDishID());
                 System.out.println("Ordered " + quantity + " of " + dish.getDishName());
                 totalPrice += dish.getDishPrice() * quantity;
             }
@@ -660,37 +1056,6 @@ public class NewOrderController {
             updateErrorMessages();
         }
     }
-    
-//    private boolean isDeliveryTimeValid() {
-//        if (deliveryDatePicker.getValue() == null || 
-//        		deliveryHourPicker.getValue() == null ||
-//        		deliveryMinutePicker.getValue() == null) {
-//            return false;
-//        }
-//
-//        LocalDateTime selectedDateTime = LocalDateTime.of(
-//            deliveryDatePicker.getValue(),
-//            LocalTime.of(Integer.parseInt
-//            		(deliveryHourPicker.getValue()),
-//            		Integer.parseInt(deliveryMinutePicker.getValue()))
-//        );
-//
-//        return selectedDateTime.isAfter(LocalDateTime.now());
-//    }
-    
-//    private void updateConfirmButtonState() {
-//        boolean allFieldsFilled = !addressField.getText().isEmpty() &&
-//                                  !companyNameField.getText().isEmpty() &&
-//                                  !userNameField.getText().isEmpty() &&
-//                                  !phoneNumberField.getText().isEmpty() &&
-//                                  deliveryDatePicker.getValue() != null &&
-//                                  deliveryHourPicker.getValue() != null &&
-//                                  deliveryMinutePicker.getValue() != null;
-//
-//        boolean isPickup = deliveryTypeComboBox.getValue() != null && deliveryTypeComboBox.getValue().equals("Pickup");
-//
-//        confirmDeliveryButton.setDisable(!(isPickup || (allFieldsFilled && isAddressValid && isPhoneValid && isDeliveryDateTimeValid())));
-//    }
 
     void getRestaurantList() {
         Message msg = new Message(null, Commands.getRestaurantList);

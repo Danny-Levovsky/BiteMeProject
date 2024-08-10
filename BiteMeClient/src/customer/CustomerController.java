@@ -96,21 +96,10 @@ public class CustomerController {
 
 	@FXML
     void getBtnNewOrder(ActionEvent event) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/customer/NewOrder.fxml"));
-        Parent root = loader.load();
-        NewOrderController newOrderController = loader.getController();
-        
-        // Set the newOrderController in ClientController
-        ClientController.client.setNewOrderController(newOrderController);
-
-        Stage stage = new Stage();
-        stage.setScene(new Scene(root));
-        stage.setTitle("New Order");
-        
-        // Hide the current window
-        ((Node) event.getSource()).getScene().getWindow().hide();
-        
-        stage.show();
+		NewOrderController.setCustomer(customer);
+		((Node) event.getSource()).getScene().getWindow().hide();
+		NewOrderController newScreen = new NewOrderController();
+		newScreen.start(new Stage());
     }
 
 
