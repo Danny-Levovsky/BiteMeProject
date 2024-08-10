@@ -484,16 +484,9 @@ public class DbController {
                     + "(33, 0, 654123841, '01/2026'), "
                     + "(44, 1, 961782346, '06/2028'), "
                     + "(55, 0, 627183285, '04/2024'), "
-                    + "(66, 1, 627175285, '04/2029'), "
-                    + "(77, 0, 287694132, '06/2029'), "
-                    + "(88, 0, 973508085, '07/2031'), "
-                    + "(99, 0, 815374351, '11/2027'), "
-                    + "(111, 0, 881596491, '12/2026'), "
-                    + "(122, 0, 881596491, '08/2029'), "
-                    + "(133, 0, 901174220, '01/2027'), "
-                    + "(144, 1, 891718880, '11/2024'), "
-                    + "(155, 0, 322264644, '02/2030'), "
-                    + "(166, 0, 195431542, '05/2026')";
+                    + "(66, 1, 627175285, '04/2029')";
+              
+
             PreparedStatement insertCustomersStmt = conn.prepareStatement(insertCustomersQuery);
             insertCustomersStmt.executeUpdate();
 
@@ -502,11 +495,11 @@ public class DbController {
             PreparedStatement updateCustomersStmt1 = conn.prepareStatement(updateCustomersQuery1);
             updateCustomersStmt1.executeUpdate();
 
-            String updateCustomersQuery2 = "UPDATE bite_me.customers SET Credit = 15, Status = 'active' WHERE ID = 66";
+            String updateCustomersQuery2 = "UPDATE bite_me.customers SET Credit = 15, Status = 'active' WHERE ID = 55";
             PreparedStatement updateCustomersStmt2 = conn.prepareStatement(updateCustomersQuery2);
             updateCustomersStmt2.executeUpdate();
 
-            String updateCustomersQuery3 = "UPDATE bite_me.customers SET Status = 'active' WHERE ID = 155";
+            String updateCustomersQuery3 = "UPDATE bite_me.customers SET Status = 'active' WHERE ID = 33";
             PreparedStatement updateCustomersStmt3 = conn.prepareStatement(updateCustomersQuery3);
             updateCustomersStmt3.executeUpdate();
 

@@ -32,7 +32,6 @@ import login.LoginScreenController;
  * displaying orders, and handling button actions for logging out, receiving
  * orders, completing orders, and navigating back to the certified employee
  * screen.
- * 
  * @author yosra
  */
 public class EmployeeController {
@@ -41,7 +40,7 @@ public class EmployeeController {
 	private Label txtEmployeeName;
 
 	@FXML
-	private Button btnLogout; // disappear if I'm certified employee
+	private Button btnLogout; 
 
 	@FXML
 	private Button btnOrderReceived;
@@ -87,7 +86,6 @@ public class EmployeeController {
 
 	/**
 	 * Sets the employee for the controller.
-	 * 
 	 * @param user the employee user
 	 */
 	public static void setEmployee(User user) {
@@ -96,7 +94,6 @@ public class EmployeeController {
 
 	/**
 	 * Starts and displays the employee window.
-	 * 
 	 * @param primaryStage the primary stage for this application
 	 * @throws Exception if there is an error during the loading of the FXML file
 	 */
@@ -109,10 +106,11 @@ public class EmployeeController {
 		primaryStage.show();
 	}
 
-	/**
-	 * Initializes the controller class. This method is automatically called after
-	 * the FXML file has been loaded. It updates the name to this user's name.
-	 */
+	 /**
+     * Initializes the controller class. This method is automatically called after
+     * the FXML file has been loaded. It updates the name to this user's name and
+     * sets up the table columns and data.
+     */
 	@FXML
 	private void initialize() {
 		Client.employeeController = this; // Set the employeeController instance here
@@ -148,7 +146,6 @@ public class EmployeeController {
 
 	/**
 	 * Updates the table with the list of restaurant orders.
-	 * 
 	 * @param restaurantOrders the list of restaurant orders to display
 	 */
 	public void setTable(List<RestaurantOrder> restaurantOrders) {
@@ -156,27 +153,10 @@ public class EmployeeController {
 		orderTable.setItems(orderList);
 	}
 
-	/**
-	 * Handles the action for the logout button. This method is triggered when the
-	 * logout button is clicked. It sends a logout request to the server and opens
-	 * the login screen.
-	 * 
-	 * @param event the event triggered by the logout button click
-	 * @throws Exception if there is an error while opening the login screen
-	 */
-	@FXML
-	public void getBtnLogout(ActionEvent event) throws Exception {
-		Message logoutMessage = new Message(EmployeeController.employee.getId(), Commands.LogoutUser);
-		ClientController.client.handleMessageFromClientControllers(logoutMessage);
 
-		((Node) event.getSource()).getScene().getWindow().hide();
-		LoginScreenController newScreen = new LoginScreenController();
-		newScreen.start(new Stage());
-	}
 
 	/**
 	 * Updates the status of an order.
-	 * 
 	 * @param msg the message containing order ID and status
 	 */
 	public void updateOrderStatus(Object msg) {
@@ -190,12 +170,11 @@ public class EmployeeController {
 	}
 
 	/**
-	 * Handles the action for the order received button. This method is triggered
-	 * when the order received button is clicked. It updates the order status to
-	 * 'received'.
-	 * 
-	 * @param event the event triggered by the order received button click
-	 */
+     * Handles the action for the order received button. This method is triggered
+     * when the order received button is clicked. It updates the order status to
+     * 'received' if it is currently pending.
+     * @param event the event triggered by the order received button click
+     */
 	@FXML
 	public void getBtnOrderReceived(ActionEvent event) {
 		int orderId = Integer.parseInt(txtOrderID.getText());
@@ -213,13 +192,12 @@ public class EmployeeController {
 		}
 	}
 
-	/**
-	 * Handles the action for the order completed button. This method is triggered
-	 * when the order completed button is clicked. It updates the order status to
-	 * 'completed' and fetches the customer details.
-	 * 
-	 * @param event the event triggered by the order completed button click
-	 */
+	  /**
+     * Handles the action for the order completed button. This method is triggered
+     * when the order completed button is clicked. It updates the order status to
+     * 'completed' if it is currently received, and fetches the customer details.
+     * @param event the event triggered by the order completed button click
+     */
 	@FXML
 	public void getBtnOrderCompleted(ActionEvent event) {
 		int orderId = Integer.parseInt(txtOrderID.getText());
@@ -255,7 +233,6 @@ public class EmployeeController {
 
 	/**
 	 * Gets the customer ID to contact from the table view by order ID.
-	 * 
 	 * @param orderId the order ID
 	 * @return the customer number associated with the order, or -1 if not found
 	 */
@@ -272,8 +249,7 @@ public class EmployeeController {
 	}
 
 	/**
-	 * Updates the customer to contact by customer ID.
-	 * 
+	 * Updates the customer to contact by customer ID. 
 	 * @param customerNumber the customer number
 	 */
 	private void updateCoustomerToContactByCoustomerId(int customerNumber) {
@@ -284,7 +260,6 @@ public class EmployeeController {
 
 	/**
 	 * Sends a text message and email to the customer.
-	 * 
 	 * @param customer the customer to contact
 	 */
 	public void sendTextMassageAndEmailToCustomer(User customer) {
@@ -315,7 +290,6 @@ public class EmployeeController {
 	 * Handles the action for the back button. This method is triggered when the
 	 * back button is clicked. It hides the current window and opens the certified
 	 * employee screen.
-	 * 
 	 * @param event the event triggered by the back button click
 	 * @throws Exception if there is an error while opening the certified employee
 	 *                   screen
@@ -325,14 +299,32 @@ public class EmployeeController {
 		((Node) event.getSource()).getScene().getWindow().hide();
 		CertifiedEmployeeController newScreen = new CertifiedEmployeeController();
 		newScreen.start(new Stage());
-
 	}
 	
+	/**
+	 * Handles the action for the logout button. This method is triggered when the
+	 * logout button is clicked. It sends a logout request to the server and opens
+	 * the login screen.
+	 * @param event the event triggered by the logout button click
+	 * @throws Exception if there is an error while opening the login screen
+	 */
+	@FXML
+	public void getBtnLogout(ActionEvent event) throws Exception {
+		Message logoutMessage = new Message(EmployeeController.employee.getId(), Commands.LogoutUser);
+		ClientController.client.handleMessageFromClientControllers(logoutMessage);
+
+		((Node) event.getSource()).getScene().getWindow().hide();
+		LoginScreenController newScreen = new LoginScreenController();
+		newScreen.start(new Stage());
+	}
+	
+	/**
+     * Enables the received and completed buttons when an order ID is entered.
+     * @param event the event triggered by entering an order ID
+     */
     @FXML
     public void getTxtOrderID(ActionEvent event) {
 		btnOrderReceived.setDisable(false);
 		btnOrderCompleted.setDisable(false);
-
     }
-
 }

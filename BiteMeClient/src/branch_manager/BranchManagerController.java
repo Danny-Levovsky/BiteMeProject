@@ -3,6 +3,10 @@ package branch_manager;
 
 import entites.User;
 import enums.Commands;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import client.ClientController;
 import entites.Message;
 import login.LoginScreenController;
@@ -22,7 +26,8 @@ import javafx.scene.Node;
 
 
 /**
- * Controller class for the branch manager interface.
+ * Controller class for the branch manager interface. This class handles user
+ * interactions and controls the flow of data between the UI and the backend.
  * @author yosra
  */
 public class BranchManagerController {
@@ -40,7 +45,18 @@ public class BranchManagerController {
     private Button BtnViewReports;
 
     @FXML
-    private ComboBox<Integer> monthComboBox;
+    private ComboBox<String> monthComboBox;
+
+    @FXML
+    private ComboBox<String> reportComboBox;
+    
+    @FXML
+    private ComboBox<String> restaurantComboBox;
+    
+    @FXML
+    private Label txtError;
+    
+    private Map<String, Integer> restaurantMap = new HashMap<>();
     
     private static User branchManager;
 
@@ -66,18 +82,41 @@ public class BranchManagerController {
     	primaryStage.show();
 	}
     
-	
+	/**
+	 * Initializes the controller class. This method is automatically called after
+	 * the FXML file has been loaded. It populates the ComboBoxes with month/year
+	 * strings, report options, and restaurant names. It also updates the branch
+	 * manager's name on the UI, disables the "View Reports" button by default, and hides
+	 * the error message.
+	 */
     @FXML
     private void initialize() {
-        // Add month values 1 to 12 to the ComboBox
-        for (int i = 1; i <= 12; i++) {
-        	monthComboBox.getItems().add(i);
-        }
+    	// Populate the ComboBox with month/year strings
+    	for (int i = 1; i <= 12; i++) {
+    	    String monthYear = i + "/2024";
+    	    monthComboBox.getItems().add(monthYear);
+    	}
+    	
+    	// Initialize the ComboBox with report options
+    	reportComboBox.getItems().addAll("income report", "order report", "performance report");
+    	
+    	// Initialize the ComboBox with restaurant options and map with corresponding numbers
+        restaurantMap.put("The Savory Spoon", 1);
+        restaurantMap.put("Bistro Belle Vie", 2);
+        restaurantMap.put("Harvest Moon Cafe", 3);
+        restaurantMap.put("Gourmet Garden", 4);
+        restaurantMap.put("Urban Palate", 5);
+
+        // Add restaurant names to the ComboBox
+        restaurantComboBox.getItems().addAll(restaurantMap.keySet());
         
         //update name
         if(branchManager != null) {
         	txtBranchManagerName.setText(branchManager.getFirstName() + " " + branchManager.getLastName());
         }
+        
+        BtnViewReports.setDisable(true);
+        txtError.setVisible(false);
     }
 
 
@@ -114,10 +153,59 @@ public class BranchManagerController {
 		UpdateClientController newScreen = new UpdateClientController();
 		newScreen.start(new Stage());
     }
-
+    
+    /**
+     * Handles the view reports button action. This method is triggered when the
+     * view reports button is clicked. It gathers the selected restaurant, month,
+     * report type, and the branch manager's district, then opens the report view screen.
+     * @param event the event triggered by the view reports button click
+     * @throws Exception if there is an error while opening the report view screen
+     */
     @FXML
-    void getBtnViewReports(ActionEvent event) {
+    void getBtnViewReports(ActionEvent event) throws Exception {
+    	
+    	// Get selected restaurant name and corresponding number
+        String selectedRestaurant = restaurantComboBox.getSelectionModel().getSelectedItem();
+        Integer restaurantNumber = restaurantMap.get(selectedRestaurant);
 
+        // Get selected month/year
+        String selectedMonthYear = monthComboBox.getSelectionModel().getSelectedItem();
+
+        // Get selected report type
+        String selectedReport = reportComboBox.getSelectionModel().getSelectedItem();
+
+        // Get district of the branch manager
+        String district = branchManager.getDistrict();
+
+        // Call the setDetails method of ReportViewController with the gathered data
+        ReportViewController.setDetails(restaurantNumber, selectedMonthYear, district, selectedReport,selectedRestaurant);
+    	
+    	((Node) event.getSource()).getScene().getWindow().hide();
+		ReportViewController newScreen = new ReportViewController();
+		newScreen.start(new Stage());
     }
-
+    
+    /**
+     * Handles the action when a month is selected from the ComboBox. This method
+     * checks if the selected month/year falls within the range of September 2024 to
+     * December 2024. If it does, the "View Reports" button is disabled and an error
+     * message is shown. Otherwise, the button is enabled and the error message is hidden.
+     * @param event the event triggered by selecting a month/year
+     */
+    @FXML
+    void getMonth(ActionEvent event) {
+    	
+    	// Get the selected item from the ComboBox
+        String selectedMonthYear = monthComboBox.getSelectionModel().getSelectedItem();
+        
+     // Check if the selected item is null or falls within the range September 2024 to December 2024
+        if (selectedMonthYear == null || 
+            selectedMonthYear.matches("9/2024|10/2024|11/2024|12/2024")) {
+            BtnViewReports.setDisable(true);   // Disable the button
+            txtError.setVisible(true);         // Show the error message
+        } else {
+            BtnViewReports.setDisable(false);  // Enable the button
+            txtError.setVisible(false);   
+        }
+    }
 }
