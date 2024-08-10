@@ -23,6 +23,9 @@ public enum Commands {
     UpdateCredit, //command for updating credit if late delivery
     updateRestaurantOrderStatus, // command from restaurant to update order status
     updateCoustomerToContactByCoustomerId, // command from restaurant to update coustomerToContact to send them SMS & Email
-    updateRestaurantOrdersTable // command to tell the employee controller to update restaurant orders table
- 
+    updateRestaurantOrdersTable, // command to tell the employee controller to update restaurant orders table
+    OrderReport, //command for orders report
+    getIncomeReport, // command from branch manager to get Income Report from DB
+    setIncomeReport // command from server to manager to set Income Report from DB
+    
 }

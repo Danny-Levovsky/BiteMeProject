@@ -80,7 +80,6 @@ public class BiteMeServer extends AbstractServer {
 			ServerUI.gotResponse = true;
 			break;
 
-	
 		case CheckUsername:
 			User user = (User) m.getObj();
 			boolean usernameExists = dbController.isUsernameExists(user.getUsername());
@@ -185,45 +184,69 @@ public class BiteMeServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
-			case UpdateCredit:
-                try {
-                    Object[] data = (Object[]) m.getObj();
-                    int id1 = (int) data[0];
-                    int orderId = (int) data[1];
-                    int credit = (int) data[2];
-                    dbController.updateCredit(id1, orderId, credit);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-			 case getRestaurantOrders:
-				  Object RestaurantOrdersData = dbController.getRestaurantOrders((int)m.getObj());
-				  // setRestaurantPendingOrders
-				  try {
-					client.sendToClient(new Message(RestaurantOrdersData, Commands.setRestaurantOrders));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				  break;
-				  
-			  case updateRestaurantOrderStatus:
-				  Object[] data1 = (Object[]) m.getObj();
-				  int orderId = (int) data1[0];
-				  String status1 = (String) data1[1];
-				  dbController.updateRestaurantOrderStatus(orderId,status1);
-				  break;
-				  
-			  case updateCoustomerToContactByCoustomerId: 
-				  int customerNumber = (int) m.getObj();
-				  User customer = dbController.getCustomerDetailsByNumber(customerNumber);
-				  try {
-						client.sendToClient(new Message(customer, Commands.updateCoustomerToContactByCoustomerId));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				  
-				  
-				  
+		case UpdateCredit:
+			try {
+				Object[] data = (Object[]) m.getObj();
+				int id1 = (int) data[0];
+				int orderId = (int) data[1];
+				int credit = (int) data[2];
+				dbController.updateCredit(id1, orderId, credit);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			break;
+		case getRestaurantOrders:
+			Object RestaurantOrdersData = dbController.getRestaurantOrders((int) m.getObj());
+			// setRestaurantPendingOrders
+			try {
+				client.sendToClient(new Message(RestaurantOrdersData, Commands.setRestaurantOrders));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			break;
+
+		case updateRestaurantOrderStatus:
+			Object[] data1 = (Object[]) m.getObj();
+			int orderId = (int) data1[0];
+			String status1 = (String) data1[1];
+			dbController.updateRestaurantOrderStatus(orderId, status1);
+			break;
+
+		case updateCoustomerToContactByCoustomerId:
+			int customerNumber = (int) m.getObj();
+			User customer = dbController.getCustomerDetailsByNumber(customerNumber);
+			try {
+				client.sendToClient(new Message(customer, Commands.updateCoustomerToContactByCoustomerId));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		case OrderReport:
+			Object[] data2 = (Object[]) m.getObj();
+			String district = (String) data2[0];
+			int restaurantNumber = (int) data2[1];
+			String monthYear = (String) data2[2];
+
+			Object[] orderReportDetails = dbController.getOrderReport(district, restaurantNumber, monthYear);
+
+			try {
+				client.sendToClient(new Message(orderReportDetails, Commands.OrderReport));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		case getIncomeReport:
+			Object[] incomeReportData = (Object[]) m.getObj();
+			int restaurantId = (int) incomeReportData[0];
+			String monthYear1 = (String) incomeReportData[1];
+			String district1 = (String) incomeReportData[2];
+			int[] incomeReportResultData = dbController.IncomeReport(restaurantId, monthYear1, district1);
+			try {
+				client.sendToClient(new Message(incomeReportResultData, Commands.setIncomeReport));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			break;
+
 		default:
 			break;
 		}

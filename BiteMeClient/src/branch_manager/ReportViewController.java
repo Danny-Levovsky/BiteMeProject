@@ -9,7 +9,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import client.Client;
+import client.ClientController;
 import entites.Message;
+import enums.Commands;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -23,6 +26,8 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
+
+
 
 public class ReportViewController {
 
@@ -66,6 +71,8 @@ public class ReportViewController {
 
 	@FXML
 	private void initialize() {
+		
+		 Client.reportViewController = this;  // Set the  reportViwController instance here
 
 		txtRestaurant.setText(restaurantName);
 
@@ -111,57 +118,75 @@ public class ReportViewController {
 
 	/* end of timer */
 
-	
-	public void incomeReport() {
 
-		
-		
-	}
-	
-	public void handleServerResponseIncome(Message message) {
-		//... 
-		
-		XYChart.Series<String, Number> series1 = new XYChart.Series<>();
-		series1.setName("income report " + monthYear);
-		series1.getData().add(new XYChart.Data<>("week1", 6500));
-		series1.getData().add(new XYChart.Data<>("week2", 8000));
-		series1.getData().add(new XYChart.Data<>("week3",7000 ));
-		series1.getData().add(new XYChart.Data<>("week4",9000 ));
-		xAxis.setLabel("Week");
-		yAxis.setLabel("NIS");
-		barChart.getData().addAll(series1);
-	}
-	
-	
 
 	public void orderReport() {
 		
-		
-		
-
+		 Message msg = new Message(new Object[]{district,restaurantId,monthYear }, Commands. OrderReport);
+         ClientController.client.handleMessageFromClientControllers(msg); 
 	}
 
-	public void handleServerResponseOrder(Message message) {
-		
-		//...
-		
+	public void handleServerResponseOrder(int salad, int mainCourse, int dessert, int drink) {
+
+        // Set chart title
+        barChart.setTitle("Quantity by Dish Type");
+        
 		XYChart.Series<String, Number> series1 = new XYChart.Series<>();
-		series1.setName("income report " + monthYear);
-		series1.getData().add(new XYChart.Data<>("Salad", 250));
-		series1.getData().add(new XYChart.Data<>("Main Course", 300));
-		series1.getData().add(new XYChart.Data<>("Dessert",60 ));
-		series1.getData().add(new XYChart.Data<>("Drink",500));
+		series1.setName("orders report " + monthYear);
+		series1.getData().add(new XYChart.Data<>("Salad", salad));
+		series1.getData().add(new XYChart.Data<>("Main Course", mainCourse));
+		series1.getData().add(new XYChart.Data<>("Dessert",dessert ));
+		series1.getData().add(new XYChart.Data<>("Drink",drink));
 		xAxis.setLabel("Dish Type");
 		yAxis.setLabel("Quantity");
+		
+		barChart.setAnimated(false);
+		
+		barChart.getData().addAll(series1);	
+    }
+	
+
+	public void incomeReport() {
+		Commands command = Commands.getIncomeReport;
+		Object[] incomeReportData = {restaurantId, monthYear, district};
+		Message message = new Message(incomeReportData, command);
+		ClientController.client.handleMessageFromClientControllers(message);	
+	}
+	
+	public void handleServerResponseIncome(int[] incomeReportResultData) {
+		
+		// Set chart title
+        barChart.setTitle("Total Income per Week");
+        
+		XYChart.Series<String, Number> series1 = new XYChart.Series<>();
+		series1.setName("income report " + monthYear);
+		series1.getData().add(new XYChart.Data<>("week1", incomeReportResultData[0]));
+		series1.getData().add(new XYChart.Data<>("week2", incomeReportResultData[1]));
+		series1.getData().add(new XYChart.Data<>("week3",incomeReportResultData[2]));
+		series1.getData().add(new XYChart.Data<>("week4",incomeReportResultData[3]));
+		xAxis.setLabel("Week");
+		yAxis.setLabel("NIS");
+		
+		barChart.setAnimated(false);
+		
 		barChart.getData().addAll(series1);
 	}
 	
 	
+	
+	
 	public void performanceReport() {
-		//...
 		
+		
+
+	}
+	
+	
+	public void handleServerResponsePerformance(Message message) {
+		 // Set chart title
+        barChart.setTitle("Percentage of Delivery Delays per Week");
 		XYChart.Series<String, Number> series1 = new XYChart.Series<>();
-		series1.setName("income report " + monthYear);
+		series1.setName("performance report " + monthYear);
 		series1.getData().add(new XYChart.Data<>("week1", 20));
 		series1.getData().add(new XYChart.Data<>("week2", 10));
 		series1.getData().add(new XYChart.Data<>("week3",5 ));
@@ -169,11 +194,6 @@ public class ReportViewController {
 		xAxis.setLabel("Week");
 		yAxis.setLabel("%");
 		barChart.getData().addAll(series1);
-	}
-	
-	
-	public void handleServerResponsePerformance(Message message) {
-		
 	}
 
 	

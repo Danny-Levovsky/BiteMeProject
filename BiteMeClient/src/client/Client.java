@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import branch_manager.ReportViewController;
 import branch_manager.UpdateClientController;
 import customer.CustomerController;
 import customer.ViewOrderController;
@@ -44,6 +45,8 @@ public class Client extends AbstractClient {
 	static public UpdateClientController updateClientController;
 	static public CustomerController customerController;
 	static public ViewOrderController viewOrderController;
+	static public ReportViewController reportViewController;
+	
 	
 
 	// static public WorkerController workerController;
@@ -166,10 +169,28 @@ public class Client extends AbstractClient {
 						 employeeController.sendTextMassageAndEmailToCustomer(customer);
 					}
 				});
-
 			break;
-
-
+		 case OrderReport:
+				Platform.runLater(() -> {
+					Object[] reportDetails = (Object[]) m.getObj();
+					int salad = (int) reportDetails[0];
+					int mainCourse = (int) reportDetails[1];
+					int dessert = (int) reportDetails[2];
+					int drink = (int) reportDetails[3];	
+					if (  reportViewController != null) {
+						reportViewController.handleServerResponseOrder(salad,mainCourse,dessert,drink);
+					}
+				});
+				break;
+				
+		 case setIncomeReport:
+				Platform.runLater(() -> {
+					int[] incomeReportResultData = (int[]) m.getObj();
+					if ( reportViewController != null) {
+						reportViewController.handleServerResponseIncome(incomeReportResultData);
+					}
+				});
+				break;
 		default:
 			break;
 
