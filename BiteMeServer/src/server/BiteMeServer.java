@@ -197,6 +197,19 @@ public class BiteMeServer extends AbstractServer
       	    }
       	    
     	    break;
+    	    
+      case getCustomerDetails:
+    	  int userID = (int)m.getObj();
+    	  Customer customerDetails = dbController.getCustomerFromDB(userID);
+    	  System.out.println(customerDetails);
+    	  try {
+    	        client.sendToClient(new Message(customerDetails, Commands.gotMyCustomerDetails));
+    	    } catch (IOException e) {
+    	        e.printStackTrace();
+    	    }
+    	  break;
+    	  
+    	  
     	  
 	  	default:
 	  		break;	  			  	

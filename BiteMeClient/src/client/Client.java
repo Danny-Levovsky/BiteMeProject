@@ -8,6 +8,7 @@ import java.util.Map;
 import branch_manager.UpdateClientController;
 import customer.NewOrderController;
 import customer.ViewOrderController;
+import entites.Customer;
 import entites.Message;
 import entites.Order;
 import enums.Commands;
@@ -147,6 +148,16 @@ public class Client extends AbstractClient {
 		        }
 		    });
 		    break;
+		    
+		case gotMyCustomerDetails:
+			Platform.runLater(() -> {
+			Customer customerDetails = (Customer) m.getObj();
+			if (newOrderController != null) {
+	            newOrderController.setCustomerDetails(customerDetails);
+	            System.out.println(customerDetails); //checking debugging
+	        }
+	    });
+	    break;
 
 		default:
 			break;

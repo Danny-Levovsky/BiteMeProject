@@ -101,6 +101,7 @@ public class CustomerController {
 		NewOrderController newScreen = new NewOrderController();
 		newScreen.start(new Stage());
     }
+	
 
 
 	/**

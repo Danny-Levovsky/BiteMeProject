@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import entites.Customer;
 import entites.Order;
 import entites.User;
 
@@ -324,6 +325,36 @@ public class DbController {
 
         return menu;
     }
+    
+    public Customer getCustomerFromDB(int userID) {
+        Customer customer = null;
+        String query = "SELECT CustomerNumber, ID, Credit, IsBusiness, Status " +
+                       "FROM customers WHERE ID = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userID);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    customer = new Customer(
+                        rs.getInt("CustomerNumber"),
+                        rs.getInt("ID"),
+                        rs.getInt("Credit"),
+                        rs.getBoolean("IsBusiness"),
+                        rs.getString("Status")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Consider logging the error or throwing a custom exception
+        }
+
+        return customer;
+    }
+    	
+    
+    
 
     /**
      * Imports external data into the application database.
@@ -414,4 +445,6 @@ public class DbController {
             e.printStackTrace();
         }
     }
+
+	
 }

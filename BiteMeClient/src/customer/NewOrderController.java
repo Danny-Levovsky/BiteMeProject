@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import client.Client;
 import client.ClientController;
+import entites.Customer;
 import entites.Dish;
 import entites.Message;
 import entites.User;
@@ -126,6 +127,7 @@ public class NewOrderController {
     private Map<String, Integer> orderQuantitiesDesert = new HashMap<>();
     private Map<String, Integer> orderQuantitiesDrink = new HashMap<>();
     private static User customer;
+    private Customer currentCustomer;
 
     @FXML
     private void initialize() {
@@ -148,9 +150,11 @@ public class NewOrderController {
         
         //request restaurant names
         requestRestaurantNames();
+        //setCustomer(customer);
         
         
-        setupComboBoxes();
+        
+        //setupComboBoxes();
         setupDishTableView();
         setupOrderTableView();
         addListeners();
@@ -163,9 +167,35 @@ public class NewOrderController {
             }
         });
     }
-    
     public static void setCustomer(User user) {
+    	
     	customer = user;
+    	int userID = customer.getId();
+    	Commands command = Commands.getCustomerDetails;
+    	Message message = new Message(userID,command);
+    	ClientController.client.handleMessageFromClientControllers(message);
+    	
+    }
+    
+    public void setCustomerDetails(Customer customerDetails) {
+    	
+    	if (this.currentCustomer == null) {
+            // This is a new customer, create and set it
+            this.currentCustomer = new Customer(
+                customerDetails.getCustomerNumber(),
+                customerDetails.getId(),
+                customerDetails.getCredit(),
+                customerDetails.isBusiness(),
+                customerDetails.getStatus()
+            );
+    	}
+    	System.out.println(currentCustomer);
+    	Platform.runLater(this::setupUI);
+    	
+    }
+    private void setupUI() {
+        setupComboBoxes();
+        // Set up other UI elements as needed
     }
     
     //implement request for rest names
@@ -276,8 +306,13 @@ public class NewOrderController {
     private void setupComboBoxes() {
         restaurantComboBox.setValue("Choose a restaurant");
         restaurantComboBox.setItems(restaurantList);
-
+        
+        if (currentCustomer.isBusiness()== true) {
         deliveryTypeComboBox.getItems().addAll("Pickup", "Regular Delivery", "Shared Delivery", "Robot Delivery");
+        }
+        else {
+        	deliveryTypeComboBox.getItems().addAll("Pickup", "Regular Delivery", "Robot Delivery");
+        }
 
         // Setup hour and minute pickers
         for (int i = 0; i < 24; i++) {
