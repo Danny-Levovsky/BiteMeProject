@@ -214,7 +214,7 @@ public class NewOrderController {
             String dishType = (String) dish.get("dishType");
             String dishName = (String) dish.get("dishName");
             int dishPrice = ((Number) dish.get("dishPrice")).intValue();
-            Map<String, String> dishOptions = (Map<String, String>) dish.get("dishOptions");
+            Map<String, List<String>> dishOptions = (Map<String, List<String>>) dish.get("dishOptions");
 
             // Get or create the Dish object for this dishID
             Dish newDish;
@@ -226,14 +226,36 @@ public class NewOrderController {
                 dishMap.put(dishID, newDish);
             }
 
-            // Add specifications to the existing Dish object
-            for (Map.Entry<String, String> entry : dishOptions.entrySet()) {
-                if (!newDish.getSpecifications().contains(entry.getKey() + ": " + entry.getValue())) {
-                    newDish.getSpecifications().add(entry.getKey() + ": " + entry.getValue());
+         // Add specifications to the existing Dish object
+            for (Map.Entry<String, List<String>> entry : dishOptions.entrySet()) {
+                String optionType = entry.getKey();
+                List<String> optionValues = entry.getValue();
+                
+                if (optionType.equals("Doneness")) {
+                    for (String value : optionValues) {
+                        String specificationText = "Doneness: " + value;
+                        if (!newDish.getSpecifications().contains(specificationText)) {
+                            newDish.getSpecifications().add(specificationText);
+                        }
+                    }
+                } else if (optionType.equals("Remove")) {
+                    for (String value : optionValues) {
+                        String specificationText = "Remove " + value;
+                        if (!newDish.getSpecifications().contains(specificationText)) {
+                            newDish.getSpecifications().add(specificationText);
+                        }
+                    }
+                } else {
+                    for (String value : optionValues) {
+                        String specificationText = optionType + ": " + value;
+                        if (!newDish.getSpecifications().contains(specificationText)) {
+                            newDish.getSpecifications().add(specificationText);
+                        }
+                    }
                 }
             }
 
-            newDish.setSelectedSpecification((String) dishOptions.getOrDefault("None", "None"));
+            newDish.setSelectedSpecification("None");
         }
 
         // Categorize dishes into the appropriate lists
