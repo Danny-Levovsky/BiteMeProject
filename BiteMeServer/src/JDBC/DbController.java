@@ -5,7 +5,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import entites.Order;
@@ -73,87 +77,115 @@ public class DbController {
         return false;
     }
     
-    public int[] IncomeReport(int restaurantId, String monthYear, String district) {
-		
-    	String query = "SELECT Week1, Week2, Week3, Week4 " +
-                "FROM income_reports " +
-                "WHERE MonthYear = ? AND District = ? AND RestaurantNumber = ?";
+    public int[] IncomeReport(int restaurantNumber, String monthYear, String district) {
+        int[] incomeReportResultData = new int[4]; // Array to hold income data for 4 weeks
 
-    	try {
-	     PreparedStatement stmt = conn.prepareStatement(query);
-	     stmt.setString(1, monthYear);
-	     stmt.setString(2, district);
-	     stmt.setInt(3, restaurantId);
-	     
-	     ResultSet rs = stmt.executeQuery();
-	     
-	     if (rs.next()) {
-	         int week1 = rs.getInt("Week1");
-	         int week2 = rs.getInt("Week2");
-	         int week3 = rs.getInt("Week3");
-	         int week4 = rs.getInt("Week4");
-	         int[] IncomeReportDataByWeeks = {week1, week2, week3, week4};
-	         return IncomeReportDataByWeeks;
-	     
-	     } else {
-	         String query2 = "INSERT INTO income_reports (MonthYear, District, RestaurantNumber, Week1, Week2, Week3, Week4) " +
-	                         "SELECT ?, ?, ?, " +
-	                         "SUM(CASE WHEN WEEK(RequestedDateTime, 1) = 1 THEN TotalPrice ELSE 0 END) AS Week1, " +
-	                         "SUM(CASE WHEN WEEK(RequestedDateTime, 1) = 2 THEN TotalPrice ELSE 0 END) AS Week2, " +
-	                         "SUM(CASE WHEN WEEK(RequestedDateTime, 1) = 3 THEN TotalPrice ELSE 0 END) AS Week3, " +
-	                         "SUM(CASE WHEN WEEK(RequestedDateTime, 1) = 4 THEN TotalPrice ELSE 0 END) AS Week4 " +
-	                         "FROM orders o " +
-	                         "JOIN customers c ON o.CustomerNumber = c.CustomerNumber " +
-	                         "JOIN users u ON c.ID = u.ID " +
-	                         "WHERE MONTH(RequestedDateTime) = ? AND YEAR(RequestedDateTime) = ? " +
-	                         "AND o.RestaurantNumber = ? " +
-	                         "AND u.District = ? " +
-	                         "GROUP BY o.RestaurantNumber, MONTH(RequestedDateTime), YEAR(RequestedDateTime)";
-	
-	         PreparedStatement stmt2 = conn.prepareStatement(query2);
-	
-	         // Parse the monthYear parameter to extract month and year
-	         String[] monthYearParts = monthYear.split("/");
-	         int month = Integer.parseInt(monthYearParts[0]);
-	         int year = Integer.parseInt(monthYearParts[1]);
-	
-	         // Set parameters for the query
-	         stmt2.setString(1, monthYear);
-	         stmt2.setString(2, district);
-	         stmt2.setInt(3, restaurantId);
-	         stmt2.setInt(4, month);
-	         stmt2.setInt(5, year);
-	         stmt2.setInt(6, restaurantId);
-	         stmt2.setString(7, district);
-	
-	         // Execute the query
-	         stmt2.executeUpdate();
-	
-	         // Retrieve the updated data
-	         rs = stmt.executeQuery();
-	         if (rs.next()) {
-	             int week1 = rs.getInt("Week1");
-	             int week2 = rs.getInt("Week2");
-	             int week3 = rs.getInt("Week3");
-	             int week4 = rs.getInt("Week4");
-	             int[] IncomeReportDataByWeeks = {week1, week2, week3, week4};
-	             return IncomeReportDataByWeeks;
-	         }
-	     }
-	 } catch (SQLException e) {
-	     e.printStackTrace();
-	 
-	 }
- 
+        System.out.println("Starting IncomeReport calculation for Restaurant: " + restaurantNumber + ", Month/Year: " + monthYear + ", District: " + district);
 
- return new int[0]; // Return an empty array if nothing was found or an error occurred
-}
-         
-            	
-            
-            
+        // 1. Try to fetch data from the income_reports table
+        String selectIncomeQuery = "SELECT Week1, Week2, Week3, Week4 FROM bite_me.income_reports WHERE RestaurantNumber = ? AND MonthYear = ? AND District = ?";
         
-		
+        try (PreparedStatement selectStmt = conn.prepareStatement(selectIncomeQuery)) {
+            selectStmt.setInt(1, restaurantNumber);
+            selectStmt.setString(2, monthYear);
+            selectStmt.setString(3, district);
+            
+            ResultSet rs = selectStmt.executeQuery();
+            
+            if (rs.next()) {
+                incomeReportResultData[0] = rs.getInt("Week1");
+                incomeReportResultData[1] = rs.getInt("Week2");
+                incomeReportResultData[2] = rs.getInt("Week3");
+                incomeReportResultData[3] = rs.getInt("Week4");
+                System.out.println("Data found in income_reports: " + Arrays.toString(incomeReportResultData));
+                return incomeReportResultData; // Return early if data found
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // 2. If data not found in income_reports, calculate it from the orders table
+        System.out.println("No data found in income_reports. Calculating from orders...");
+        
+        String selectCustomersQuery = "SELECT c.CustomerNumber FROM bite_me.customers c JOIN bite_me.users u ON c.ID = u.ID WHERE u.District = ? AND u.Type = 'customer' AND c.Status = 'active'";
+        List<Integer> customerNumbers = new ArrayList<>();
+        
+        try (PreparedStatement selectCustomersStmt = conn.prepareStatement(selectCustomersQuery)) {
+            selectCustomersStmt.setString(1, district);
+            ResultSet rs = selectCustomersStmt.executeQuery();
+            
+            while (rs.next()) {
+                customerNumbers.add(rs.getInt("CustomerNumber"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (customerNumbers.isEmpty()) {
+            System.out.println("No customers found in the specified district.");
+            return incomeReportResultData; // If no customers found, return an empty result
+        }
+
+        System.out.println("Customer numbers found: " + customerNumbers);
+        
+        String placeholders = String.join(",", Collections.nCopies(customerNumbers.size(), "?"));
+        
+        String selectOrdersQuery = "SELECT TotalPrice, OrderDateTime FROM bite_me.orders WHERE RestaurantNumber = ? AND CustomerNumber IN (" + placeholders + ") AND DATE_FORMAT(OrderDateTime, '%c/%Y') = ?";
+        
+        try (PreparedStatement selectOrdersStmt = conn.prepareStatement(selectOrdersQuery)) {
+            selectOrdersStmt.setInt(1, restaurantNumber);
+            
+            int i = 2;
+            for (Integer customerNumber : customerNumbers) {
+                selectOrdersStmt.setInt(i++, customerNumber);
+            }
+            
+            selectOrdersStmt.setString(i, monthYear);
+
+            ResultSet rs = selectOrdersStmt.executeQuery();
+            
+            while (rs.next()) {
+                int totalPrice = rs.getInt("TotalPrice");
+                LocalDateTime orderDateTime = rs.getTimestamp("OrderDateTime").toLocalDateTime();
+                int weekOfMonth = orderDateTime.get(ChronoField.ALIGNED_WEEK_OF_MONTH);
+                System.out.println("OrderDateTime: " + orderDateTime + ", TotalPrice: " + totalPrice + ", WeekOfMonth: " + weekOfMonth);
+                
+                if (weekOfMonth >= 1 && weekOfMonth <= 4) {
+                    incomeReportResultData[weekOfMonth - 1] += totalPrice;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Calculated incomeReportResultData: " + Arrays.toString(incomeReportResultData));
+
+        // 3. Update the income_reports table with the calculated values
+        String updateIncomeQuery = "INSERT INTO bite_me.income_reports (MonthYear, District, RestaurantNumber, Week1, Week2, Week3, Week4) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE Week1 = ?, Week2 = ?, Week3 = ?, Week4 = ?";
+        
+        try (PreparedStatement updateStmt = conn.prepareStatement(updateIncomeQuery)) {
+            updateStmt.setString(1, monthYear);
+            updateStmt.setString(2, district);
+            updateStmt.setInt(3, restaurantNumber);
+            updateStmt.setInt(4, incomeReportResultData[0]);
+            updateStmt.setInt(5, incomeReportResultData[1]);
+            updateStmt.setInt(6, incomeReportResultData[2]);
+            updateStmt.setInt(7, incomeReportResultData[3]);
+            
+            updateStmt.setInt(8, incomeReportResultData[0]);
+            updateStmt.setInt(9, incomeReportResultData[1]);
+            updateStmt.setInt(10, incomeReportResultData[2]);
+            updateStmt.setInt(11, incomeReportResultData[3]);
+
+            updateStmt.executeUpdate();
+            System.out.println("Updated income_reports table with calculated values.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return incomeReportResultData;
+    }
+	
 
     
     /**

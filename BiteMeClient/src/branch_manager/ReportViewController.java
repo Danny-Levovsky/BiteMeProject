@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import client.Client;
 import client.ClientController;
 import entites.Message;
 import enums.Commands;
@@ -68,7 +69,7 @@ public class ReportViewController {
 
 	@FXML
 	private void initialize() {
-
+		Client.reportViewController = this;
 		txtRestaurant.setText(restaurantName);
 
 		if (reportType.equals("income report")) {
@@ -124,8 +125,9 @@ public class ReportViewController {
 	}
 	
 	public void handleServerResponseIncome(int[] incomeReportResultData) {
-		//... 
 		
+		// Set chart title
+        barChart.setTitle("Total Income per Week");
 		XYChart.Series<String, Number> series1 = new XYChart.Series<>();
 		series1.setName("income report " + monthYear);
 		series1.getData().add(new XYChart.Data<>("week1", incomeReportResultData[0]));
@@ -134,6 +136,7 @@ public class ReportViewController {
 		series1.getData().add(new XYChart.Data<>("week4",incomeReportResultData[3]));
 		xAxis.setLabel("Week");
 		yAxis.setLabel("NIS");
+		barChart.setAnimated(false);
 		barChart.getData().addAll(series1);
 	}
 	
