@@ -149,7 +149,9 @@ public class NewOrderController {
         orderQuantitiesDesert = new HashMap<>();
         orderQuantitiesDrink = new HashMap<>();
         restaurantList = FXCollections.observableArrayList();
-        confirmDeliveryButton.setDisable(false);
+        confirmDeliveryButton.setDisable(true);
+        deliveryHourPicker.setDisable(true);
+        deliveryMinutePicker.setDisable(true);
         
         errorText = new Text();
         errorText.setFill(Color.RED);
@@ -177,6 +179,13 @@ public class NewOrderController {
             btnRemoveItem.setDisable(newSelection == null);
             if (newSelection == null) {
                 removeItemText.setVisible(false);
+            }
+        });
+        
+        deliveryTypeComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                updateDeliveryFields(newVal);
+                confirmDeliveryButton.setDisable(false);
             }
         });
         
@@ -1199,7 +1208,7 @@ public class NewOrderController {
     }
     
     private void updateDeliveryFields(String deliveryType) {
-        boolean fieldsEnabled = !deliveryType.equals("Pickup") && deliveryType != null;
+    	boolean fieldsEnabled = !deliveryType.equals("Pickup") && deliveryType != null;
         addressField.setDisable(!fieldsEnabled);
         companyNameField.setDisable(!fieldsEnabled);
         userNameField.setDisable(!fieldsEnabled);
