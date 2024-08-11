@@ -121,6 +121,7 @@ public class NewOrderController {
     private boolean orderChanged = false;
     private String currentRestaurant = null;
     private boolean showErrorMessages = false;
+    private boolean isDeliveryConfirmed = false;
     private ObservableList<String> restaurantList = FXCollections.observableArrayList();
     private ObservableList<Dish> dishes1 = FXCollections.observableArrayList();
     private ObservableList<Dish> dishes2 = FXCollections.observableArrayList();
@@ -882,7 +883,25 @@ public class NewOrderController {
         companyNameField.textProperty().addListener((obs, oldVal, newVal) -> validateCompanyName());
         userNameField.textProperty().addListener((obs, oldVal, newVal) -> validateUserName());
         deliveryParticipantsField.textProperty().addListener((obs, oldVal, newVal) -> validateDeliveryParticipants());
+        
+        deliveryTypeComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
+        addressField.textProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
+        companyNameField.textProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
+        userNameField.textProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
+        phoneNumberField.textProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
+        deliveryDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
+        deliveryHourPicker.valueProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
+        deliveryMinutePicker.valueProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
+        deliveryParticipantsField.textProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
 
+    }
+    
+    private void invalidateDeliveryConfirmation() {
+        if (isDeliveryConfirmed) {
+            isDeliveryConfirmed = false;
+            confirmDeliveryText.setText("Delivery details changed. Please confirm again.");
+            confirmDeliveryText.setFill(Color.ORANGE);
+        }
     }
     
     private void updateButtonStates() {
@@ -912,12 +931,12 @@ public class NewOrderController {
                 isUserNameValid &&
                 isDeliveryDateTimeValid();
 
-		if (deliveryTypeComboBox.getValue().equals("Shared Delivery")) {
-		  isValid = isValid && isDeliveryParticipantsValid;
-		}
-	
-	return isValid;
-	}
+        if (deliveryTypeComboBox.getValue().equals("Shared Delivery")) {
+            isValid = isValid && isDeliveryParticipantsValid;
+        }
+
+        return isValid;
+    }
     
     private void updateErrorMessages() {
         addressErrorText.setText(showErrorMessages && !isAddressValid ? "Please use 'City, Street Name (optional number)'" : "");
@@ -948,11 +967,8 @@ public class NewOrderController {
                 deliveryParticipantsErrorText.setText("");
             }
         } else {
-        	errorText.setText("");
             dateErrorText.setText("");
             timeErrorText.setText("");
-            confirmDeliveryText.setText("");
-            finishErrorText.setText("");
         }
     }
     
@@ -1048,11 +1064,14 @@ public class NewOrderController {
                     discountPercentage = 0;
             }
             updateOrderTotal();
+            isDeliveryConfirmed = true;
             confirmDeliveryText.setText("Delivery details confirmed successfully");
+            confirmDeliveryText.setFill(Color.GREEN);
             showErrorMessages = false;
         } else {
-        	showErrorMessages = true;
-        	finishErrorText.setText("Please correct the errors in the delivery fields");
+            showErrorMessages = true;
+            confirmDeliveryText.setText("Please correct the errors in the delivery fields");
+            confirmDeliveryText.setFill(Color.RED);
         }
         updateErrorMessages();
     }
