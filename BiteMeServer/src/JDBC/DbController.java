@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 
 import entites.Category;
 import entites.Dish;
@@ -377,6 +379,69 @@ public class DbController {
         }
     }
      
+    
+    /**
+     * Updates the BeginUpdate timestamp for a specific restaurant in the database.
+     * This method is called when a certified employee begins updating the menu.
+     *
+     * @param restaurantNum The unique identifier of the restaurant to update.
+     * @param localTime     The Timestamp representing the time when the update began.
+     *
+     * @throws SQLException If there's an error executing the SQL statement.
+     *
+     */ 
+    public void updateEntryTime(int restaurantNum, Timestamp localTime) {
+        String query = "UPDATE restaurants SET BeginUpdate = ? WHERE RestaurantNumber = ?";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            // Use setObject with Types.TIMESTAMP to ensure compatibility with datetime
+            pstmt.setObject(1, localTime, Types.TIMESTAMP);
+            pstmt.setInt(2, restaurantNum);
+            
+            int affectedRows = pstmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                System.out.println("Successfully updated BeginUpdate for restaurant " + restaurantNum);
+            } else {
+                System.out.println("No restaurant found with number " + restaurantNum);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error updating BeginUpdate: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    
+    /**
+     * Updates the EndUpdate timestamp for a specific restaurant in the database.
+     * This method is called when a certified employee finishes updating the menu.
+     *
+     * @param restaurantNum The unique identifier of the restaurant to update.
+     * @param localTime     The Timestamp representing the time when the update ended.
+     *
+     * @throws SQLException If there's an error executing the SQL statement.
+     *
+     */
+    public void updateExitTime(int restaurantNum, Timestamp localTime) {
+        String query = "UPDATE restaurants SET EndUpdate = ? WHERE RestaurantNumber = ?";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            // Use setObject with Types.TIMESTAMP to ensure compatibility with datetime
+            pstmt.setObject(1, localTime, Types.TIMESTAMP);
+            pstmt.setInt(2, restaurantNum);
+            
+            int affectedRows = pstmt.executeUpdate();
+            
+            if (affectedRows > 0) {
+                System.out.println("Successfully updated EndUpdate for restaurant " + restaurantNum);
+            } else {
+                System.out.println("No restaurant found with number " + restaurantNum);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error updating EndUpdate: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
     
     
     public boolean isUsernameExists(String username) {

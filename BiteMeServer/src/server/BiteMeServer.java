@@ -9,6 +9,9 @@ import entites.Message;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -207,6 +210,35 @@ public class BiteMeServer extends AbstractServer
           } catch (IOException e) {
               e.printStackTrace();
           }
+          break;
+      case updateBegin:
+          Object[] update_begin = (Object[]) m.getObj();
+          int restaurantNum = (int) update_begin[0];
+          String localTimeStr = (String) update_begin[1];
+          
+          // Parse the datetime string to a LocalDateTime object
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+          LocalDateTime localDateTime = LocalDateTime.parse(localTimeStr, formatter);
+          
+          // Convert LocalDateTime to Timestamp
+          Timestamp localTime = Timestamp.valueOf(localDateTime);
+          
+          dbController.updateEntryTime(restaurantNum, localTime);
+          break;
+          
+      case EndUpdate:
+          Object[] update_end = (Object[]) m.getObj();
+          int restaurantNum2 = (int) update_end[0];
+          String localTimeStr2 = (String) update_end[1];
+          
+          // Parse the datetime string to a LocalDateTime object
+          DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+          LocalDateTime localDateTime2 = LocalDateTime.parse(localTimeStr2, formatter2);
+          
+          // Convert LocalDateTime to Timestamp
+          Timestamp localTime2 = Timestamp.valueOf(localDateTime2);
+          
+          dbController.updateExitTime(restaurantNum2, localTime2);
           break;
   
 

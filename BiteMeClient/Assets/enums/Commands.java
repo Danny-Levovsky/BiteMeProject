@@ -26,5 +26,7 @@ public enum Commands {
 	AddDish,
 	DeleteDish,
 	UpdateDishPrice,
-    CheckDishExists
+    CheckDishExists,
+    updateBegin,
+    EndUpdate
 }

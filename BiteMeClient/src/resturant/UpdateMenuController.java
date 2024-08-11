@@ -36,6 +36,9 @@ import enums.Commands;
 import enums.OptionType;
 import javafx.scene.control.Alert;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 /**
  * Controller class for updating the restaurant menu.
@@ -88,7 +91,9 @@ public class UpdateMenuController {
     private String restaurantName;
     private boolean dishExists;
     private int categoryId;
-
+    
+    DateTimeFormatter formatter;
+    String formattedDateTime;
     
     /**
      * Inner class representing a dish display object.
@@ -204,6 +209,32 @@ public class UpdateMenuController {
     	    }
     	    Message getDishesMessage = new Message(certifiedEmployee, Commands.GetRestaurantDishes);
     	    ClientController.client.handleMessageFromClientControllers(getDishesMessage);
+    }
+    
+    
+    /**
+     * Updates the database with the entry time of a certified employee.
+     * This method is called when a certified employee begins updating the menu.
+     *
+     * @param localTime A string representation of the local time when the update began,
+     *                  formatted as "yyyy-MM-dd HH:mm:ss".
+     */
+    public void updateEntry(String localTime) {
+        Message updateBegin = new Message(new Object[]{restaurantNumber, localTime}, Commands.updateBegin);
+        ClientController.client.handleMessageFromClientControllers(updateBegin);
+    }
+    
+    
+    /**
+     * Updates the database with the exit time of a certified employee.
+     * This method is called when a certified employee finishes updating the menu.
+     *
+     * @param localTime A string representation of the local time when the update ended,
+     *                  formatted as "yyyy-MM-dd HH:mm:ss".
+     */
+    public void updateExit(String localTime) {
+        Message updateEnd = new Message(new Object[]{restaurantNumber, localTime}, Commands.EndUpdate);
+        ClientController.client.handleMessageFromClientControllers(updateEnd);
     }
     
     
@@ -367,14 +398,24 @@ public class UpdateMenuController {
     
 	
     /**
-     * Handles the action of navigating back to the Certified Employee screen.
-     * Closes the current window and opens the Certified Employee screen.
+     * Handles the action of clicking the 'Back' button.
+     * This method performs the following actions:
+     * 1. Gets the current local time and formats it.
+     * 2. Calls updateExit to record the departure time of the certified employee.
+     * 3. Closes the current window.
+     * 4. Opens a new CertifiedEmployeeController screen.
      *
-     * @param event The action event triggered by the back button
-     * @throws Exception if there's an error opening the new screen
+     * @param event The ActionEvent triggered by clicking the 'Back' button.
+     * @throws Exception If there's an error while opening the new screen.
      */
     @FXML
     void getBtnBack(ActionEvent event) throws Exception {
+    	// Get current local time and format it
+        LocalDateTime localTime = LocalDateTime.now();
+        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        formattedDateTime = localTime.format(formatter);
+        updateExit(formattedDateTime); // calls updateExit to update the Update the departure time of a certified employee
+        
     	((Node) event.getSource()).getScene().getWindow().hide();
     	CertifiedEmployeeController newScreen = new CertifiedEmployeeController();
     	newScreen.start(new Stage());
@@ -384,7 +425,8 @@ public class UpdateMenuController {
     
     /**
      * Handles responses received from the server.
-     * Processes various types of server responses including dish data, operation confirmations, and restaurant information.
+     * Processes various types of server responses including dish data, operation confirmations, restaurant information,
+     * and certified employee enters the update menu screen.
      *
      * @param message The message received from the server
      */
@@ -425,6 +467,12 @@ public class UpdateMenuController {
         case GetRestaurantNum:
             restaurantNumber = (Integer) message.getObj();
             System.out.println("Restaurant Number: " + restaurantNumber);
+            
+            // Get current local time and format it
+            LocalDateTime localTime = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedDateTime = localTime.format(formatter);
+            updateEntry(formattedDateTime); // calls updateEntry to update the entry time of certified employee
             break;
 
         case GetRestaurantName:
