@@ -1073,6 +1073,7 @@ public class NewOrderController {
             confirmDeliveryText.setText("Please correct the errors in the delivery fields");
             confirmDeliveryText.setFill(Color.RED);
         }
+        updateButtonStates();
         updateErrorMessages();
     }
     
