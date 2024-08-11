@@ -179,6 +179,8 @@ public class NewOrderController {
                 removeItemText.setVisible(false);
             }
         });
+        
+        
     }
     
     
@@ -356,7 +358,7 @@ public class NewOrderController {
         dishTableViewDrink.setItems(dishes4);
         dishTableViewDrink.refresh();
         
-        orderChanged = true;
+        orderChanged = false;
         updateButtonStates();
     }
 
@@ -805,6 +807,9 @@ public class NewOrderController {
     }
 
     private void addListeners() {
+    	
+    	orderItems.addListener((ListChangeListener<OrderItem>) c -> updateButtonStates()); //Listener to update 'Confirm Order' button
+    	
         dishTableViewSalad.getItems().addListener((ListChangeListener<Dish>) c -> {
             orderChanged = true;
             updateButtonStates();
@@ -871,6 +876,7 @@ public class NewOrderController {
         deliveryTypeComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 updateDeliveryFields(newVal);
+                
             }
         });
 
@@ -893,6 +899,7 @@ public class NewOrderController {
         deliveryHourPicker.valueProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
         deliveryMinutePicker.valueProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
         deliveryParticipantsField.textProperty().addListener((obs, oldVal, newVal) -> invalidateDeliveryConfirmation());
+        
 
     }
     
@@ -906,9 +913,13 @@ public class NewOrderController {
     
     private void updateButtonStates() {
         boolean restaurantSelected = currentRestaurant != null;
-        btnAddOrder.setDisable(!restaurantSelected || !orderChanged);
-        btnFinish.setDisable(!restaurantSelected || orderDishes.isEmpty());
-        btnRemoveItem.setDisable(!restaurantSelected || orderItems.isEmpty());
+        boolean hasOrderItems = !orderItems.isEmpty();
+        btnAddOrder.setDisable(!orderChanged);
+        btnFinish.setDisable(!restaurantSelected || !hasOrderItems);
+        btnRemoveItem.setDisable(!restaurantSelected || !hasOrderItems);
+        removeItemText.setVisible(false);
+        finishErrorText.setText("");
+   
     }
     
     private boolean validateDeliveryFields() {
@@ -1269,6 +1280,7 @@ public class NewOrderController {
             orderItems.remove(selectedItem);
             updateOrderTotal();
             removeItemText.setText("Removed: " + selectedItem.getDishName());
+            updateButtonStates();
             removeItemText.setVisible(true);
         }
     }
