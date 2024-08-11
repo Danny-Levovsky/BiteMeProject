@@ -77,11 +77,13 @@ public class NewOrderController {
     @FXML private TableColumn<Dish, Integer> orderQuantityColumn;
     @FXML private Text orderPriceText;
     @FXML private Text deliveryFeeText;
+    @FXML private Text removeItemText;
 
     @FXML private ComboBox<String> restaurantComboBox;
     @FXML private Button btnBack;
     @FXML private Button btnAddOrder;
     @FXML private Button btnFinish;
+    @FXML private Button btnRemoveItem;
     @FXML private Text confirmDeliveryText;
     @FXML private Text totalPriceText;
     
@@ -135,42 +137,50 @@ public class NewOrderController {
 
     @FXML
     private void initialize() {
-    	Client.newOrderController = this;
-    	dishes1 = FXCollections.observableArrayList();
-    	dishes2 = FXCollections.observableArrayList();
-    	dishes3 = FXCollections.observableArrayList();
-    	dishes4 = FXCollections.observableArrayList();
+        Client.newOrderController = this;
+        dishes1 = FXCollections.observableArrayList();
+        dishes2 = FXCollections.observableArrayList();
+        dishes3 = FXCollections.observableArrayList();
+        dishes4 = FXCollections.observableArrayList();
         orderDishes = FXCollections.observableArrayList();
-        orderQuantitiesSalad = new HashMap<>(); // Move this line here
+        orderQuantitiesSalad = new HashMap<>(); 
         orderQuantitiesMain = new HashMap<>();
         orderQuantitiesDesert = new HashMap<>();
         orderQuantitiesDrink = new HashMap<>();
-        restaurantList = FXCollections.observableArrayList(); // set list of restaurant names from method
+        restaurantList = FXCollections.observableArrayList();
         confirmDeliveryButton.setDisable(false);
         
         errorText = new Text();
         errorText.setFill(Color.RED);
         errorText.setStyle("-fx-font-size: 12px;");
         
-        //request restaurant names
         requestRestaurantNames();
-        //setCustomer(customer);
         
-        
-        
-        //setupComboBoxes();
-        setupDishTableView();
-        addListeners();
-        //addSampleData();
-        updateButtonStates();
-        setupOrderTableView();
+        // We'll delay these setups until we have customer details
+        // setupDishTableView();
+        // addListeners();
+        // updateButtonStates();
+        // setupOrderTableView();
         
         restaurantComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null && !newValue.equals("Choose a restaurant")) {
                 requestRestaurantMenu(newValue);
             }
         });
+        
+        btnRemoveItem.setOnAction(this::handleRemoveItem);
+        btnRemoveItem.setDisable(true);
+        removeItemText.setVisible(false);
+
+        orderTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            btnRemoveItem.setDisable(newSelection == null);
+            if (newSelection == null) {
+                removeItemText.setVisible(false);
+            }
+        });
     }
+    
+    
     public static void setCustomer(User user) {
     	
     	customer = user;
@@ -182,9 +192,7 @@ public class NewOrderController {
     }
     
     public void setCustomerDetails(Customer customerDetails) {
-    	
-    	if (this.currentCustomer == null) {
-            // This is a new customer, create and set it
+        if (this.currentCustomer == null) {
             this.currentCustomer = new Customer(
                 customerDetails.getCustomerNumber(),
                 customerDetails.getId(),
@@ -192,22 +200,29 @@ public class NewOrderController {
                 customerDetails.isBusiness(),
                 customerDetails.getStatus()
             );
-    	}
-    	System.out.println(currentCustomer);
-    	Platform.runLater(this::setupUI);
-    	
+        }
+        System.out.println("Current Customer: " + currentCustomer);
+        Platform.runLater(this::completeSetup);
     }
+
+    private void completeSetup() {
+        setupUI();
+        setupDishTableView();
+        addListeners();
+        updateButtonStates();
+        setupOrderTableView();
+    }
+
     private void setupUI() {
         setupComboBoxes();
-        // Set up other UI elements as needed
+        // Any other UI setup that depends on customer details
     }
     
-    //implement request for rest names
+    //implement request for Restaurant names
     public void requestRestaurantNames() {
     	Commands command = Commands.getRestaurantList;
     	Message message = new Message(null,command);
     	ClientController.client.handleMessageFromClientControllers(message);
-    	//System.out.println(customer.getId());
     	
     }
     //implement setting combo box
@@ -224,71 +239,89 @@ public class NewOrderController {
         ClientController.client.handleMessageFromClientControllers(message);
     }
     
+    /**
+     * Sets up the restaurant menu based on the provided menu data.
+     * This method processes the menu data, creates Dish objects, and populates the appropriate TableViews.
+     * It also sets default specifications for size and doneness options.
+     *
+     * @param menu An ArrayList of Map objects, each representing a dish with its properties and options.
+     */
     public void setRestaurantMenu(ArrayList<Map<String, Object>> menu) {
         dishes1.clear();
         orderQuantitiesSalad.clear();
-        
         dishes2.clear();
         orderQuantitiesMain.clear();
-        
         dishes3.clear();
         orderQuantitiesDesert.clear();
-        
         dishes4.clear();
         orderQuantitiesDrink.clear();
         
         Map<String, Dish> dishMap = new HashMap<>();
+        
+        
+        for (Map<String, Object> dishData : menu) {
+            String dishID = (String) dishData.get("dishID");
+            String dishType = (String) dishData.get("dishType");
+            String dishName = (String) dishData.get("dishName");
+            int dishPrice = ((Number) dishData.get("dishPrice")).intValue();
+            Map<String, List<String>> dishOptions = (Map<String, List<String>>) dishData.get("dishOptions");
+            Map<String, Integer> dishPrices = (Map<String, Integer>) dishData.get("dishPrices");
 
-        for (Map<String, Object> dish : menu) {
-            String dishID = (String) dish.get("dishID");
-            String dishType = (String) dish.get("dishType");
-            String dishName = (String) dish.get("dishName");
-            int dishPrice = ((Number) dish.get("dishPrice")).intValue();
-            Map<String, List<String>> dishOptions = (Map<String, List<String>>) dish.get("dishOptions");
-
-            // Get or create the Dish object for this dishID
-            Dish newDish;
-            if (dishMap.containsKey(dishID)) {
-                newDish = dishMap.get(dishID);
-            } else {
+            // Create or get existing Dish object
+            Dish dish = dishMap.computeIfAbsent(dishID, k -> {
                 ObservableList<String> specifications = FXCollections.observableArrayList();
-                newDish = new Dish(dishID, dishName, dishType, dishPrice, specifications);
-                dishMap.put(dishID, newDish);
+                return new Dish(dishID, dishName, dishType, dishPrice, specifications);
+            });
+
+            // Set size prices after dish is created
+            if (dishPrices != null && !dishPrices.isEmpty()) {
+                dish.setSizePrices(new HashMap<>(dishPrices));
+            } else {
+                dish.setSizePrices(new HashMap<>());
             }
 
-         // Add specifications to the existing Dish object
+         // Process and add specifications
+            boolean hasSpecifications = false;
+            boolean hasRemoveOption = false;
             for (Map.Entry<String, List<String>> entry : dishOptions.entrySet()) {
                 String optionType = entry.getKey();
                 List<String> optionValues = entry.getValue();
                 
-                if (optionType.equals("Doneness")) {
-                    for (String value : optionValues) {
-                        String specificationText = "Doneness: " + value;
-                        if (!newDish.getSpecifications().contains(specificationText)) {
-                            newDish.getSpecifications().add(specificationText);
-                        }
-                    }
-                } else if (optionType.equals("Remove")) {
-                    for (String value : optionValues) {
-                        String specificationText = "Remove " + value;
-                        if (!newDish.getSpecifications().contains(specificationText)) {
-                            newDish.getSpecifications().add(specificationText);
-                        }
-                    }
-                } else {
-                    for (String value : optionValues) {
-                        String specificationText = optionType + ": " + value;
-                        if (!newDish.getSpecifications().contains(specificationText)) {
-                            newDish.getSpecifications().add(specificationText);
+                for (String value : optionValues) {
+                    String specificationText = optionType + ": " + value;
+                    if (!dish.getSpecifications().contains(specificationText)) {
+                        dish.getSpecifications().add(specificationText);
+                        hasSpecifications = true;
+                        if (optionType.equals("Remove")) {
+                            hasRemoveOption = true;
                         }
                     }
                 }
             }
 
-            newDish.setSelectedSpecification("None");
+            // Add "None" if there are no specifications or if there's a "Remove" option
+            if (!hasSpecifications || hasRemoveOption) {
+                dish.getSpecifications().add(0, "None");
+            }
+
+            // Set default specification
+            if (hasRemoveOption) {
+                dish.setSelectedSpecification("None");
+            } else if (!dish.getSpecifications().isEmpty()) {
+                dish.setSelectedSpecification(dish.getSpecifications().get(0));
+            }
+
+            // Update price if the default specification is a size
+            if (dish.getSelectedSpecification().startsWith("Size:")) {
+                String selectedSize = dish.getSelectedSpecification().substring(6).trim().toLowerCase();
+                Integer newPrice = dish.getSizePrices().get(selectedSize);
+                if (newPrice != null) {
+                    dish.setDishPrice(newPrice);
+                }
+            }
         }
 
-        // Categorize dishes into the appropriate lists
+        // Categorize dishes into appropriate lists
         for (Dish dish : dishMap.values()) {
             switch (dish.getCategoryName()) {
                 case "salad":
@@ -312,16 +345,13 @@ public class NewOrderController {
             }
         }
 
-        // Set items and refresh table views
+        // Update TableViews
         dishTableViewSalad.setItems(dishes1);
         dishTableViewSalad.refresh();
-        
         dishTableViewMainCourse.setItems(dishes2);
         dishTableViewMainCourse.refresh();
-        
         dishTableViewDesert.setItems(dishes3);
         dishTableViewDesert.refresh();
-        
         dishTableViewDrink.setItems(dishes4);
         dishTableViewDrink.refresh();
         
@@ -348,9 +378,13 @@ public class NewOrderController {
             deliveryMinutePicker.getItems().add(String.format("%02d", i));
         }
     }
-
+    
+    /**
+     * Sets up the TableViews for displaying dish information.
+     * This method configures the columns for each TableView, including the specifications column
+     * which uses a ComboBox for selecting dish options.
+     */
     private void setupDishTableView() {
-        //dishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
         dishNameColumnSalad.setCellValueFactory(new PropertyValueFactory<>("dishName"));
         dishPriceColumnSalad.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
         
@@ -362,7 +396,19 @@ public class NewOrderController {
         
         dishNameColumnDrink.setCellValueFactory(new PropertyValueFactory<>("dishName"));
         dishPriceColumnDrink.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
+        
+        setupSpecificationColumn(specificationsColumnSalad);
+        setupSpecificationColumn(specificationsColumnMain);
+        setupSpecificationColumn(specificationsColumnDesert);
+        setupSpecificationColumn(specificationsColumnDrink);
 
+        
+        
+        /**
+         * Configures the specifications column to use a ComboBox for selecting dish options.
+         * The ComboBox is populated with available specifications for each dish and displays
+         * the currently selected specification.
+         */
         specificationsColumnSalad.setCellFactory(column -> {
             return new TableCell<Dish, String>() {
                 private final ComboBox<String> comboBox = new ComboBox<>();
@@ -379,17 +425,19 @@ public class NewOrderController {
                         setGraphic(null);
                     } else {
                         Dish dish = getTableView().getItems().get(getIndex());
-                        ObservableList<String> specs = FXCollections.observableArrayList("None");
-                        specs.addAll(dish.getSpecifications());
+                        ObservableList<String> specs = FXCollections.observableArrayList(dish.getSpecifications());
                         comboBox.setItems(specs);
-                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : "None");
-                        comboBox.setOnAction(event -> dish.setSelectedSpecification(comboBox.getValue()));
+                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : specs.get(0));
+                        comboBox.setOnAction(event -> {
+                            dish.setSelectedSpecification(comboBox.getValue());
+                            handleSpecificationChange(dish, comboBox.getValue());
+                        });
                         setGraphic(comboBox);
                     }
                 }
             };
         });
-        
+      
         specificationsColumnMain.setCellFactory(column -> {
             return new TableCell<Dish, String>() {
                 private final ComboBox<String> comboBox = new ComboBox<>();
@@ -405,18 +453,20 @@ public class NewOrderController {
                     if (empty) {
                         setGraphic(null);
                     } else {
-                        Dish dish = getTableView().getItems().get(getIndex());
-                        ObservableList<String> specs = FXCollections.observableArrayList("None");
-                        specs.addAll(dish.getSpecifications());
+                    	Dish dish = getTableView().getItems().get(getIndex());
+                        ObservableList<String> specs = FXCollections.observableArrayList(dish.getSpecifications());
                         comboBox.setItems(specs);
-                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : "None");
-                        comboBox.setOnAction(event -> dish.setSelectedSpecification(comboBox.getValue()));
+                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : specs.get(0));
+                        comboBox.setOnAction(event -> {
+                            dish.setSelectedSpecification(comboBox.getValue());
+                            handleSpecificationChange(dish, comboBox.getValue());
+                        });
                         setGraphic(comboBox);
                     }
                 }
             };
         });
-        
+      
         specificationsColumnDesert.setCellFactory(column -> {
             return new TableCell<Dish, String>() {
                 private final ComboBox<String> comboBox = new ComboBox<>();
@@ -432,17 +482,20 @@ public class NewOrderController {
                     if (empty) {
                         setGraphic(null);
                     } else {
-                        Dish dish = getTableView().getItems().get(getIndex());
-                        ObservableList<String> specs = FXCollections.observableArrayList("None");
-                        specs.addAll(dish.getSpecifications());
+                    	Dish dish = getTableView().getItems().get(getIndex());
+                        ObservableList<String> specs = FXCollections.observableArrayList(dish.getSpecifications());
                         comboBox.setItems(specs);
-                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : "None");
-                        comboBox.setOnAction(event -> dish.setSelectedSpecification(comboBox.getValue()));
+                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : specs.get(0));
+                        comboBox.setOnAction(event -> {
+                            dish.setSelectedSpecification(comboBox.getValue());
+                            handleSpecificationChange(dish, comboBox.getValue());
+                        });
                         setGraphic(comboBox);
                     }
                 }
             };
         });
+              
         
         specificationsColumnDrink.setCellFactory(column -> {
             return new TableCell<Dish, String>() {
@@ -459,17 +512,20 @@ public class NewOrderController {
                     if (empty) {
                         setGraphic(null);
                     } else {
-                        Dish dish = getTableView().getItems().get(getIndex());
-                        ObservableList<String> specs = FXCollections.observableArrayList("None");
-                        specs.addAll(dish.getSpecifications());
+                    	Dish dish = getTableView().getItems().get(getIndex());
+                        ObservableList<String> specs = FXCollections.observableArrayList(dish.getSpecifications());
                         comboBox.setItems(specs);
-                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : "None");
-                        comboBox.setOnAction(event -> dish.setSelectedSpecification(comboBox.getValue()));
+                        comboBox.setValue(dish.getSelectedSpecification() != null ? dish.getSelectedSpecification() : specs.get(0));
+                        comboBox.setOnAction(event -> {
+                            dish.setSelectedSpecification(comboBox.getValue());
+                            handleSpecificationChange(dish, comboBox.getValue());
+                        });
                         setGraphic(comboBox);
                     }
                 }
             };
         });
+       
         
         quantityColumnSalad.setCellFactory(column -> new TableCell<Dish, Integer>() {
             private final Spinner<Integer> spinner = new Spinner<>(0, 100, 0);
@@ -660,31 +716,84 @@ public class NewOrderController {
         dishTableViewDesert.setItems(dishes3);
         dishTableViewDrink.setItems(dishes4);
     }
+    
+    ///Might need to delete if this da
+    private void setupSpecificationColumn(TableColumn<Dish, String> column) {
+        column.setCellFactory(col -> new TableCell<Dish, String>() {
+            private final ComboBox<String> comboBox = new ComboBox<>();
+            
+            {
+                comboBox.setMaxWidth(Double.MAX_VALUE);
+                comboBox.setStyle("-fx-font-size: 12px;");
+            }
+            
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    Dish dish = getTableView().getItems().get(getIndex());
+                    ObservableList<String> specs = FXCollections.observableArrayList(dish.getSpecifications());
+                    comboBox.setItems(specs);
+                    comboBox.setValue(dish.getSelectedSpecification());
+                    comboBox.setOnAction(event -> {
+                        dish.setSelectedSpecification(comboBox.getValue());
+                        handleSpecificationChange(dish, comboBox.getValue());
+                    });
+                    setGraphic(comboBox);
+                }
+            }
+        });
+    }
+    
+    private void handleSpecificationChange(Dish dish, String newValue) {
+        if (dish == null || newValue == null) {
+            System.out.println("Dish or newValue is null in handleSpecificationChange");
+            if (dish == null) {
+                System.out.println("Dish is null");
+            } else {
+                System.out.println("Dish: " + dish.getDishName() + ", but newValue is null");
+            }
+            return;
+        }
+
+        System.out.println("Handling specification change for dish: " + dish.getDishName() + ", new value: " + newValue);
+
+        if (newValue.startsWith("Size: ")) {
+            String selectedSize = newValue.substring(6).toLowerCase();
+            Map<String, Integer> sizePrices = dish.getSizePrices();
+            if (sizePrices == null) {
+                System.out.println("SizePrices is null for dish: " + dish.getDishName());
+                return;
+            }
+            Integer newPrice = sizePrices.get(selectedSize);
+            if (newPrice != null) {
+                dish.setDishPrice(newPrice);
+                updateDishPrice(dish);
+                System.out.println("Updated price for " + dish.getDishName() + " to " + newPrice + " for size " + selectedSize);
+            } else {
+                System.out.println("No price found for size: " + selectedSize + " in dish: " + dish.getDishName());
+            }
+        }
+    }
+    
+    private void updateDishPrice(Dish dish) {
+        // Refresh the TableView that contains this dish
+        if (dishes1.contains(dish)) {
+            dishTableViewSalad.refresh();
+        } else if (dishes2.contains(dish)) {
+            dishTableViewMainCourse.refresh();
+        } else if (dishes3.contains(dish)) {
+            dishTableViewDesert.refresh();
+        } else if (dishes4.contains(dish)) {
+            dishTableViewDrink.refresh();
+        }
+        // Update total price if necessary
+        updateOrderTotal();
+    }
 
     private void setupOrderTableView() {
-//        orderDishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
-//        orderDishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
-//        orderDishPriceColumn.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
-//        orderSpecificationsColumn.setCellValueFactory(new PropertyValueFactory<>("selectedSpecification"));
-//        orderQuantityColumn.setCellValueFactory(cellData -> {
-//            Dish dish = cellData.getValue();
-//            return javafx.beans.binding.Bindings.createIntegerBinding(() -> {
-//                switch (dish.getCategoryName()) {
-//                    case "salad":
-//                        return orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
-//                    case "main course":
-//                        return orderQuantitiesMain.getOrDefault(dish.getDishID(), 0);
-//                    case "dessert":
-//                        return orderQuantitiesDesert.getOrDefault(dish.getDishID(), 0);
-//                    case "drink":
-//                        return orderQuantitiesDrink.getOrDefault(dish.getDishID(), 0);
-//                    default:
-//                        return 0;
-//                }
-//            }).asObject();
-//        });
-//
-//        orderTableView.setItems(orderDishes);
     	orderDishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
         orderDishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
         orderDishPriceColumn.setCellValueFactory(new PropertyValueFactory<>("dishPrice"));
@@ -743,16 +852,6 @@ public class NewOrderController {
             });
         }
 
-//        restaurantComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-//            if (newVal != null && !newVal.equals(currentRestaurant)) {
-//                if (currentRestaurant != null && !orderDishes.isEmpty()) {
-//                    showRestaurantChangeConfirmation(newVal);
-//                } else {
-//                    currentRestaurant = newVal;
-//                    updateButtonStates();
-//                }
-//            }
-//        });
         restaurantComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && !newVal.equals(currentRestaurant)) {
                 if (currentRestaurant != null && !orderItems.isEmpty()) {
@@ -790,6 +889,7 @@ public class NewOrderController {
         boolean restaurantSelected = currentRestaurant != null;
         btnAddOrder.setDisable(!restaurantSelected || !orderChanged);
         btnFinish.setDisable(!restaurantSelected || orderDishes.isEmpty());
+        btnRemoveItem.setDisable(!restaurantSelected || orderItems.isEmpty());
     }
     
     private boolean validateDeliveryFields() {
@@ -925,26 +1025,7 @@ public class NewOrderController {
             updateErrorMessages();
         }
     }
-    
-    private void resetOrder() {
-        orderDishes.clear();
-        orderItems.clear();
-        orderQuantitiesSalad.clear();
-        orderChanged = false;
-        deliveryCharge = 0;
-        discountPercentage = 0;
-        resetOrderFields();
-        updateOrderTotal();
-        updateButtonStates();
         
-        // Reset spinners and specifications
-        for (Dish dish : dishes1) {
-            orderQuantitiesSalad.put(dish.getDishID(), 0);
-            dish.setSelectedSpecification("None");
-        }
-        dishTableViewSalad.refresh();
-    }
-    
     @FXML
     private void handleConfirmDelivery() {
         if (validateDeliveryFields()) {
@@ -992,40 +1073,10 @@ public class NewOrderController {
         orderPriceText.setText(String.format("Order Price: ₪%.2f", orderPrice));
         deliveryFeeText.setText(String.format("Delivery Fee: ₪%.2f (%s)", deliveryFee, deliveryType != null ? deliveryType : "Not selected"));
         totalPriceText.setText(String.format("Total Price: ₪%.2f", totalPrice));
+        
+        updateButtonStates();
     }
-    
-//    private void updateOrderTotal() {
-//    	double orderPrice = 0;
-//        orderPrice += orderDishes.stream()
-//            .filter(dish -> dish.getCategoryName().equals("salad"))
-//            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesSalad.get(dish.getDishID()))
-//            .sum();
-//        orderPrice += orderDishes.stream()
-//            .filter(dish -> dish.getCategoryName().equals("main course"))
-//            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesMain.get(dish.getDishID()))
-//            .sum();
-//        orderPrice += orderDishes.stream()
-//            .filter(dish -> dish.getCategoryName().equals("dessert"))
-//            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesDesert.get(dish.getDishID()))
-//            .sum();
-//        orderPrice += orderDishes.stream()
-//            .filter(dish -> dish.getCategoryName().equals("drink"))
-//            .mapToDouble(dish -> dish.getDishPrice() * orderQuantitiesDrink.get(dish.getDishID()))
-//            .sum();
-//        
-//        String deliveryType = deliveryTypeComboBox.getValue();
-//        double deliveryFee = deliveryCharge;
-//        if (discountPercentage > 0) {
-//            deliveryFee = -orderPrice * discountPercentage;
-//        }
-//
-//        double totalPrice = orderPrice + deliveryFee;
-//
-//        // Update the text in the View Order tab
-//        orderPriceText.setText(String.format("Order Price: ₪%.2f", orderPrice));
-//        deliveryFeeText.setText(String.format("Delivery Fee: ₪%.2f (%s)", deliveryFee, deliveryType != null ? deliveryType : "Not selected"));
-//        totalPriceText.setText(String.format("Total Price: ₪%.2f", totalPrice));
-//    }
+
 
     @FXML
     void getBtnAddOrder(ActionEvent event) {
@@ -1034,12 +1085,6 @@ public class NewOrderController {
         boolean hasItems = false;
         double totalPrice = 0.0;
         for (Dish dish : dishes1) {
-//            int quantity = orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
-//            if (quantity > 0) {
-//                orderDishes.add(dish);
-//                hasItems = true;
-//                totalPrice += dish.getDishPrice() * quantity;
-//            }
         	int quantity = orderQuantitiesSalad.getOrDefault(dish.getDishID(), 0);
         	if (quantity > 0) {
                 OrderItem item = new OrderItem(dish, dish.getSelectedSpecification(), quantity);
@@ -1050,11 +1095,6 @@ public class NewOrderController {
         }
         for (Dish dish : dishes2) {
             int quantity = orderQuantitiesMain.getOrDefault(dish.getDishID(), 0);
-//            if (quantity > 0) {
-//                orderDishes.add(dish);
-//                hasItems = true;
-//                totalPrice += dish.getDishPrice() * quantity;
-//            }
         	if (quantity > 0) {
         		OrderItem item = new OrderItem(dish, dish.getSelectedSpecification(), quantity);
                 newItems.add(item);
@@ -1064,11 +1104,6 @@ public class NewOrderController {
         }
         for (Dish dish : dishes3) {
             int quantity = orderQuantitiesDesert.getOrDefault(dish.getDishID(), 0);
-//            if (quantity > 0) {
-//                orderDishes.add(dish);
-//                hasItems = true;
-//                totalPrice += dish.getDishPrice() * quantity;
-//            }
             if (quantity > 0) {
             	OrderItem item = new OrderItem(dish, dish.getSelectedSpecification(), quantity);
                 newItems.add(item);
@@ -1078,11 +1113,6 @@ public class NewOrderController {
         }
         for (Dish dish : dishes4) {
             int quantity = orderQuantitiesDrink.getOrDefault(dish.getDishID(), 0);
-//            if (quantity > 0) {
-//                orderDishes.add(dish);
-//                hasItems = true;
-//                totalPrice += dish.getDishPrice() * quantity;
-//            }
             if (quantity > 0) {
             	OrderItem item = new OrderItem(dish, dish.getSelectedSpecification(), quantity);
                 newItems.add(item);
@@ -1124,7 +1154,6 @@ public class NewOrderController {
                 totalPrice += dish.getDishPrice() * quantity;
             }
             System.out.println(String.format("Total Price: ₪%.2f", totalPrice));
-            // Proceed with order submission
             finishErrorText.setText("");
         }
     }
@@ -1148,7 +1177,7 @@ public class NewOrderController {
         deliveryHourPicker.setDisable(!fieldsEnabled);
         deliveryMinutePicker.setDisable(!fieldsEnabled);
         
-        // Show/hide delivery participants field
+        // Show/hide shared delivery based on User type 
         deliveryParticipantsField.setVisible(deliveryType.equals("Shared Delivery"));
         deliveryParticipantsField.setManaged(deliveryType.equals("Shared Delivery"));
         
@@ -1198,17 +1227,11 @@ public class NewOrderController {
         resetTableFields(dishTableViewDrink, orderQuantitiesDrink);
     }
     
-//    private void resetTableFields(TableView<Dish> tableView, Map<String, Integer> quantityMap) {
-//        for (Dish dish : tableView.getItems()) {
-//            quantityMap.put(dish.getDishID(), 0);
-//            dish.setSelectedSpecification("None");
-//        }
-//        tableView.refresh();
-//    }
     private void resetTableFields(TableView<Dish> tableView, Map<String, Integer> quantityMap) {
         for (Dish dish : tableView.getItems()) {
             quantityMap.put(dish.getDishID(), 0);
-            dish.setSelectedSpecification("None");
+            // Reset to the first specification instead of "None"
+            dish.setSelectedSpecification(dish.getSpecifications().get(0));
         }
         tableView.refresh();
     }
@@ -1218,5 +1241,15 @@ public class NewOrderController {
         resetOrderFields();
         updateOrderTotal();
         orderChanged = false;
+    }
+    
+    private void handleRemoveItem(ActionEvent event) {
+        OrderItem selectedItem = orderTableView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            orderItems.remove(selectedItem);
+            updateOrderTotal();
+            removeItemText.setText("Removed: " + selectedItem.getDishName());
+            removeItemText.setVisible(true);
+        }
     }
 }

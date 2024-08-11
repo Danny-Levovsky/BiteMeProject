@@ -239,7 +239,10 @@ public class DbController {
         }
     }
     
-    //query that gets restaurant names
+    /**
+     * Retrieves a list of restaurant names from the database.
+     * @return An ArrayList of restaurant names.
+     */
     public ArrayList<String> getRestaurantNamesFromDB() {
         ArrayList<String> restaurantNames = new ArrayList<>();
         String query = "SELECT RestaurantName FROM restaurants";
@@ -262,7 +265,12 @@ public class DbController {
     
 		
 
-    
+
+    /**
+     * Retrieves a list of pending orders for a specific customer.
+     * @param customerId The ID of the customer.
+     * @return A List of Order objects representing pending orders.
+     */
     public List<Order> getPendingOrders(int customerId) {
         List<Order> orders = new ArrayList<>();
         String query = "SELECT o.OrderID, o.OrderDateTime FROM orders o " +
@@ -288,7 +296,8 @@ public class DbController {
     public ArrayList<Map<String, Object>> getRestaurantMenuFromDB(String restaurantName) {
         ArrayList<Map<String, Object>> menu = new ArrayList<>();
         String SQL_QUERY =
-            "SELECT c.name AS dishType, d.dishID AS dishID, d.DishName AS dishName, p.Price AS dishPrice, do.OptionType, do.OptionValue " +
+            "SELECT c.name AS dishType, d.dishID AS dishID, d.DishName AS dishName, " +
+            "p.Price AS dishPrice, p.Size AS dishSize, do.OptionType, do.OptionValue " +
             "FROM dishes d " +
             "JOIN categories c ON d.CategoryID = c.CategoryID " +
             "JOIN prices p ON d.dishID = p.dishID " +
@@ -307,19 +316,33 @@ public class DbController {
 
             while (rs.next()) {
                 String dishID = rs.getString("dishID");
+                String dishSize = rs.getString("dishSize");
+                int dishPrice = rs.getInt("dishPrice");
+
                 Map<String, Object> dish = dishMap.computeIfAbsent(dishID, k -> {
                     Map<String, Object> newDish = new HashMap<>();
                     try {
                         newDish.put("dishID", dishID);
                         newDish.put("dishType", rs.getString("dishType"));
                         newDish.put("dishName", rs.getString("dishName"));
-                        newDish.put("dishPrice", rs.getDouble("dishPrice"));
+                        newDish.put("dishPrice", dishPrice);
                         newDish.put("dishOptions", new HashMap<String, List<String>>());
+                        newDish.put("dishPrices", new HashMap<String, Integer>());
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
                     return newDish;
                 });
+
+                // Handle size options, ignoring 'Regular'
+                if (dishSize != null && !dishSize.isEmpty() && !dishSize.equalsIgnoreCase("Regular")) {
+                    Map<String, List<String>> options = (Map<String, List<String>>) dish.get("dishOptions");
+                    options.computeIfAbsent("Size", k -> new ArrayList<>()).add(dishSize);
+                    
+                    // Store price for each size
+                    Map<String, Integer> prices = (Map<String, Integer>) dish.get("dishPrices");
+                    prices.put(dishSize, dishPrice);
+                }
 
                 String optionType = rs.getString("OptionType");
                 String optionValue = rs.getString("OptionValue");
@@ -349,6 +372,11 @@ public class DbController {
         return menu;
     }
     
+    /**
+     * Retrieves customer details from the database for a given user ID.
+     * @param userID The ID of the user.
+     * @return A Customer object containing the customer's details, or null if not found.
+     */
     public Customer getCustomerFromDB(int userID) {
         Customer customer = null;
         String query = "SELECT CustomerNumber, ID, Credit, IsBusiness, Status " +

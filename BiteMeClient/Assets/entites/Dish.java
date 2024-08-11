@@ -1,5 +1,8 @@
 package entites;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,6 +15,7 @@ public class Dish {
     private final ObjectProperty<ObservableList<String>> specifications;
     private final StringProperty selectedSpecification;
     private final IntegerProperty quantity;
+    private final ObjectProperty<Map<String, Integer>> sizePrices;
     
 
     public Dish(String dishID, String dishName, String categoryName, int dishPrice, ObservableList<String> specifications) {
@@ -22,6 +26,7 @@ public class Dish {
         this.specifications = new SimpleObjectProperty<>(specifications);
         this.selectedSpecification = new SimpleStringProperty();
         this.quantity = new SimpleIntegerProperty(0);
+        this.sizePrices = new SimpleObjectProperty<>(new HashMap<>());
     }
     
  // Copy constructor
@@ -33,6 +38,7 @@ public class Dish {
         this.specifications = new SimpleObjectProperty<>(FXCollections.observableArrayList(other.getSpecifications()));
         this.selectedSpecification = new SimpleStringProperty(selectedSpecification);
         this.quantity = new SimpleIntegerProperty(0);
+        this.sizePrices = new SimpleObjectProperty<>(new HashMap<>(other.getSizePrices()));
     }
 
     // Getters
@@ -54,6 +60,50 @@ public class Dish {
     public IntegerProperty dishPriceProperty() { return dishPrice; }
     public ObjectProperty<ObservableList<String>> specificationsProperty() { return specifications; }
     public StringProperty selectedSpecificationProperty() { return selectedSpecification; }
+    
+    /**
+     * Gets the map of size prices for this dish.
+     * @return A Map where the key is the size and the value is the price.
+     */
+    public Map<String, Integer> getSizePrices() {
+        return sizePrices.get();
+    }
+
+    /**
+     * Sets the map of size prices for this dish.
+     * @param prices A Map where the key is the size and the value is the price.
+     */
+    public void setSizePrices(Map<String, Integer> prices) {
+        this.sizePrices.set(prices);
+    }
+
+    /**
+     * Gets the property containing the map of size prices.
+     * @return The ObjectProperty containing the size prices map.
+     */
+    public ObjectProperty<Map<String, Integer>> sizePricesProperty() {
+        return sizePrices;
+    }
+
+    /**
+     * Gets the price for a specific size of this dish.
+     * @param size The size to get the price for.
+     * @return The price for the given size, or the default dish price if the size is not found.
+     */
+    public int getPriceForSize(String size) {
+        return sizePrices.get().getOrDefault(size, getDishPrice());
+    }
+
+    /**
+     * Adds or updates a price for a specific size of this dish.
+     * @param size The size to set the price for.
+     * @param price The price for the given size.
+     */
+    public void addSizePrice(String size, int price) {
+        Map<String, Integer> prices = sizePrices.get();
+        prices.put(size, price);
+        sizePrices.set(prices);
+    }
 
     // Setters
     public void setDishID(String id) { dishID.set(id); }

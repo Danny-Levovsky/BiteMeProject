@@ -115,16 +115,16 @@
                             <Insets top="10.0" />
                         </VBox.margin>
                     </Button>
-                    <Text fx:id="confirmDeliveryText" fill="RED" style="-fx-font-size: 12px;" />
+                    <Text fx:id="confirmDeliveryText" style="-fx-font-size: 14px;" />
                 </VBox>
             </children>
         </AnchorPane>
     </content>
 </Tab>
 <Tab text="View Order">
-<content>
-<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-<children>
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
 <TableView fx:id="orderTableView" layoutX="20.0" layoutY="20.0" prefHeight="500.0" prefWidth="860.0">
 <columns>
 <TableColumn fx:id="orderDishTypeColumn" prefWidth="150.0" text="Dish Type" />
@@ -138,15 +138,16 @@
 <Text fx:id="deliveryFeeText" layoutX="370.0" layoutY="549.0" text="Delivery Fee: ₪0.00" />
 <Text fx:id="totalPriceText" layoutX="640.0" layoutY="549.0" text="Total Price: ₪0.00" />
 <HBox alignment="CENTER" layoutX="20.0" layoutY="588.0" prefWidth="860.0" spacing="20">
-    <Text fx:id="finishErrorText" fill="RED" style="-fx-font-size: 14px;" />
-    <Button fx:id="btnFinish" mnemonicParsing="false" onAction="#getBtnFinish" prefHeight="44.0" prefWidth="111.0" text="Finish" />
-    <Text fx:id="finishErrorText" fill="RED" layoutX="200.0" layoutY="620.0" />
-</HBox>
-</children>
-</AnchorPane>
-</content>
-</Tab>
-</tabs>
-</TabPane>
-</children>
+                                    <Text fx:id="removeItemText" style="-fx-font-size: 14px;" />
+                                    <Button fx:id="btnRemoveItem" mnemonicParsing="false" text="Remove Item" prefHeight="44.0" prefWidth="111.0" />
+                                    <Button fx:id="btnFinish" mnemonicParsing="false" onAction="#getBtnFinish" prefHeight="44.0" prefWidth="111.0" text="Finish" />
+                                    <Text fx:id="finishErrorText" fill="RED" style="-fx-font-size: 14px;" />
+                                </HBox>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </children>
 </AnchorPane>
