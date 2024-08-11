@@ -113,6 +113,10 @@ public class NewOrderController {
     private double deliveryCharge = 0;
     private double discountPercentage = 0;
     
+    private java.sql.Timestamp beginUpdate;
+    private java.sql.Timestamp endUpdate;
+    private boolean timeIsNull = false;
+    private boolean checkTimeBeforeConfirm = false;
     private boolean isCompanyNameValid = false;
     private boolean isUserNameValid = false;
     private boolean isDeliveryParticipantsValid = false;
@@ -270,7 +274,46 @@ public class NewOrderController {
         
         Map<String, Dish> dishMap = new HashMap<>();
         
+        // The last item in the menu list contains the restaurant info
+        Map<String, Object> restaurantInfo = menu.remove(menu.size() - 1);
         
+        // Handle potential null values
+        Object beginUpdateObj = restaurantInfo.get("BeginUpdate");
+        Object endUpdateObj = restaurantInfo.get("EndUpdate");
+        
+        if (beginUpdateObj == null || endUpdateObj == null) {
+            this.timeIsNull = true;
+            this.beginUpdate = null;
+            this.endUpdate = null;
+        } else {
+            this.timeIsNull = false;
+            this.beginUpdate = (java.sql.Timestamp) beginUpdateObj;
+            this.endUpdate = (java.sql.Timestamp) endUpdateObj;
+        }
+        
+        // Print statements to verify the data
+        System.out.println("Restaurant Update Times:");
+        if (this.timeIsNull) {
+            System.out.println("Update times are NULL");
+        } else {
+            System.out.println("Begin Update: " + this.beginUpdate);
+            System.out.println("End Update: " + this.endUpdate);
+        }
+        System.out.println("TimeIsNull: " + this.timeIsNull);
+        
+        
+        //Instead of creating another method and sql query and etc.
+        //Save the current beginUpdate and endUpdate then
+        //Call method requestRestaurantMenu() to pull the menu (yes the entire menu)
+        //this will update the beginUpdate and endUpdate times so you can compare them 
+        //This flag is here so that if you're just calling requestRestaurantMenu to confirm order
+        //that it will not do anything other than get update the the timestamps.
+        //Don't forget to set the flag to true when calling requestRestaurantMenu
+        //and then back to false after comparing.
+        if(!checkTimeBeforeConfirm) {
+        
+        	
+        	
         for (Map<String, Object> dishData : menu) {
             String dishID = (String) dishData.get("dishID");
             String dishType = (String) dishData.get("dishType");
@@ -369,6 +412,7 @@ public class NewOrderController {
         
         orderChanged = false;
         updateButtonStates();
+        }
     }
 
     private void setupComboBoxes() {
@@ -1259,7 +1303,7 @@ public class NewOrderController {
         Message msg = new Message(null, Commands.getRestaurantList);
         ClientController.client.handleMessageFromClientControllers(msg);
     }
-    
+
     private void resetOrderFields() {
         resetTableFields(dishTableViewSalad, orderQuantitiesSalad);
         resetTableFields(dishTableViewMainCourse, orderQuantitiesMain);

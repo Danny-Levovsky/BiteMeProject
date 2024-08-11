@@ -23,5 +23,6 @@ public enum Commands {
     getRestaurantMenu, //command to get restaurant menu
     gotMyRestaurantMenu,
     getCustomerDetails,
-    gotMyCustomerDetails
+    gotMyCustomerDetails,
+    getUpdateTimes
 }
