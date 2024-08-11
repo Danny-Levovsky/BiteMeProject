@@ -61,7 +61,7 @@ public class BiteMeServer extends AbstractServer {
 
 	public void handleMessageFromClient(Object msg, ConnectionToClient client) {
 
-		System.out.println(msg);
+		System.out.println("Received message from client: " + msg);
 		Message m = (Message) msg;
 
 		switch (m.getCmd()) {
@@ -221,18 +221,20 @@ public class BiteMeServer extends AbstractServer {
 				e.printStackTrace();
 			}
 		case OrderReport:
+
 			Object[] data2 = (Object[]) m.getObj();
 			String district = (String) data2[0];
 			int restaurantNumber = (int) data2[1];
 			String monthYear = (String) data2[2];
 
-			Object[] orderReportDetails = dbController.getOrderReport(district, restaurantNumber, monthYear);
-
+			int[] orderReportDetails = dbController.getOrderReport(district, restaurantNumber, monthYear);	
+			
 			try {
-				client.sendToClient(new Message(orderReportDetails, Commands.OrderReport));
+			client.sendToClient(new Message(orderReportDetails, Commands.OrderReport));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			break;
 		case getIncomeReport:
 			Object[] incomeReportData = (Object[]) m.getObj();
 			int restaurantId = (int) incomeReportData[0];
@@ -245,6 +247,17 @@ public class BiteMeServer extends AbstractServer {
 				e.printStackTrace();
 			}
 
+			break;
+		case getPerformanceReport:
+			Object[] data3 = (Object[]) m.getObj();
+			String district2 = (String) data3[0];
+			String monthYear2 = (String) data3[1];
+			int[] PerformanceReportDetails = dbController.performanceReport(monthYear2, district2);
+			try {
+				client.sendToClient(new Message(PerformanceReportDetails, Commands.getPerformanceReport));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			break;
 
 		default:

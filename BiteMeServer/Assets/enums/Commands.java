@@ -26,6 +26,7 @@ public enum Commands {
     updateRestaurantOrdersTable, // command to tell the employee controller to update restaurant orders table
     OrderReport, //command for orders report
     getIncomeReport, // command from branch manager to get Income Report from DB
-    setIncomeReport // command from server to manager to set Income Report from DB
+    setIncomeReport, // command from server to manager to set Income Report from DB
+    getPerformanceReport //command for creating and getting performance report
 
 }

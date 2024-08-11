@@ -172,13 +172,9 @@ public class Client extends AbstractClient {
 			break;
 		 case OrderReport:
 				Platform.runLater(() -> {
-					Object[] reportDetails = (Object[]) m.getObj();
-					int salad = (int) reportDetails[0];
-					int mainCourse = (int) reportDetails[1];
-					int dessert = (int) reportDetails[2];
-					int drink = (int) reportDetails[3];	
+					int[] orderReportDetails = (int[]) m.getObj();
 					if (  reportViewController != null) {
-						reportViewController.handleServerResponseOrder(salad,mainCourse,dessert,drink);
+						reportViewController.handleServerResponseOrder(orderReportDetails);
 					}
 				});
 				break;
@@ -188,6 +184,14 @@ public class Client extends AbstractClient {
 					int[] incomeReportResultData = (int[]) m.getObj();
 					if ( reportViewController != null) {
 						reportViewController.handleServerResponseIncome(incomeReportResultData);
+					}
+				});
+				break;
+		 case getPerformanceReport:
+				Platform.runLater(() -> {
+					int[] performanceReportResultData = (int[]) m.getObj();
+					if ( reportViewController != null) {
+						reportViewController.handleServerResponsePerformance(performanceReportResultData);
 					}
 				});
 				break;
@@ -239,4 +243,6 @@ public class Client extends AbstractClient {
 			quit();
 		}
 	}
+	
+
 }

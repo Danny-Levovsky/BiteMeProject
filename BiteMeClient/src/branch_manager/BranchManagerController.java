@@ -3,6 +3,7 @@ package branch_manager;
 import entites.User;
 import enums.Commands;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -21,13 +22,13 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
 /**
  * Controller class for the branch manager interface. This class handles user
  * interactions and controls the flow of data between the UI and the backend.
- * 
  * @author yosra
  */
 public class BranchManagerController {
@@ -53,16 +54,15 @@ public class BranchManagerController {
 	@FXML
 	private ComboBox<String> restaurantComboBox;
 
-	@FXML
-	private Label txtError;
-
+    @FXML
+    private TextArea txtError;
+    
 	private Map<String, Integer> restaurantMap = new HashMap<>();
 
 	private static User branchManager;
 
 	/**
 	 * Sets the branch manager user.
-	 * 
 	 * @param user the User object representing the branch manager
 	 */
 	public static void setbranchManager(User user) {
@@ -71,7 +71,6 @@ public class BranchManagerController {
 
 	/**
 	 * Starts the branch manager interface.
-	 * 
 	 * @param primaryStage the primary stage for this application
 	 * @throws Exception if an error occurs during loading the FXML
 	 */
@@ -85,12 +84,12 @@ public class BranchManagerController {
 	}
 
 	/**
-	 * Initializes the controller class. This method is automatically called after
-	 * the FXML file has been loaded. It populates the ComboBoxes with month/year
-	 * strings, report options, and restaurant names. It also updates the branch
-	 * manager's name on the UI, disables the "View Reports" button by default, and
-	 * hides the error message.
-	 */
+     * Initializes the controller class. This method is automatically called after
+     * the FXML file has been loaded. It populates the ComboBoxes with month/year
+     * strings, report options, and restaurant names. It also updates the branch
+     * manager's name on the UI, disables the "View Reports" button by default, and
+     * hides the error message.
+     */
 	@FXML
 	private void initialize() {
 		// Populate the ComboBox with month/year strings
@@ -117,18 +116,18 @@ public class BranchManagerController {
 		if (branchManager != null) {
 			txtBranchManagerName.setText(branchManager.getFirstName() + " " + branchManager.getLastName());
 		}
-
+		 // Disable restaurant ComboBox and "View Reports" button initially
+		restaurantComboBox.setDisable(true);
 		BtnViewReports.setDisable(true);
 		txtError.setVisible(false);
 	}
 
 	/**
-	 * Handles the logout button action. Sends a logout message to the server
-	 * through client and transitions to the login screen.
-	 * 
-	 * @param event the event triggered by the logout button
-	 * @throws Exception if an error occurs during the process
-	 */
+     * Handles the logout button action. Sends a logout message to the server
+     * through the client and transitions to the login screen.
+     * @param event the event triggered by the logout button
+     * @throws Exception if an error occurs during the process
+     */
 	@FXML
 	void getBtnLogout(ActionEvent event) throws Exception {
 
@@ -142,13 +141,12 @@ public class BranchManagerController {
 	}
 
 	/**
-	 * Handles the update client button action. This method is triggered when the
-	 * update client button is clicked. It hides the current window and opens the
-	 * update client screen, and passes branch manager district
-	 * 
-	 * @param event the event triggered by the update client button click
-	 * @throws Exception if there is an error while opening the update client screen
-	 */
+     * Handles the update client button action. This method is triggered when the
+     * update client button is clicked. It hides the current window and opens the
+     * update client screen, passing the branch manager's district.
+     * @param event the event triggered by the update client button click
+     * @throws Exception if there is an error while opening the update client screen
+     */
 	@FXML
 	public void getBtnUpdateClient(ActionEvent event) throws Exception {
 		UpdateClientController.setbranchManagerDistrict(branchManager.getDistrict());
@@ -158,20 +156,28 @@ public class BranchManagerController {
 	}
 
 	/**
-	 * Handles the view reports button action. This method is triggered when the
-	 * view reports button is clicked. It gathers the selected restaurant, month,
-	 * report type, and the branch manager's district, then opens the report view
-	 * screen.
-	 * 
-	 * @param event the event triggered by the view reports button click
-	 * @throws Exception if there is an error while opening the report view screen
-	 */
+     * Handles the view reports button action. This method is triggered when the
+     * view reports button is clicked. It gathers the selected restaurant, month,
+     * report type, and the branch manager's district, then opens the report view
+     * screen.
+     * @param event the event triggered by the view reports button click
+     * @throws Exception if there is an error while opening the report view screen
+     */
 	@FXML
 	void getBtnViewReports(ActionEvent event) throws Exception {
 
 		// Get selected restaurant name and corresponding number
 		String selectedRestaurant = restaurantComboBox.getSelectionModel().getSelectedItem();
-		Integer restaurantNumber = restaurantMap.get(selectedRestaurant);
+		
+		// Check if no selection was made and set selectedRestaurant to null
+		if (selectedRestaurant == null) {
+		    selectedRestaurant = null;
+		}
+		
+		Integer restaurantNumber = 0;
+		if(selectedRestaurant != null) {
+			restaurantNumber = restaurantMap.get(selectedRestaurant);
+		}
 
 		// Get selected month/year
 		String selectedMonthYear = monthComboBox.getSelectionModel().getSelectedItem();
@@ -192,13 +198,13 @@ public class BranchManagerController {
 	}
 
 	/**
-	 * Handles the action when a month is selected from the ComboBox. This method
-	 * checks if the selected month/year is before or the same as the current
-	 * month/year. If it is, the "View Reports" button is enabled, and any error
-	 * message is hidden. Otherwise, the button is disabled, and an error message is
-	 * displayed.
-	 * @param event the event triggered by selecting a month/year
-	 */
+     * Handles the action when a month is selected from the ComboBox. This method
+     * checks if the selected month/year is before or the same as the current
+     * month/year. If it is, the "View Reports" button is enabled, and any error
+     * message is hidden. Otherwise, the button is disabled, and an error message is
+     * displayed.
+     * @param event the event triggered by selecting a month/year
+     */
 	@FXML
 	void getMonth(ActionEvent event) {
 
@@ -212,9 +218,14 @@ public class BranchManagerController {
 
 			// Get the current month and year
 			YearMonth currentDate = YearMonth.now();
+			
+			// Get the last day of the current month
+	        LocalDate lastDayOfCurrentMonth = currentDate.atEndOfMonth();
+	        LocalDate today = LocalDate.now();
+
 
 			// Check if the selected date is before or the same as the current date
-			if (selectedDate.isBefore(currentDate) || selectedDate.equals(currentDate)) {
+			if (selectedDate.isBefore(currentDate) || (selectedDate.equals(currentDate) && today.equals(lastDayOfCurrentMonth))) {
 				BtnViewReports.setDisable(false); 
 				txtError.setVisible(false); 
 			} else {
@@ -226,5 +237,18 @@ public class BranchManagerController {
 			txtError.setVisible(false);
 		}
 	}
-
+	
+	 /**
+     * Handles the action when a report type is selected from the ComboBox. Enables
+     * the restaurant ComboBox if the selected report type is not "performance report".
+     * @param event the event triggered by selecting a report type
+     */
+    @FXML
+    void getReportComboBox(ActionEvent event) {
+    	// Get selected report type
+    	String selectedReport = reportComboBox.getSelectionModel().getSelectedItem();
+    	if (!selectedReport.equals("performance report")) {
+    		restaurantComboBox.setDisable(false);
+    	}
+    }
 }

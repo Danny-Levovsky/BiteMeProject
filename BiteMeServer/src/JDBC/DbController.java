@@ -467,7 +467,7 @@ public class DbController {
     }
     
     
-    public Object[] getOrderReport(String district, int restaurantNumber, String monthYear) {
+    public int[] getOrderReport(String district, int restaurantNumber, String monthYear) {
         // Step 1: Check if the report already exists in the order_reports table
         String checkReportQuery = "SELECT Salad, MainCourse, Dessert, Drink FROM order_reports WHERE MonthYear = ? AND District = ? AND RestaurantNumber = ?";
         
@@ -483,7 +483,7 @@ public class DbController {
                 int mainCourse = rs.getInt("MainCourse");
                 int dessert = rs.getInt("Dessert");
                 int drink = rs.getInt("Drink");
-                return new Object[]{salad, mainCourse, dessert, drink};
+                return new int[]{salad, mainCourse, dessert, drink};
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -528,14 +528,14 @@ public class DbController {
                     insertOrUpdateStmt.executeUpdate();
                 }
 
-                return new Object[]{salad, mainCourse, dessert, drink};
+                return new int[]{salad, mainCourse, dessert, drink};
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         // Return zeros if no data found
-        return new Object[]{0, 0, 0, 0};
+        return new int[]{0, 0, 0, 0};
     }
 
 
@@ -646,6 +646,87 @@ public class DbController {
         }
 
         return incomeReportResultData;
+    }
+    
+    public int[] performanceReport(String monthYear, String district) {
+        // Step 1: Check if the report already exists in the performance_reports table
+        String checkReportQuery = "SELECT Week1, Week2, Week3, Week4 FROM performance_reports WHERE MonthYear = ? AND District = ?";
+
+        try (PreparedStatement checkReportStmt = conn.prepareStatement(checkReportQuery)) {
+            checkReportStmt.setString(1, monthYear);
+            checkReportStmt.setString(2, district);
+
+            ResultSet rs = checkReportStmt.executeQuery();
+            
+            if (rs.next()) {
+                // Report exists, return the existing data
+                return new int[]{
+                    rs.getInt("Week1"),
+                    rs.getInt("Week2"),
+                    rs.getInt("Week3"),
+                    rs.getInt("Week4")
+                };
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Step 2: If the report does not exist, calculate it from the orders table
+        String query = "SELECT " +
+            "SUM(CASE WHEN DAYOFMONTH(OrderDateTime) BETWEEN 1 AND 7 THEN 1 ELSE 0 END) AS TotalWeek1, " +
+            "SUM(CASE WHEN DAYOFMONTH(OrderDateTime) BETWEEN 1 AND 7 AND IsLate = 1 THEN 1 ELSE 0 END) AS LateWeek1, " +
+            "SUM(CASE WHEN DAYOFMONTH(OrderDateTime) BETWEEN 8 AND 14 THEN 1 ELSE 0 END) AS TotalWeek2, " +
+            "SUM(CASE WHEN DAYOFMONTH(OrderDateTime) BETWEEN 8 AND 14 AND IsLate = 1 THEN 1 ELSE 0 END) AS LateWeek2, " +
+            "SUM(CASE WHEN DAYOFMONTH(OrderDateTime) BETWEEN 15 AND 21 THEN 1 ELSE 0 END) AS TotalWeek3, " +
+            "SUM(CASE WHEN DAYOFMONTH(OrderDateTime) BETWEEN 15 AND 21 AND IsLate = 1 THEN 1 ELSE 0 END) AS LateWeek3, " +
+            "SUM(CASE WHEN DAYOFMONTH(OrderDateTime) >= 22 THEN 1 ELSE 0 END) AS TotalWeek4, " +
+            "SUM(CASE WHEN DAYOFMONTH(OrderDateTime) >= 22 AND IsLate = 1 THEN 1 ELSE 0 END) AS LateWeek4 " +
+            "FROM orders o " +
+            "JOIN customers c ON o.CustomerNumber = c.CustomerNumber " +
+            "JOIN users u ON c.ID = u.ID " +
+            "WHERE u.District = ? AND c.Status = 'active' " +
+            "AND DATE_FORMAT(o.OrderDateTime, '%c/%Y') = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, district);
+            stmt.setString(2, monthYear);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int[] performanceData = new int[4];
+                for (int i = 1; i <= 4; i++) {
+                    int total = rs.getInt("TotalWeek" + i);
+                    int late = rs.getInt("LateWeek" + i);
+                    performanceData[i-1] = total > 0 ? (late * 100 / total) : 0;
+                }
+                System.out.println("Calculated performance data: " + Arrays.toString(performanceData));
+
+                // Insert or update the new report in the performance_reports table
+                String insertOrUpdateReportQuery = "INSERT INTO performance_reports (MonthYear, District, Week1, Week2, Week3, Week4) " +
+                    "VALUES (?, ?, ?, ?, ?, ?) " +
+                    "ON DUPLICATE KEY UPDATE Week1 = VALUES(Week1), Week2 = VALUES(Week2), " +
+                    "Week3 = VALUES(Week3), Week4 = VALUES(Week4)";
+
+                try (PreparedStatement insertOrUpdateStmt = conn.prepareStatement(insertOrUpdateReportQuery)) {
+                    insertOrUpdateStmt.setString(1, monthYear);
+                    insertOrUpdateStmt.setString(2, district);
+                    insertOrUpdateStmt.setInt(3, performanceData[0]);
+                    insertOrUpdateStmt.setInt(4, performanceData[1]);
+                    insertOrUpdateStmt.setInt(5, performanceData[2]);
+                    insertOrUpdateStmt.setInt(6, performanceData[3]);
+                    
+                    insertOrUpdateStmt.executeUpdate();
+                }
+
+                return performanceData;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Return zeros if no data found
+        return new int[]{0, 0, 0, 0};
     }
 
     
