@@ -298,12 +298,12 @@ public class DbController {
         String SQL_QUERY =
             "SELECT c.name AS dishType, d.dishID AS dishID, d.DishName AS dishName, " +
             "p.Price AS dishPrice, p.Size AS dishSize, do.OptionType, do.OptionValue, " +
-            "r.BeginUpdate, r.EndUpdate " +  // Added BeginUpdate and EndUpdate
+            "r.BeginUpdate, r.EndUpdate, r.RestaurantNumber " +  // Added RestaurantNumber
             "FROM dishes d " +
             "JOIN categories c ON d.CategoryID = c.CategoryID " +
             "JOIN prices p ON d.dishID = p.dishID " +
             "LEFT JOIN dish_options do ON d.dishID = do.dishID " +
-            "JOIN restaurants r ON d.RestaurantNumber = r.RestaurantNumber " +  // Added join with restaurants table
+            "JOIN restaurants r ON d.RestaurantNumber = r.RestaurantNumber " +
             "WHERE d.RestaurantNumber = ( " +
             "  SELECT RestaurantNumber " +
             "  FROM restaurants " +
@@ -315,17 +315,27 @@ public class DbController {
             ResultSet rs = stmt.executeQuery();
 
             Map<String, Map<String, Object>> dishMap = new HashMap<>();
-            Map<String, Object> restaurantInfo = new HashMap<>();  // To store BeginUpdate and EndUpdate
-
+            Map<String, Object> restaurantInfo = new HashMap<>();  // To store BeginUpdate, EndUpdate, and RestaurantNumber
+            
+            boolean firstRow = true;
             while (rs.next()) {
                 String dishID = rs.getString("dishID");
                 String dishSize = rs.getString("dishSize");
                 int dishPrice = rs.getInt("dishPrice");
 
-                // Store BeginUpdate and EndUpdate only once
+                // Store BeginUpdate, EndUpdate, and RestaurantNumber only once
                 if (restaurantInfo.isEmpty()) {
-                    restaurantInfo.put("BeginUpdate", rs.getTimestamp("BeginUpdate"));
-                    restaurantInfo.put("EndUpdate", rs.getTimestamp("EndUpdate"));
+                	int restaurantNumber = rs.getInt("RestaurantNumber");
+                    java.sql.Timestamp beginUpdate = rs.getTimestamp("BeginUpdate");
+                    java.sql.Timestamp endUpdate = rs.getTimestamp("EndUpdate");
+                    
+                    restaurantInfo.put("RestaurantNumber", restaurantNumber);
+                    restaurantInfo.put("BeginUpdate", beginUpdate);
+                    restaurantInfo.put("EndUpdate", endUpdate);
+                    
+                    System.out.println("DbController: Retrieved RestaurantNumber: " + restaurantNumber);
+                    System.out.println("DbController: Retrieved BeginUpdate: " + beginUpdate);
+                    System.out.println("DbController: Retrieved EndUpdate: " + endUpdate);
                 }
 
                 Map<String, Object> dish = dishMap.computeIfAbsent(dishID, k -> {
@@ -379,6 +389,8 @@ public class DbController {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        
+        
 
         return menu;
     }

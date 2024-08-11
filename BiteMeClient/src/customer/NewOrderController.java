@@ -126,6 +126,7 @@ public class NewOrderController {
     private String currentRestaurant = null;
     private boolean showErrorMessages = false;
     private boolean isDeliveryConfirmed = false;
+    private int restaurantNumber;
     private ObservableList<String> restaurantList = FXCollections.observableArrayList();
     private ObservableList<Dish> dishes1 = FXCollections.observableArrayList();
     private ObservableList<Dish> dishes2 = FXCollections.observableArrayList();
@@ -272,14 +273,19 @@ public class NewOrderController {
         dishes4.clear();
         orderQuantitiesDrink.clear();
         
+        System.out.println("NewOrderController: Received menu size: " + menu.size());
         Map<String, Dish> dishMap = new HashMap<>();
         
         // The last item in the menu list contains the restaurant info
         Map<String, Object> restaurantInfo = menu.remove(menu.size() - 1);
         
-        // Handle potential null values
+        // Debug log
+        System.out.println("NewOrderController: Restaurant Info map: " + restaurantInfo);
+        
+        // Handle potential null values for BeginUpdate and EndUpdate
         Object beginUpdateObj = restaurantInfo.get("BeginUpdate");
         Object endUpdateObj = restaurantInfo.get("EndUpdate");
+        
         
         if (beginUpdateObj == null || endUpdateObj == null) {
             this.timeIsNull = true;
@@ -291,8 +297,19 @@ public class NewOrderController {
             this.endUpdate = (java.sql.Timestamp) endUpdateObj;
         }
         
+     // Handle RestaurantNumber
+        Object restaurantNumberObj = restaurantInfo.get("RestaurantNumber");
+        if (restaurantNumberObj != null) {
+            this.restaurantNumber = (Integer) restaurantNumberObj;
+            System.out.println("NewOrderController: RestaurantNumber set to: " + this.restaurantNumber);
+        } else {
+            this.restaurantNumber = -1;
+            System.out.println("NewOrderController: RestaurantNumber is null, set to -1");
+        }
+        
         // Print statements to verify the data
-        System.out.println("Restaurant Update Times:");
+        System.out.println("Restaurant Information:");
+        System.out.println("Restaurant Number: " + this.restaurantNumber);
         if (this.timeIsNull) {
             System.out.println("Update times are NULL");
         } else {
@@ -310,6 +327,7 @@ public class NewOrderController {
         //that it will not do anything other than get update the the timestamps.
         //Don't forget to set the flag to true when calling requestRestaurantMenu
         //and then back to false after comparing.
+        
         if(!checkTimeBeforeConfirm) {
         
         	
