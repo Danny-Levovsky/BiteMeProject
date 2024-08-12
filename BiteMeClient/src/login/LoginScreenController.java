@@ -203,6 +203,7 @@ public class LoginScreenController {
                     employeeController.start(new Stage());
                     break;
                 case "Certified Employee":
+                    CertifiedEmployeeController.setCertifiedEmployee(user);
                     CertifiedEmployeeController certifiedEmployeeController = new CertifiedEmployeeController();
                     certifiedEmployeeController.start(new Stage());
                     break;

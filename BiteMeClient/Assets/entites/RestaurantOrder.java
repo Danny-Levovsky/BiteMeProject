@@ -21,10 +21,9 @@ public class RestaurantOrder implements Serializable {
 	private int quantity;
 	private int IsDelivery;
     private String orderStatus;
-    
-    
-    
-    
+    private String size;
+    private String specification;
+
    
     /**
      * Default constructor for creating a RestaurantOrder object.
@@ -147,4 +146,14 @@ public class RestaurantOrder implements Serializable {
      * @param orderStatus the order status to set
      */
 	public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
+
+	public String getSize() {
+		return size;
+	}
+
+	public void setSize(String size) { this.size = size;}
+
+	public String getSpecification() { return specification; }
+
+	public void setSpecification(String specification) { this.specification = specification; }
 }

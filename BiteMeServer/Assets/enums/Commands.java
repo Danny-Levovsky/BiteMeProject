@@ -28,6 +28,15 @@ public enum Commands {
     getIncomeReport, // command from branch manager to get Income Report from DB
     setIncomeReport, // command from server to manager to set Income Report from DB
     getPerformanceReport, //command for creating and getting performance report
-    RestaurantQuarterReport1 //command for viewing restaurant quarter report
+    RestaurantQuarterReport1, //command for viewing restaurant quarter report
+    GetRestaurantDishes, //command for updating menu
+	GetRestaurantNum, //command for updating menu
+	GetRestaurantName, //command for updating menu
+	AddDish, //command for updating menu
+	DeleteDish, //command for updating menu
+	UpdateDishPrice, //command for updating menu
+    CheckDishExists, //command for updating menu
+    updateBegin, //command for updating menu
+    EndUpdate,//command for updating menu
 
 }

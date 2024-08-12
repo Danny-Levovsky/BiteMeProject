@@ -65,6 +65,11 @@ public class EmployeeController {
 	private TableColumn<RestaurantOrder, Integer> IsDeliveryColumn;
 	@FXML
 	private TableColumn<RestaurantOrder, String> orderStatusColumn;
+	
+	@FXML
+    private TableColumn<RestaurantOrder, String> sizeColumn;
+    @FXML
+    private TableColumn<RestaurantOrder, String> specificationColumn;
 
 	@FXML
 	private TextField txtOrderID;
@@ -122,15 +127,27 @@ public class EmployeeController {
 		if (employee != null) {
 			txtEmployeeName.setText(employee.getFirstName() + " " + employee.getLastName());
 		}
+		
+		// Show or hide btnBack based on user type
+        if (employee.getType().equals("Certified Employee")) {
+            btnBack.setVisible(true);
+            btnLogout.setVisible(false);
+        } else {
+            btnBack.setVisible(false);
+            btnLogout.setVisible(true);
+        }
 
 		orderIdColumn.setCellValueFactory(new PropertyValueFactory<>("orderId"));
 		customerNumberColumn.setCellValueFactory(new PropertyValueFactory<>("customerNumber"));
 		orderDateTimeColumn.setCellValueFactory(new PropertyValueFactory<>("orderDateTime"));
 		dishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
 		quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
+		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("specification"));
 		IsDeliveryColumn.setCellValueFactory(new PropertyValueFactory<>("IsDelivery"));
 		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("orderStatus"));
 		getTableData();
+		
 	}	
 
 	/**

@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import login.LoginScreenController; //**
 import ocsf.client.AbstractClient;
 import resturant.EmployeeController;
+import resturant.UpdateMenuController;
 
 public class Client extends AbstractClient {
 	// Instance variables **********************************************
@@ -46,8 +47,7 @@ public class Client extends AbstractClient {
 	static public CustomerController customerController;
 	static public ViewOrderController viewOrderController;
 	static public ReportViewController reportViewController;
-	
-	
+	static public UpdateMenuController updateMenuController;
 
 	// static public WorkerController workerController;
 	// static public MainScreenController mainScreenController;
@@ -60,9 +60,11 @@ public class Client extends AbstractClient {
 		System.out.println("Connecting...");
 		openConnection();
 
+		updateMenuController = new UpdateMenuController();
+
 		// Initilazing The Contorllers
 		// IMPORT CLIENT CONTROLLERS HERE
-		//employeeController = new EmployeeController();
+		// employeeController = new EmployeeController();
 
 		// bookingController = new BookingController();
 		// mainScreenController = new MainScreenController();
@@ -123,7 +125,7 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
-		case CheckStatus:	
+		case CheckStatus:
 			Platform.runLater(() -> {
 				if (customerController != null) {
 					customerController.handleServerResponse(m);
@@ -138,63 +140,78 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
-		 case UpdateCustomerOrdersStatus:
-             Platform.runLater(() -> {
-                 Object[] orderDetails = (Object[]) m.getObj();
-                 int isEarlyOrder = (int) orderDetails[0];
-                 String dateTime = (String) orderDetails[1];
-                 int totalPrice = (int) orderDetails[2];
-                 if (viewOrderController != null) {
-                     try {
-						viewOrderController.handleServerResponse(isEarlyOrder, dateTime,totalPrice);
+		case UpdateCustomerOrdersStatus:
+			Platform.runLater(() -> {
+				Object[] orderDetails = (Object[]) m.getObj();
+				int isEarlyOrder = (int) orderDetails[0];
+				String dateTime = (String) orderDetails[1];
+				int totalPrice = (int) orderDetails[2];
+				if (viewOrderController != null) {
+					try {
+						viewOrderController.handleServerResponse(isEarlyOrder, dateTime, totalPrice);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-                 }
-             });
-             break;
-		 case setRestaurantOrders:
-				Platform.runLater(() -> {
-					List<RestaurantOrder> orders = (List<RestaurantOrder>) m.getObj();
-					if ( employeeController != null) {
-						 employeeController.setTable(orders);
-					}
-				});
+				}
+			});
+			break;
+		case setRestaurantOrders:
+			Platform.runLater(() -> {
+				List<RestaurantOrder> orders = (List<RestaurantOrder>) m.getObj();
+				if (employeeController != null) {
+					employeeController.setTable(orders);
+				}
+			});
 
 			break;
-		 case updateCoustomerToContactByCoustomerId: 
-				Platform.runLater(() -> {
-					User customer = (User) m.getObj();
-					if ( employeeController != null) {
-						 employeeController.sendTextMassageAndEmailToCustomer(customer);
-					}
-				});
+		case updateCoustomerToContactByCoustomerId:
+			Platform.runLater(() -> {
+				User customer = (User) m.getObj();
+				if (employeeController != null) {
+					employeeController.sendTextMassageAndEmailToCustomer(customer);
+				}
+			});
 			break;
-		 case OrderReport:
-				Platform.runLater(() -> {
-					int[] orderReportDetails = (int[]) m.getObj();
-					if (  reportViewController != null) {
-						reportViewController.handleServerResponseOrder(orderReportDetails);
-					}
-				});
-				break;
-				
-		 case setIncomeReport:
-				Platform.runLater(() -> {
-					int[] incomeReportResultData = (int[]) m.getObj();
-					if ( reportViewController != null) {
-						reportViewController.handleServerResponseIncome(incomeReportResultData);
-					}
-				});
-				break;
-		 case getPerformanceReport:
-				Platform.runLater(() -> {
-					int[] performanceReportResultData = (int[]) m.getObj();
-					if ( reportViewController != null) {
-						reportViewController.handleServerResponsePerformance(performanceReportResultData);
-					}
-				});
-				break;
+		case OrderReport:
+			Platform.runLater(() -> {
+				int[] orderReportDetails = (int[]) m.getObj();
+				if (reportViewController != null) {
+					reportViewController.handleServerResponseOrder(orderReportDetails);
+				}
+			});
+			break;
+		case setIncomeReport:
+			Platform.runLater(() -> {
+				int[] incomeReportResultData = (int[]) m.getObj();
+				if (reportViewController != null) {
+					reportViewController.handleServerResponseIncome(incomeReportResultData);
+				}
+			});
+			break;
+		case getPerformanceReport:
+			Platform.runLater(() -> {
+				int[] performanceReportResultData = (int[]) m.getObj();
+				if (reportViewController != null) {
+					reportViewController.handleServerResponsePerformance(performanceReportResultData);
+				}
+			});
+			break;
+		case GetRestaurantDishes:
+		case AddDish:
+		case DeleteDish:
+		case UpdateDishPrice:
+		case GetRestaurantNum:
+		case GetRestaurantName:
+		case CheckDishExists:
+			Platform.runLater(() -> {
+				if (UpdateMenuController.getInstance() != null) {
+					UpdateMenuController.getInstance().handleServerResponse(m);
+				} else {
+					System.err.println("UpdateMenuController instance is null.");
+				}
+			});
+			break;
+
 		default:
 			break;
 
@@ -243,6 +260,5 @@ public class Client extends AbstractClient {
 			quit();
 		}
 	}
-	
 
 }
