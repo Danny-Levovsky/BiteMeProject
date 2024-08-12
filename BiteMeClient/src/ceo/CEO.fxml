@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="750.0" prefWidth="591.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ceo.CEOController">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="683.0" prefWidth="591.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ceo.CEOController">
   <tabs>
     <Tab text="main menu">
       <content>
@@ -52,11 +52,11 @@
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
                   <ComboBox fx:id="restaurantComboBox1" layoutX="195.0" layoutY="46.0" prefWidth="150.0" promptText="choose restaurant" />
-                  <Label layoutX="189.0" layoutY="14.0" text="option 1: by restaurant">
+                  <Label layoutX="179.0" layoutY="14.0" text="option 1: same restaurant">
                      <font>
                         <Font name="System Bold" size="15.0" />
                      </font></Label>
-                  <Label layoutX="149.0" layoutY="328.0" text="option 2: comparison between districts">
+                  <Label layoutX="104.0" layoutY="330.0" text="option 2: comparison between different restaurants">
                      <font>
                         <Font name="System Bold" size="15.0" />
                      </font></Label>
@@ -70,32 +70,22 @@
                   <Pane layoutX="296.0" layoutY="86.0" prefHeight="200.0" prefWidth="228.0" style="-fx-background-color: LightGray;">
                      <children>
                         <Label layoutX="14.0" layoutY="14.0" text="1.2 same restaurant different quarters:" />
-                        <ComboBox layoutX="43.0" layoutY="51.0" prefWidth="150.0" promptText="choose first quarter" />
-                        <ComboBox layoutX="37.0" layoutY="100.0" prefHeight="25.0" prefWidth="163.0" promptText="choose second quarter" />
-                        <Button layoutX="81.0" layoutY="145.0" mnemonicParsing="false" text="view report" />
+                        <ComboBox fx:id="quarterComboBox2" layoutX="43.0" layoutY="51.0" onAction="#checkQuarter" prefWidth="150.0" promptText="choose first quarter" />
+                        <ComboBox fx:id="quarterComboBox3" layoutX="37.0" layoutY="100.0" onAction="#checkQuarter" prefHeight="25.0" prefWidth="163.0" promptText="choose second quarter" />
+                        <Button fx:id="btnViewReport2" layoutX="81.0" layoutY="145.0" mnemonicParsing="false" onAction="#getBtnViewReport2" text="view report" />
                      </children>
                   </Pane>
-                  <Pane layoutX="53.0" layoutY="389.0" prefHeight="216.0" prefWidth="200.0" style="-fx-background-color: LightGray;">
+                  <Pane layoutX="179.0" layoutY="367.0" prefHeight="202.0" prefWidth="200.0" style="-fx-background-color: LightGray;">
                      <children>
-                        <Label layoutX="8.0" layoutY="14.0" text="2.1 same district different quarters:" />
-                        <ComboBox layoutX="41.0" layoutY="48.0" prefHeight="25.0" prefWidth="126.0" promptText="choose district" />
-                        <ComboBox layoutX="29.0" layoutY="90.0" prefWidth="150.0" promptText="choose first quarter " />
-                        <ComboBox layoutX="18.0" layoutY="133.0" prefHeight="25.0" prefWidth="170.0" promptText="choose second quarter" />
-                        <Button layoutX="63.0" layoutY="171.0" mnemonicParsing="false" text="view report" />
+                        <ComboBox fx:id="restaurantComboBox2" layoutX="21.0" layoutY="23.0" prefHeight="25.0" prefWidth="160.0" promptText="choose first restaurant" />
+                        <ComboBox fx:id="restaurantComboBox3" layoutX="9.0" layoutY="71.0" prefHeight="25.0" prefWidth="182.0" promptText="choose second restaurant" />
+                        <ComboBox fx:id="quarterComboBox4" layoutX="43.0" layoutY="117.0" onAction="#checkQuarter" prefHeight="25.0" prefWidth="131.0" promptText="choose quarter" />
+                        <Button fx:id="btnViewReport3" layoutX="71.0" layoutY="164.0" mnemonicParsing="false" onAction="#getBtnViewReport3" text="view report" />
                      </children>
                   </Pane>
-                  <Pane layoutX="324.0" layoutY="389.0" prefHeight="216.0" prefWidth="200.0" style="-fx-background-color: LightGray;">
-                     <children>
-                        <Label layoutX="10.0" layoutY="14.0" text="2.2 same quarter different districts:" />
-                        <ComboBox layoutX="24.0" layoutY="44.0" prefWidth="150.0" promptText="choose quarter" />
-                        <ComboBox layoutX="26.0" layoutY="85.0" prefWidth="150.0" promptText="choose first district" />
-                        <ComboBox layoutX="22.0" layoutY="123.0" prefHeight="25.0" prefWidth="160.0" promptText="choose second district" />
-                        <Button layoutX="60.0" layoutY="162.0" mnemonicParsing="false" text="view report" />
-                     </children>
-                  </Pane>
-                  <Label fx:id="txtError1" layoutX="182.0" layoutY="655.0" text="you can't chooses unfinished quarter" textFill="RED">
+                  <Label fx:id="txtError1" layoutX="149.0" layoutY="604.0" prefHeight="21.0" prefWidth="276.0" text="you can't chooses unfinished quarter" textFill="RED">
                      <font>
-                        <Font name="System Bold" size="12.0" />
+                        <Font name="System Bold" size="15.0" />
                      </font>
                   </Label>
                </children></AnchorPane>

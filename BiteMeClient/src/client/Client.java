@@ -7,6 +7,8 @@ import java.util.Map;
 
 import branch_manager.ReportViewController;
 import branch_manager.UpdateClientController;
+import ceo.QuarterReportView1;
+import ceo.QuarterReportView2;
 import customer.CustomerController;
 import customer.NewOrderController;
 import customer.ViewOrderController;
@@ -52,6 +54,9 @@ public class Client extends AbstractClient {
 	static public ReportViewController reportViewController;
 	static public UpdateMenuController updateMenuController;
 	static public NewOrderController newOrderController; //added connection to newordercontroller
+	static public QuarterReportView1 quarterReportView1;
+	static public QuarterReportView2 quarterReportView2;
+	
 	
 
 	// static public WorkerController workerController;
@@ -246,7 +251,78 @@ public class Client extends AbstractClient {
 	        }
 	    });
 	    break;
+	    
+		case RestaurantQuarterReport1:
+			 Platform.runLater(() -> {
+			        Object[] response = (Object[]) m.getObj();
+			        int maxOrders = (int) response[0];
+			        String[] intervals = (String[]) response[1];
+			        int[] values = (int[]) response[2];
+			        if (quarterReportView1 != null) {
+			            quarterReportView1.handleServerResponseQuarter(maxOrders, intervals, values);
+			        }
+			    });
 
+	    	  break;
+	    	  
+		case RestaurantQuarterIncomeReport:
+		    Platform.runLater(() -> {
+		        Object[] response = (Object[]) m.getObj();
+		        int totalIncome = (int) response[0];
+		        int[] values = (int[]) response[1];
+		        if (quarterReportView1 != null) {
+		            quarterReportView1.handleServerResponseQuarterIncome(totalIncome, values);
+		        }
+		    });
+		    break;
+	    	  
+		case RestaurantQuarterReport2:
+			 Platform.runLater(() -> {
+			        Object[] response = (Object[]) m.getObj();
+			        int maxOrders = (int) response[0];
+			        String[] intervals = (String[]) response[1];
+			        int[] values = (int[]) response[2];
+			        if (quarterReportView2 != null) {
+			            quarterReportView2.handleServerResponseQuarter(maxOrders, intervals, values);
+			        }
+			    });
+
+	    	  break;
+	    	  
+		case RestaurantQuarterIncomeReport1:
+		    Platform.runLater(() -> {
+		        Object[] response = (Object[]) m.getObj();
+		        int totalIncome = (int) response[0];
+		        int[] values = (int[]) response[1];
+		        if (quarterReportView2 != null) {
+		            quarterReportView2.handleServerResponseQuarterIncome(totalIncome, values);
+		        }
+		    });
+		    break;
+
+		case RestaurantQuarterReport3:
+			 Platform.runLater(() -> {
+			        Object[] response = (Object[]) m.getObj();
+			        int maxOrders = (int) response[0];
+			        String[] intervals = (String[]) response[1];
+			        int[] values = (int[]) response[2];
+			        if (quarterReportView2 != null) {
+			            quarterReportView2.handleServerResponseQuarter1(maxOrders, intervals, values);
+			        }
+			    });
+
+	    	  break;
+	    	  
+		case RestaurantQuarterIncomeReport2:
+		    Platform.runLater(() -> {
+		        Object[] response = (Object[]) m.getObj();
+		        int totalIncome = (int) response[0];
+		        int[] values = (int[]) response[1];
+		        if (quarterReportView2 != null) {
+		            quarterReportView2.handleServerResponseQuarterIncome1(totalIncome, values);
+		        }
+		    });
+		    break;
 		default:
 			break;
 

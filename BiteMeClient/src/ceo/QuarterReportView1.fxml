@@ -8,15 +8,15 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="625.0" prefWidth="695.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ceo.QuarterReportView1">
+<AnchorPane prefHeight="727.0" prefWidth="1331.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ceo.QuarterReportView1">
    <children>
-      <Button id="btnExit" fx:id="btnBack" layoutX="35.0" layoutY="573.0" mnemonicParsing="false" onAction="#getBackBtn" text="back" />
-      <BarChart fx:id="barChart" layoutX="147.0" layoutY="128.0">
+      <Button id="btnExit" fx:id="btnBack" layoutX="35.0" layoutY="671.0" mnemonicParsing="false" onAction="#getBackBtn" text="back" />
+      <BarChart fx:id="barChart1" layoutX="35.0" layoutY="164.0">
         <xAxis>
-          <CategoryAxis side="BOTTOM" fx:id="xAxis" />
+          <CategoryAxis side="BOTTOM" fx:id="xAxis1" />
         </xAxis>
         <yAxis>
-          <NumberAxis fx:id="yAxis" side="LEFT" />
+          <NumberAxis fx:id="yAxis1" side="LEFT" />
         </yAxis>
       </BarChart>
       <Label fx:id="txtRestaurant" layoutX="22.0" layoutY="23.0" prefHeight="47.0" prefWidth="487.0" textAlignment="CENTER">
@@ -24,10 +24,18 @@
             <Font size="28.0" />
          </font>
       </Label>
-      <Label fx:id="txtTotalIncome" layoutX="194.0" layoutY="577.0" prefHeight="17.0" prefWidth="355.0">
+      <Label fx:id="txtTotalIncome" layoutX="862.0" layoutY="663.0" prefHeight="17.0" prefWidth="355.0">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
+      <BarChart fx:id="barChart2" layoutX="753.0" layoutY="164.0">
+        <xAxis>
+          <CategoryAxis side="BOTTOM" fx:id="xAxis2" />
+        </xAxis>
+        <yAxis>
+          <NumberAxis fx:id="yAxis2" side="LEFT" />
+        </yAxis>
+      </BarChart>
    </children>
 </AnchorPane>

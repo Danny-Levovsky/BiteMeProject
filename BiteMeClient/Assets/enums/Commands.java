@@ -47,5 +47,9 @@ public enum Commands {
     getCustomerDetails,
     gotMyCustomerDetails,
     getUpdateTimes,
-
+    RestaurantQuarterIncomeReport,
+    RestaurantQuarterReport2,
+    RestaurantQuarterIncomeReport1,
+    RestaurantQuarterReport3,
+    RestaurantQuarterIncomeReport2,
 }

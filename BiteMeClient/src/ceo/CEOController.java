@@ -31,7 +31,13 @@ import login.LoginScreenController;
 
 
 
-
+/**
+ * The CEOController class handles the actions and interactions for the CEO's
+ * interface. This includes generating reports, managing view settings, and
+ * handling user inputs within the CEO's view.
+ * 
+ * @author yosra
+ */
 public class CEOController {
 
 	  @FXML
@@ -68,6 +74,27 @@ public class CEOController {
 	    private Button btnViewReport1;
 	    
 	    @FXML
+	    private ComboBox<String> quarterComboBox2;
+
+	    @FXML
+	    private ComboBox<String> quarterComboBox3;
+
+	    @FXML
+	    private Button btnViewReport2;
+	    
+	    @FXML
+	    private ComboBox<String> restaurantComboBox2;
+
+	    @FXML
+	    private ComboBox<String> restaurantComboBox3;
+
+	    @FXML
+	    private ComboBox<String> quarterComboBox4;
+
+	    @FXML
+	    private Button btnViewReport3;
+	    
+	    @FXML
 	    private Label txtError1;
 	    
 	    private Map<String, Integer> restaurantMap = new HashMap<>();
@@ -75,10 +102,19 @@ public class CEOController {
 	    private static User ceo;
 
 	    
+	    /**
+		 * Sets the CEO user.
+		 * @param user the User object representing the CEO
+		 */
 	    public static void setCEO(User user) {
 	        ceo = user;
 	    }
 
+	    /**
+	     * Starts the CEO interface.
+	     * @param primaryStage the primary stage for this application
+	     * @throws Exception if an error occurs during loading the FXML
+	     */
 	    public void start(Stage primaryStage) throws Exception {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/ceo/CEO.fxml"));
 	    	Parent root = loader.load();
@@ -88,6 +124,12 @@ public class CEOController {
 	    	primaryStage.show();
 		}
 	    
+	    /**
+	     * Initializes the controller class. This method is automatically called after
+	     * the FXML file has been loaded. It populates the ComboBoxes with month/year
+	     * strings, report options, district options, and restaurant names. It also updates the CEO's name on the UI, 
+	     * and configures the initial states for various UI components.
+	     */
 	    @FXML
 	    private void initialize() { 	
 	        //update name
@@ -118,11 +160,16 @@ public class CEOController {
 			// Add restaurant names to the ComboBox
 			restaurantComboBox.getItems().addAll(restaurantMap.keySet());
 			restaurantComboBox1.getItems().addAll(restaurantMap.keySet());
+			restaurantComboBox2.getItems().addAll(restaurantMap.keySet());
+			restaurantComboBox3.getItems().addAll(restaurantMap.keySet());
 			
 			String[] quarter = {"Q1", "Q2", "Q3", "Q4"};
 			
 			for(int i = 0; i < 4; i++) {
 				quarterComboBox1.getItems().addAll(quarter[i]);
+				quarterComboBox2.getItems().addAll(quarter[i]);
+				quarterComboBox3.getItems().addAll(quarter[i]);
+				quarterComboBox4.getItems().addAll(quarter[i]);
 			}
 
 			// Disable restaurant ComboBox and "View Reports" button initially
@@ -132,6 +179,12 @@ public class CEOController {
 			txtError1.setVisible(false);
 	    }
 	    
+	    /**
+	     * Handles the action for the "View Report" button. It gathers the selected 
+	     * restaurant, month, report type, and district, and then opens the Report View screen.
+	     * @param event the event triggered by the "View Report" button click
+	     * @throws Exception if there is an error while opening the Report View screen
+	     */
 	    @FXML
 	    public void getBtnViewReport(ActionEvent event) throws Exception {
 	    	// Get selected restaurant name and corresponding number
@@ -167,6 +220,14 @@ public class CEOController {
 
 	    }
 
+	    /**
+	     * Handles the action when a month is selected from the ComboBox. This method
+	     * checks if the selected month/year is before or the same as the current
+	     * month/year. If it is, the "View Reports" button is enabled, and any error
+	     * message is hidden. Otherwise, the button is disabled, and an error message is
+	     * displayed.
+	     * @param event the event triggered by selecting a month/year
+	     */
 	    @FXML
 	    public void getMonthComboBox(ActionEvent event) {
 	    	// Get the selected item from the ComboBox
@@ -199,6 +260,11 @@ public class CEOController {
 			}
 	    }
 
+	    /**
+	     * Handles the action when a report type is selected from the ComboBox. This method
+	     * enables or disables the restaurant ComboBox based on the selected report type.
+	     * @param event the event triggered by selecting a report type
+	     */
 	    @FXML
 	    public void getReportComboBox(ActionEvent event) {
 	    	// Get selected report type
@@ -211,7 +277,12 @@ public class CEOController {
 	    	}
 	    }
 	    
-	    
+	    /**
+	     * Handles the action for the "View Report" button associated with the first quarter ComboBox. 
+	     * This method gathers the selected restaurant and quarter, and then opens the Quarter Report View 1 screen.
+	     * @param event the event triggered by the "View Report" button click
+	     * @throws Exception if there is an error while opening the Quarter Report View 1 screen
+	     */
 	    @FXML
 	    public void getBtnViewReport1(ActionEvent event) throws Exception {
 	    	
@@ -226,13 +297,19 @@ public class CEOController {
 			newScreen.start(new Stage());
 	    }
 	    
-	    
-
+	    /**
+	     * Handles the action for checking the selected quarter from the ComboBox. 
+	     * This method checks if the selected quarter has passed or not. If the quarter hasn't passed, 
+	     * it disables the corresponding "View Report" button and shows an error message.
+	     * @param event the event triggered by selecting a quarter
+	     */
 	    @FXML
 	    void checkQuarter(ActionEvent event) {
-	    	 String selectedQuarter = quarterComboBox1.getValue();
-	         LocalDate currentDate = LocalDate.now();
-	         LocalDate endDate = null;
+	    	 // Determine which ComboBox triggered the event
+	        ComboBox<String> sourceComboBox = (ComboBox<String>) event.getSource();
+	        String selectedQuarter = sourceComboBox.getValue();
+	        LocalDate currentDate = LocalDate.now();
+	        LocalDate endDate = null;
 
 	         switch (selectedQuarter) {
 	             case "Q1":
@@ -249,16 +326,97 @@ public class CEOController {
 	                 break;
 	         }
 
-	         if (currentDate.isBefore(endDate)) {
-	        	 txtError1.setVisible(true);
-	        	 btnViewReport1.setDisable(true);
+	      // For quarterComboBox1
+	         if (sourceComboBox.equals(quarterComboBox1)) {
+	             if (currentDate.isBefore(endDate)) {
+	                 txtError1.setVisible(true);
+	                 btnViewReport1.setDisable(true);
+	             } else {
+	                 txtError1.setVisible(false);
+	                 btnViewReport1.setDisable(false);
+	             }
+	         } 
+	         // For quarterComboBox2
+	         else if (sourceComboBox.equals(quarterComboBox2)) {
+	             if (currentDate.isBefore(endDate)) {
+	                 txtError1.setVisible(true);
+	                 btnViewReport2.setDisable(true);
+	                 quarterComboBox3.setDisable(true); // Disable quarterComboBox3
+	             } else {
+	                 txtError1.setVisible(false);
+	                 btnViewReport2.setDisable(false);
+	                 quarterComboBox3.setDisable(false); // Enable quarterComboBox3
+	             }
 	         }
-	         else {
-		         txtError1.setVisible(false);
-	        	 btnViewReport1.setDisable(false); 
-	         }
+	         // For quarterComboBox3
+	         else if (sourceComboBox.equals(quarterComboBox3)) {
+	             if (currentDate.isBefore(endDate)) {
+	                 txtError1.setVisible(true);
+	                 btnViewReport2.setDisable(true);
+	             } else {
+	                 txtError1.setVisible(false);
+	                 btnViewReport2.setDisable(false);
+	             }
+	         } 
+	         // For quarterComboBox4
+	         else if (sourceComboBox.equals(quarterComboBox4)) {
+	             if (currentDate.isBefore(endDate)) {
+	                 txtError1.setVisible(true);
+	                 btnViewReport3.setDisable(true);
+	             } else {
+	                 txtError1.setVisible(false);
+	                 btnViewReport3.setDisable(false);
+	             }
+	         } 
 	    }
 
+	    /**
+	     * Handles the action for the "View Report" button associated with the second quarter ComboBox. 
+	     * This method gathers the selected restaurant and quarters, and then opens the Quarter Report View 2 screen.
+	     * @param event the event triggered by the "View Report" button click
+	     * @throws Exception if there is an error while opening the Quarter Report View 2 screen
+	     */
+	    @FXML
+	    void getBtnViewReport2(ActionEvent event) throws Exception {
+	    	String selectedRestaurant = restaurantComboBox1.getSelectionModel().getSelectedItem();
+	    	Integer restaurantNumber = restaurantMap.get(selectedRestaurant);
+	    	String quarter1 = quarterComboBox2.getSelectionModel().getSelectedItem();
+	    	String quarter2 = quarterComboBox3.getSelectionModel().getSelectedItem();
+	    	
+	    	QuarterReportView2.setDetails(new int[]{restaurantNumber, 0},new String[]{selectedRestaurant, null},new String[]{quarter1, quarter2});
+	    	
+	    	((Node) event.getSource()).getScene().getWindow().hide();
+			QuarterReportView2 newScreen = new QuarterReportView2 ();
+			newScreen.start(new Stage());
+	    }
+	    
+	    /**
+	     * Handles the action for the "View Report" button associated with the third quarter ComboBox. 
+	     * This method gathers the selected restaurants and quarter, and then opens the Quarter Report View 2 screen.
+	     * @param event the event triggered by the "View Report" button click
+	     * @throws Exception if there is an error while opening the Quarter Report View 2 screen
+	     */
+	    @FXML
+	    void getBtnViewReport3(ActionEvent event) throws Exception {
+	    	String selectedRestaurant1 = restaurantComboBox2.getSelectionModel().getSelectedItem();
+	    	String selectedRestaurant2 = restaurantComboBox3.getSelectionModel().getSelectedItem();
+	    	Integer restaurantNumber1 = restaurantMap.get(selectedRestaurant1);
+	    	Integer restaurantNumber2 = restaurantMap.get(selectedRestaurant2);
+	    	String quarter = quarterComboBox4.getSelectionModel().getSelectedItem();
+	    	
+	    	QuarterReportView2.setDetails(new int[]{restaurantNumber1, restaurantNumber2},new String[]{selectedRestaurant1, selectedRestaurant2},new String[]{quarter, null});
+	    	((Node) event.getSource()).getScene().getWindow().hide();
+			QuarterReportView2 newScreen = new QuarterReportView2 ();
+			newScreen.start(new Stage());
+
+	    }
+
+	    /**
+	     * Handles the logout button action. Sends a logout message to the server
+	     * through the client and transitions to the login screen.
+	     * @param event the event triggered by the logout button
+	     * @throws Exception if an error occurs during the process
+	     */
 	    @FXML
 	    public void getBtnLogout(ActionEvent event) throws Exception {
 	    	Message logoutMessage = new Message( CEOController.ceo.getId(), Commands.LogoutUser);

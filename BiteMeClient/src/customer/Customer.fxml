@@ -14,7 +14,7 @@
             <Font name="System Bold" size="29.0" />
          </font></Label>
       <Button id="btnExit" fx:id="BtnNewOrder" layoutX="266.0" layoutY="149.0" mnemonicParsing="false" onAction="#getBtnNewOrder" text="New Order" />
-      <Button id="btnExit" fx:id="BtnViewOrder" layoutX="97.0" layoutY="149.0" mnemonicParsing="false" onAction="#getBtnViewOrder" text="View Order" />
+      <Button id="btnExit" fx:id="BtnViewOrder" layoutX="53.0" layoutY="149.0" mnemonicParsing="false" onAction="#getBtnViewOrder" text="approve receiving order" />
       <Label fx:id="txtLocked" layoutX="145.0" layoutY="196.0" text="You Are Locked!" textFill="RED">
          <font>
             <Font name="System Bold" size="20.0" />

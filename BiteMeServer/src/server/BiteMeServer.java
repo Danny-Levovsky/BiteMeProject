@@ -222,6 +222,7 @@ public class BiteMeServer extends AbstractServer {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			break;
 		case OrderReport:
 
 			Object[] data2 = (Object[]) m.getObj();
@@ -260,14 +261,6 @@ public class BiteMeServer extends AbstractServer {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			break;
-			
-		case RestaurantQuarterReport1:
-			Object[] quarterData = (Object[]) m.getObj();
-			int restaurantNum = (int) quarterData[0];
-			String quarter = (String) quarterData[1];
-			//Object[] quarterDataRetrieved = dbController.quarterRestaurant(restaurantNum, quarter);
-			
 			break;
 			
 		 case GetRestaurantDishes:
@@ -415,6 +408,92 @@ public class BiteMeServer extends AbstractServer {
 	    	        e.printStackTrace();
 	    	    }
 	    	  break;
+	    	  
+	      case RestaurantQuarterReport1:
+	    	  Object[] requestData1 = (Object[]) m.getObj();
+	    	    int restaurantId1 = (int) requestData1[0];
+	    	    String quarter = (String) requestData1[1];
+
+	    	    Object[] reportData = dbController.getQuarterReportData(restaurantId1, quarter);
+	    	    
+
+	    	    try {
+	    	        client.sendToClient(new Message(reportData, Commands.RestaurantQuarterReport1));
+	    	    } catch (IOException e) {
+	    	        e.printStackTrace();
+	    	    }
+
+	    	  break;
+	      case RestaurantQuarterIncomeReport:
+	    	    Object[] requestData2 = (Object[]) m.getObj();
+	    	    int restaurantNumber4 = (int) requestData2[0];
+	    	    String quarter1 = (String) requestData2[1];
+
+	    	    Object[] incomeReportData3 = dbController.getQuarterIncomeReport(restaurantNumber4, quarter1);
+
+	    	    try {
+	    	        client.sendToClient(new Message(incomeReportData3, Commands.RestaurantQuarterIncomeReport));
+	    	    } catch (IOException e) {
+	    	        e.printStackTrace();
+	    	    }
+	    	    break;
+	      case RestaurantQuarterReport2:
+	    	  Object[] requestData3 = (Object[]) m.getObj();
+	    	    int restaurantId2 = (int) requestData3[0];
+	    	    String quarter2 = (String) requestData3[1];
+
+	    	    Object[] reportData1 = dbController.getQuarterReportData(restaurantId2, quarter2);
+	    	    
+
+	    	    try {
+	    	        client.sendToClient(new Message(reportData1, Commands.RestaurantQuarterReport2));
+	    	    } catch (IOException e) {
+	    	        e.printStackTrace();
+	    	    }
+
+	    	  break;
+	      case RestaurantQuarterIncomeReport1:
+	    	    Object[] requestData4 = (Object[]) m.getObj();
+	    	    int restaurantNumber5 = (int) requestData4[0];
+	    	    String quarter4 = (String) requestData4[1];
+
+	    	    Object[] incomeReportData4 = dbController.getQuarterIncomeReport(restaurantNumber5, quarter4);
+
+	    	    try {
+	    	        client.sendToClient(new Message(incomeReportData4, Commands.RestaurantQuarterIncomeReport1));
+	    	    } catch (IOException e) {
+	    	        e.printStackTrace();
+	    	    }
+	    	    break;
+
+	      case RestaurantQuarterReport3:
+	    	  Object[] requestDat = (Object[]) m.getObj();
+	    	    int restaurantID = (int) requestDat[0];
+	    	    String quarter5 = (String) requestDat[1];
+
+	    	    Object[] reportData5 = dbController.getQuarterReportData(restaurantID, quarter5);
+	    	    
+
+	    	    try {
+	    	        client.sendToClient(new Message(reportData5, Commands.RestaurantQuarterReport3));
+	    	    } catch (IOException e) {
+	    	        e.printStackTrace();
+	    	    }
+
+	    	  break;
+	      case RestaurantQuarterIncomeReport2:
+	    	    Object[] requestDat1 = (Object[]) m.getObj();
+	    	    int restaurantNumber6 = (int) requestDat1[0];
+	    	    String quarter6 = (String) requestDat1[1];
+
+	    	    Object[] incomeReportData5 = dbController.getQuarterIncomeReport(restaurantNumber6, quarter6);
+
+	    	    try {
+	    	        client.sendToClient(new Message(incomeReportData5, Commands.RestaurantQuarterIncomeReport2));
+	    	    } catch (IOException e) {
+	    	        e.printStackTrace();
+	    	    }
+	    	    break;
 	  
 
 

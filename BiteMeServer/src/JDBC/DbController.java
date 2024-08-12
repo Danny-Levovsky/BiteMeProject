@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
@@ -1286,10 +1287,271 @@ public class DbController {
     }
 
     
+    /**
+     * Retrieves quarter report data from the database. If the data does not exist, 
+     * it calculates the data and saves it to the database before returning it.
+     * @param restaurantNumber The restaurant's ID.
+     * @param quarter The quarter to retrieve the data for.
+     * @return An Object array containing MaxOrders, Intervals array, and Values array.
+     */
+    public Object[] getQuarterReportData(int restaurantNumber, String quarter) {
+        String query = "SELECT MaxOrders, Interval1, value1, Interval2, value2, Interval3, value3, " +
+                       "Interval4, value4, Interval5, value5, Interval6, value6, Interval7, value7, " +
+                       "Interval8, value8, Interval9, value9, Interval10, value10 " +
+                       "FROM quarter_reports WHERE RestaurantNumber = ? AND Quarter = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, restaurantNumber);
+            stmt.setString(2, quarter);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int maxOrders = rs.getInt("MaxOrders");
+                String[] intervals = new String[10];
+                int[] values = new int[10];
+                
+                for (int i = 0; i < 10; i++) {
+                    intervals[i] = rs.getString("Interval" + (i + 1));
+                    values[i] = rs.getInt("value" + (i + 1));
+                }
+
+                return new Object[]{maxOrders, intervals, values};
+            } else {
+                return calculateAndSaveQuarterReport(restaurantNumber, quarter);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;  // Return null if something goes wrong
+    }
+
+    /**
+     * Calculates the quarter report data and saves it to the database.
+     * @param restaurantNumber The restaurant's ID.
+     * @param quarter The quarter to calculate the data for.
+     * @return An Object array containing MaxOrders, Intervals array, and Values array.
+     */
+    private Object[] calculateAndSaveQuarterReport(int restaurantNumber, String quarter) {
+        // Determine the months corresponding to the quarter
+        String[] months = getMonthsForQuarter(quarter);
+
+        // Step 1: Calculate the max orders per day
+        String queryMaxOrders = "SELECT MAX(orderCount) AS MaxOrders FROM ( " +
+                                "SELECT COUNT(*) AS orderCount " +
+                                "FROM orders " +
+                                "WHERE RestaurantNumber = ? AND DATE_FORMAT(OrderDateTime, '%c') IN (?, ?, ?) " +
+                                "GROUP BY DATE(OrderDateTime)) AS dailyOrders";
+
+        int maxOrders = 0;
+        try (PreparedStatement stmtMaxOrders = conn.prepareStatement(queryMaxOrders)) {
+            stmtMaxOrders.setInt(1, restaurantNumber);
+            stmtMaxOrders.setString(2, months[0]);
+            stmtMaxOrders.setString(3, months[1]);
+            stmtMaxOrders.setString(4, months[2]);
+
+            ResultSet rsMaxOrders = stmtMaxOrders.executeQuery();
+            if (rsMaxOrders.next()) {
+                maxOrders = rsMaxOrders.getInt("MaxOrders");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // Step 2: Calculate the intervals
+        String[] intervals = new String[10];
+        int[] values = new int[10];
+        
+        if (maxOrders < 10) {
+            // If maxOrders is less than 10, create intervals of size 1
+            for (int i = 0; i < 10; i++) {
+                intervals[i] = i + "-" + (i + 1);
+            }
+        } else {
+            // For larger maxOrders, create appropriate intervals
+            int intervalSize = maxOrders / 10;
+            int remainder = maxOrders % 10;
+
+            for (int i = 0; i < 10; i++) {
+                int lowerBound = i * intervalSize;
+                int upperBound = (i + 1) * intervalSize - 1;
+                if (i == 9) { // Add any remainder to the last interval
+                    upperBound += remainder;
+                }
+                intervals[i] = lowerBound + "-" + upperBound;
+            }
+        }
+
+        // Step 3: Calculate the number of days in each interval
+        for (int i = 0; i < 10; i++) {
+            String[] bounds = intervals[i].split("-");
+            int lowerBound = Integer.parseInt(bounds[0]);
+            int upperBound = Integer.parseInt(bounds[1]);
+
+            String queryInterval = "SELECT COUNT(*) AS dayCount FROM ( " +
+                                   "SELECT COUNT(*) AS orderCount " +
+                                   "FROM orders " +
+                                   "WHERE RestaurantNumber = ? AND DATE_FORMAT(OrderDateTime, '%c') IN (?, ?, ?) " +
+                                   "GROUP BY DATE(OrderDateTime) " +
+                                   "HAVING orderCount BETWEEN ? AND ?) AS intervalOrders";
+
+            try (PreparedStatement stmtInterval = conn.prepareStatement(queryInterval)) {
+                stmtInterval.setInt(1, restaurantNumber);
+                stmtInterval.setString(2, months[0]);
+                stmtInterval.setString(3, months[1]);
+                stmtInterval.setString(4, months[2]);
+                stmtInterval.setInt(5, lowerBound);
+                stmtInterval.setInt(6, upperBound);
+
+                ResultSet rsInterval = stmtInterval.executeQuery();
+                if (rsInterval.next()) {
+                    values[i] = rsInterval.getInt("dayCount");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        // Step 4: Save the data to the quarter_reports table
+        String insertQuery = "INSERT INTO quarter_reports (Quarter, Year, RestaurantNumber, MaxOrders, " +
+                "Interval1, value1, Interval2, value2, Interval3, value3, " +
+                "Interval4, value4, Interval5, value5, Interval6, value6, " +
+                "Interval7, value7, Interval8, value8, Interval9, value9, " +
+                "Interval10, value10) " +
+                "VALUES (?, '2024', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmtInsert = conn.prepareStatement(insertQuery)) {
+            stmtInsert.setString(1, quarter);
+            stmtInsert.setInt(2, restaurantNumber);
+            stmtInsert.setInt(3, maxOrders);
+            int index = 4;
+            for (int i = 0; i < 10; i++) {
+                stmtInsert.setString(index, intervals[i]);
+                stmtInsert.setInt(index + 1, values[i]);
+                index += 2;
+            }
+            stmtInsert.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return new Object[]{maxOrders, intervals, values};
+    }
+
+    /**
+     * Helper method to determine the months corresponding to a given quarter.
+     * @param quarter The quarter (e.g., "Q1", "Q2").
+     * @return An array of three strings representing the months in the quarter.
+     */
+    private String[] getMonthsForQuarter(String quarter) {
+        switch (quarter) {
+            case "Q1":
+                return new String[]{"1", "2", "3"};
+            case "Q2":
+                return new String[]{"4", "5", "6"};
+            case "Q3":
+                return new String[]{"7", "8", "9"};
+            case "Q4":
+                return new String[]{"10", "11", "12"};
+            default:
+                throw new IllegalArgumentException("Invalid quarter: " + quarter);
+        }
+    }
+
     
-    
-    
-    
+    public Object[] getQuarterIncomeReport(int restaurantNumber, String quarter) {
+        String[] months = getMonthsForQuarter(quarter);
+
+        // Step 1: Check if the quarter report already exists in the database
+        String queryCheck = "SELECT TotalIncome, Week1, Week2, Week3, Week4, Week5, Week6, " +
+                            "Week7, Week8, Week9, Week10, Week11, Week12 " +
+                            "FROM quarter_income_reports WHERE RestaurantNumber = ? AND Quarter = ? AND Year = '2024'";
+
+        try (PreparedStatement stmt = conn.prepareStatement(queryCheck)) {
+            stmt.setInt(1, restaurantNumber);
+            stmt.setString(2, quarter);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int totalIncome = rs.getInt("TotalIncome");
+                int[] values = new int[12];
+                for (int i = 0; i < 12; i++) {
+                    values[i] = rs.getInt("Week" + (i + 1));
+                }
+                return new Object[]{totalIncome, values};
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // Step 2: Calculate the quarter income report if it doesn't exist
+        int[] values = new int[12];
+        int totalIncome = 0;
+
+        // Define the start and end dates for each of the 12 weeks
+        LocalDate[] weekStartDates = new LocalDate[12];
+        LocalDate[] weekEndDates = new LocalDate[12];
+        LocalDate firstDayOfQuarter = LocalDate.of(2024, Integer.parseInt(months[0]), 1);
+
+        for (int i = 0; i < 12; i++) {
+            weekStartDates[i] = firstDayOfQuarter.plusWeeks(i);
+            weekEndDates[i] = weekStartDates[i].plusDays(6);
+        }
+
+        String queryCalculate = "SELECT OrderDateTime, TotalPrice " +
+                                "FROM orders " +
+                                "WHERE RestaurantNumber = ? AND DATE_FORMAT(OrderDateTime, '%c') IN (?, ?, ?)";
+
+        try (PreparedStatement stmtCalc = conn.prepareStatement(queryCalculate)) {
+            stmtCalc.setInt(1, restaurantNumber);
+            stmtCalc.setString(2, months[0]);
+            stmtCalc.setString(3, months[1]);
+            stmtCalc.setString(4, months[2]);
+
+            ResultSet rsCalc = stmtCalc.executeQuery();
+            while (rsCalc.next()) {
+                LocalDate orderDate = rsCalc.getDate("OrderDateTime").toLocalDate();
+                int income = rsCalc.getInt("TotalPrice");
+
+                for (int i = 0; i < 12; i++) {
+                    if (!orderDate.isBefore(weekStartDates[i]) && !orderDate.isAfter(weekEndDates[i])) {
+                        values[i] += income;
+                        break;
+                    }
+                }
+
+                totalIncome += income;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // Step 3: Save the data to the quarter_income_reports table
+        String insertQuery = "INSERT INTO quarter_income_reports (Quarter, Year, RestaurantNumber, TotalIncome, " +
+                             "Week1, Week2, Week3, Week4, Week5, Week6, Week7, Week8, Week9, Week10, Week11, Week12) " +
+                             "VALUES (?, '2024', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement stmtInsert = conn.prepareStatement(insertQuery)) {
+            stmtInsert.setString(1, quarter);
+            stmtInsert.setInt(2, restaurantNumber);
+            stmtInsert.setInt(3, totalIncome);
+            for (int i = 0; i < 12; i++) {
+                stmtInsert.setInt(4 + i, values[i]);
+            }
+            stmtInsert.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return new Object[]{totalIncome, values};
+    }
+
+
     
     
     

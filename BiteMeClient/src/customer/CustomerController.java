@@ -126,6 +126,12 @@ public class CustomerController {
 		newScreen.start(new Stage());
 	}
 
+	/**
+	 * Handles the action for the "New Order" button. This method is triggered when the "New Order" button is clicked.
+	 * It sets the customer in the NewOrderController, hides the current window, and opens the New Order screen.
+	 * @param event the event triggered by the "New Order" button click
+	 * @throws Exception if there is an error while opening the New Order screen
+	 */
 	@FXML
     void getBtnNewOrder(ActionEvent event) throws Exception {
 		NewOrderController.setCustomer(customer);
