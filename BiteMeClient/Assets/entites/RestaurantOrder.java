@@ -151,9 +151,15 @@ public class RestaurantOrder implements Serializable {
 		return size;
 	}
 
-	public void setSize(String size) { this.size = size;}
+	public void setSize(String size) { 
+		this.size = size;
+		}
 
-	public String getSpecification() { return specification; }
+	public String getSpecification() { 
+		return specification; 
+		}
 
-	public void setSpecification(String specification) { this.specification = specification; }
+	public void setSpecification(String specification) { 
+		this.specification = specification; 
+		}
 }

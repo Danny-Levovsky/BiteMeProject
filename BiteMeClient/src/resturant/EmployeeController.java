@@ -142,8 +142,8 @@ public class EmployeeController {
 		orderDateTimeColumn.setCellValueFactory(new PropertyValueFactory<>("orderDateTime"));
 		dishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
 		quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
-		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("specification"));
+		sizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
+		specificationColumn.setCellValueFactory(new PropertyValueFactory<>("specification"));
 		IsDeliveryColumn.setCellValueFactory(new PropertyValueFactory<>("IsDelivery"));
 		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("orderStatus"));
 		getTableData();
