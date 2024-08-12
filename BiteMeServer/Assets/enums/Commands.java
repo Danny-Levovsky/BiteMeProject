@@ -27,6 +27,7 @@ public enum Commands {
     OrderReport, //command for orders report
     getIncomeReport, // command from branch manager to get Income Report from DB
     setIncomeReport, // command from server to manager to set Income Report from DB
-    getPerformanceReport //command for creating and getting performance report
+    getPerformanceReport, //command for creating and getting performance report
+    RestaurantQuarterReport1 //command for viewing restaurant quarter report
 
 }

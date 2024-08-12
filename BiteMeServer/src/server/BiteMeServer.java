@@ -259,6 +259,14 @@ public class BiteMeServer extends AbstractServer {
 				e.printStackTrace();
 			}
 			break;
+			
+		case RestaurantQuarterReport1:
+			Object[] quarterData = (Object[]) m.getObj();
+			int restaurantNum = (int) quarterData[0];
+			String quarter = (String) quarterData[1];
+			//Object[] quarterDataRetrieved = dbController.quarterRestaurant(restaurantNum, quarter);
+			
+			break;
 
 		default:
 			break;

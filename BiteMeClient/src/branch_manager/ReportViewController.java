@@ -10,9 +10,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import ceo.CEOController;
 import client.Client;
 import client.ClientController;
 import entites.Message;
+import entites.User;
 import enums.Commands;
 
 import javafx.application.Platform;
@@ -63,6 +65,8 @@ public class ReportViewController {
 	private static String district;
 	private static String reportType;
 	private static String restaurantName;
+	
+	private static User user;
 
 	/**
      * Sets the details required for generating the report.
@@ -78,6 +82,10 @@ public class ReportViewController {
 		district = dis;
 		reportType = report;
 		restaurantName = name;
+	}
+	
+	public static void setUser(User user1) {
+		user = user1;
 	}
 
 	/**
@@ -361,17 +369,25 @@ public class ReportViewController {
 	    barChart.layout();   
 	}
 
-	 /**
-     * Handles the action for the back button. This method is triggered when the
-     * back button is clicked. It hides the current window and opens the branch
-     * manager screen.
-     * @param event the event triggered by the back button click
-     * @throws Exception if there is an error while opening the branch manager screen
-     */
+	/**
+	 * Handles the action for the back button. This method is triggered when the back button is clicked. 
+	 * It hides the current window and opens the appropriate screen based on the user type.
+	 * If the user is a "Branch Manager," it navigates to the Branch Manager screen.
+	 * If the user is a "CEO," it navigates to the CEO screen.
+	 * @param event the event triggered by the back button click
+	 * @throws Exception if there is an error while opening the new screen
+	 */
 	@FXML
 	public void getBackBtn(ActionEvent event) throws Exception {
 		((Node) event.getSource()).getScene().getWindow().hide();
-		BranchManagerController newScreen = new BranchManagerController();
-		newScreen.start(new Stage());
+		
+		if(user.getType().equals("Branch Manager")) {
+			BranchManagerController newScreen = new BranchManagerController();
+			newScreen.start(new Stage());
+		}
+		if(user.getType().equals("CEO")) {
+			CEOController newScreen = new CEOController();
+			newScreen.start(new Stage());
+		}
 	}
 }

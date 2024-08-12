@@ -129,7 +129,7 @@ public class BranchManagerController {
      * @throws Exception if an error occurs during the process
      */
 	@FXML
-	void getBtnLogout(ActionEvent event) throws Exception {
+	public void getBtnLogout(ActionEvent event) throws Exception {
 
 		Message logoutMessage = new Message(BranchManagerController.branchManager.getId(), Commands.LogoutUser);
 		ClientController.client.sendToServer(logoutMessage);
@@ -164,7 +164,7 @@ public class BranchManagerController {
      * @throws Exception if there is an error while opening the report view screen
      */
 	@FXML
-	void getBtnViewReports(ActionEvent event) throws Exception {
+	public void getBtnViewReports(ActionEvent event) throws Exception {
 
 		// Get selected restaurant name and corresponding number
 		String selectedRestaurant = restaurantComboBox.getSelectionModel().getSelectedItem();
@@ -191,6 +191,7 @@ public class BranchManagerController {
 		// Call the setDetails method of ReportViewController with the gathered data
 		ReportViewController.setDetails(restaurantNumber, selectedMonthYear, district, selectedReport,
 				selectedRestaurant);
+		ReportViewController.setUser(branchManager);
 
 		((Node) event.getSource()).getScene().getWindow().hide();
 		ReportViewController newScreen = new ReportViewController();
@@ -206,7 +207,7 @@ public class BranchManagerController {
      * @param event the event triggered by selecting a month/year
      */
 	@FXML
-	void getMonth(ActionEvent event) {
+	public void getMonth(ActionEvent event) {
 
 		// Get the selected item from the ComboBox
 		String selectedMonthYear = monthComboBox.getSelectionModel().getSelectedItem();
@@ -244,10 +245,13 @@ public class BranchManagerController {
      * @param event the event triggered by selecting a report type
      */
     @FXML
-    void getReportComboBox(ActionEvent event) {
+    public void getReportComboBox(ActionEvent event) {
     	// Get selected report type
     	String selectedReport = reportComboBox.getSelectionModel().getSelectedItem();
-    	if (!selectedReport.equals("performance report")) {
+    	if (selectedReport.equals("performance report")) {
+    		restaurantComboBox.setDisable(true);
+    	}
+    	else {
     		restaurantComboBox.setDisable(false);
     	}
     }
