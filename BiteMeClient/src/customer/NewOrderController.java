@@ -1244,19 +1244,61 @@ public class NewOrderController {
 
     @FXML
     void getBtnFinish(ActionEvent event) {
-        if (orderDishes.isEmpty()) {
+        if (orderItems.isEmpty()) {
             finishErrorText.setText("Please add items to order before finishing");
         } else if (!validateDeliveryFields()) {
             finishErrorText.setText("Please correct the errors in the delivery fields");
         } else {
-            double totalPrice = 0.0;
-            for (Dish dish : orderDishes) {
-                int quantity = orderQuantitiesSalad.get(dish.getDishID());
-                System.out.println("Ordered " + quantity + " of " + dish.getDishName());
-                totalPrice += dish.getDishPrice() * quantity;
+            // Save current timestamps
+            java.sql.Timestamp tempBeginUpdate = this.beginUpdate;
+            java.sql.Timestamp tempEndUpdate = this.endUpdate;
+
+            // Set flag to true before calling requestRestaurantMenu
+            this.checkTimeBeforeConfirm = true;
+            requestRestaurantMenu(currentRestaurant);
+
+            // Compare timestamps
+            if (tempBeginUpdate.equals(this.beginUpdate) && tempEndUpdate.equals(this.endUpdate)) {
+                // Prepare order data
+                List<Map<String, Object>> orderData = new ArrayList<>();
+                for (OrderItem item : orderItems) {
+                    Map<String, Object> itemData = new HashMap<>();
+                    itemData.put("dishID", item.getDishID());
+                    itemData.put("dishName", item.getDishName());
+                    itemData.put("quantity", item.getQuantity());
+                    itemData.put("price", item.getDishPrice());
+                    itemData.put("specification", item.getSelectedSpecification());
+                    orderData.add(itemData);
+                }
+
+                // Add customer and order details
+                Map<String, Object> orderDetails = new HashMap<>();
+                orderDetails.put("customerNumber", currentCustomer.getCustomerNumber());
+                orderDetails.put("restaurantNumber", this.restaurantNumber);
+                orderDetails.put("deliveryType", deliveryTypeComboBox.getValue());
+                orderDetails.put("address", addressField.getText());
+                orderDetails.put("phoneNumber", phoneNumberField.getText());
+                orderDetails.put("deliveryDate", deliveryDatePicker.getValue().toString());
+                orderDetails.put("deliveryTime", deliveryHourPicker.getValue() + ":" + deliveryMinutePicker.getValue());
+                orderDetails.put("totalPrice", Double.parseDouble(totalPriceText.getText().split(":")[1].trim().substring(1)));
+
+                // Combine order items and details
+                List<Object> completeOrderData = new ArrayList<>();
+                completeOrderData.add(orderDetails);
+                completeOrderData.add(orderData);
+
+                // Send order to server
+                Message msg = new Message(completeOrderData, Commands.sendCustomerOrder);
+                ClientController.client.handleMessageFromClientControllers(msg);
+
+                finishErrorText.setText("Order submitted successfully!");
+                resetEntireOrder();
+            } else {
+                finishErrorText.setText("Menu has been updated. Please review your order and try again.");
             }
-            System.out.println(String.format("Total Price: ₪%.2f", totalPrice));
-            finishErrorText.setText("");
+
+            // Reset the flag
+            this.checkTimeBeforeConfirm = false;
         }
     }
     

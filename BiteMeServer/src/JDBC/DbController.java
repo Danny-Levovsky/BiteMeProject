@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -262,7 +263,100 @@ public class DbController {
         return restaurantNames;
     }
 
-    
+    /**
+     * Inserts a new customer order into the database, including order details and individual items.
+     * 
+     * @param orderData A List containing two elements: a Map with order details and a List of Maps with order items.
+     * @return "success" if the order was successfully inserted, or an error message if the insertion failed.
+     */
+    public String sendCustomerOrder(List<Object> orderData) {
+        String insertOrderQuery = "INSERT INTO orders (CustomerNumber, RestaurantNumber, TotalPrice, IsDelivery, RequestedDateTime, OrderDateTime) VALUES (?, ?, ?, ?, ?, ?)";
+        String insertOrderItemQuery = "INSERT INTO restaurants_orders (OrderID, DishID, Size, Specification, Quantity) VALUES (?, ?, ?, ?, ?)";
+
+        try {
+            conn.setAutoCommit(false);
+
+            Map<String, Object> orderDetails = (Map<String, Object>) orderData.get(0);
+            List<Map<String, Object>> orderItems = (List<Map<String, Object>>) orderData.get(1);
+
+            // Insert order details
+            try (PreparedStatement orderStmt = conn.prepareStatement(insertOrderQuery)) {
+                orderStmt.setInt(1, (Integer) orderDetails.get("customerNumber"));
+                orderStmt.setInt(2, (Integer) orderDetails.get("restaurantNumber"));
+                orderStmt.setDouble(3, (Double) orderDetails.get("totalPrice"));
+                orderStmt.setBoolean(4, !orderDetails.get("deliveryType").equals("Pickup"));
+                
+                String requestedDateTime = orderDetails.get("deliveryDate") + " " + orderDetails.get("deliveryTime");
+                orderStmt.setTimestamp(5, Timestamp.valueOf(requestedDateTime));
+                orderStmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+
+                int affectedRows = orderStmt.executeUpdate();
+                if (affectedRows == 0) {
+                    throw new SQLException("Creating order failed, no rows affected.");
+                }
+            }
+
+            // Get the last inserted order ID
+            int orderId = getLastInsertedOrderId();
+
+            // Insert order items
+            try (PreparedStatement itemStmt = conn.prepareStatement(insertOrderItemQuery)) {
+                for (Map<String, Object> item : orderItems) {
+                    itemStmt.setInt(1, orderId);
+                    itemStmt.setInt(2, (Integer) item.get("dishID"));
+                    
+                    String specification = (String) item.get("specification");
+                    String size = "Regular";
+                    if (specification.startsWith("Size:")) {
+                        String[] parts = specification.split(":");
+                        size = parts[1].trim();
+                        specification = parts.length > 2 ? parts[2].trim() : "";
+                    }
+                    
+                    itemStmt.setString(3, size);
+                    itemStmt.setString(4, specification);
+                    itemStmt.setInt(5, (Integer) item.get("quantity"));
+                    itemStmt.addBatch();
+                }
+                itemStmt.executeBatch();
+            }
+
+            conn.commit();
+            return "success";
+        } catch (SQLException e) {
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+            return "error: " + e.getMessage();
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Retrieves the ID of the last inserted order.
+     * 
+     * @return The ID of the last inserted order.
+     * @throws SQLException If a database access error occurs.
+     */
+    private int getLastInsertedOrderId() throws SQLException {
+        String query = "SELECT LAST_INSERT_ID()";
+        try (PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            } else {
+                throw new SQLException("Failed to get last inserted order ID.");
+            }
+        }
+    }
 		
 
 
