@@ -488,7 +488,7 @@ public class DbController {
     public List<RestaurantOrder> getRestaurantOrders(int employeeId) {
         List<RestaurantOrder> restaurantOrders = new ArrayList<>();
         String queryRestaurantNumber = "SELECT RestaurantNumber FROM employee WHERE ID = ?";
-        String queryOrders = "SELECT o.OrderID, o.CustomerNumber, o.IsDelivery, o.OrderDateTime, o.StatusRestaurant, d.DishName, r.Quantity " +
+        String queryOrders = "SELECT o.OrderID, o.CustomerNumber, o.IsDelivery, o.OrderDateTime, o.StatusRestaurant, d.DishName, r.Quantity, r.Size, r.Specification " +
                 "FROM orders o " +
                 "JOIN restaurants_orders r ON o.OrderID = r.OrderID " +
                 "JOIN dishes d ON r.DishID = d.DishID " +
@@ -520,6 +520,8 @@ public class DbController {
                     restaurantOrder.setOrderStatus(rsOrders.getString("StatusRestaurant"));
                     restaurantOrder.setDishName(rsOrders.getString("DishName"));
                     restaurantOrder.setQuantity(rsOrders.getInt("Quantity"));
+                    restaurantOrder.setSpecification(rsOrders.getString("Specification"));
+                    restaurantOrder.setSize(rsOrders.getString("Size"));
 
                     restaurantOrders.add(restaurantOrder);
                 }

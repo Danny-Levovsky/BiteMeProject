@@ -62,6 +62,10 @@ public class EmployeeController {
 	@FXML
 	private TableColumn<RestaurantOrder, Integer> quantityColumn;
 	@FXML
+    private TableColumn<RestaurantOrder, String> sizeColumn;
+    @FXML
+    private TableColumn<RestaurantOrder, String> specificationColumn;
+	@FXML
 	private TableColumn<RestaurantOrder, Integer> IsDeliveryColumn;
 	@FXML
 	private TableColumn<RestaurantOrder, String> orderStatusColumn;
@@ -128,6 +132,8 @@ public class EmployeeController {
 		orderDateTimeColumn.setCellValueFactory(new PropertyValueFactory<>("orderDateTime"));
 		dishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
 		quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
+		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("specification"));
 		IsDeliveryColumn.setCellValueFactory(new PropertyValueFactory<>("IsDelivery"));
 		orderStatusColumn.setCellValueFactory(new PropertyValueFactory<>("orderStatus"));
 		getTableData();
