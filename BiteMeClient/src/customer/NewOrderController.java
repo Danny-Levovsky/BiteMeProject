@@ -1244,20 +1244,61 @@ public class NewOrderController {
 
     @FXML
     void getBtnFinish(ActionEvent event) {
-        if (orderDishes.isEmpty()) {
+        if (orderItems.isEmpty()) {
             finishErrorText.setText("Please add items to order before finishing");
         } else if (!validateDeliveryFields()) {
             finishErrorText.setText("Please correct the errors in the delivery fields");
         } else {
             double totalPrice = 0.0;
-            for (Dish dish : orderDishes) {
-                int quantity = orderQuantitiesSalad.get(dish.getDishID());
-                System.out.println("Ordered " + quantity + " of " + dish.getDishName());
-                totalPrice += dish.getDishPrice() * quantity;
+            int quantitySalad = 0;
+            int quantityMain = 0;
+            int quantityDessert = 0;
+            int quantityDrink = 0;
+            
+            for (OrderItem item : orderItems) {
+                int quantity = item.getQuantity();
+                System.out.println("Ordered " + quantity + " of " + item.getDishName() + item.getCategoryName());
+                totalPrice += item.getDishPrice() * quantity;
+                
+                switch (item.getCategoryName()) {
+                case "salad":
+                	quantitySalad +=  item.getQuantity();
+                    break;
+                case "main course":
+                	quantityMain +=  item.getQuantity();
+                    break;
+                case "dessert":
+                	quantityDessert +=  item.getQuantity();
+                    break;
+                case "drink":
+                	quantityDrink +=  item.getQuantity();
+                    break;
+                default:
+                   break;
+                }
             }
+           
             System.out.println(String.format("Total Price: ₪%.2f", totalPrice));
             finishErrorText.setText("");
+            //this is what we send to db in list in the ORDERS TABLE
+            //is earlyorder will get from the method for datetime in a class variable + requested datetime, orderdatetime
+            //TODO: method for earlyOrder in delivery date: get these variables 
+            //TODO: FXML method for delivery time 
+            //TODO: implement begin/end update variables 
+            List<Object> orderInfo = new ArrayList<>();
+            orderInfo.add(currentCustomer.getCustomerNumber());
+            orderInfo.add(restaurantNumber);
+            orderInfo.add(totalPrice);
+            orderInfo.add(quantitySalad);
+            orderInfo.add(quantityMain);
+            orderInfo.add(quantityDessert);
+            orderInfo.add(quantityDrink);
+
+            // Print the list for verification
+            //Order Information: [1, 1, 591.0, 4, 5, 3, 5] will be added to db in that order
+            System.out.println("Order Information: " + orderInfo);
         }
+        
     }
     
     public void start(Stage primaryStage) throws Exception {
