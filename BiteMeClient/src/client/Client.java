@@ -160,22 +160,22 @@ public class Client extends AbstractClient {
 			
 	    break;
 	    
-		case sendCustomerOrder:
-            List<Object> orderData = (List<Object>) m.getObj();
-            Map<String, Object> orderDetails = (Map<String, Object>) orderData.get(0);
-            List<Map<String, Object>> orderItems = (List<Map<String, Object>>) orderData.get(1);
-
-            boolean orderAdded = newOrderController.addCustomerOrder(orderDetails, orderItems);
-            
-            try {
-                client.sendToClient(new Message(
-                    orderAdded ? "Order submitted successfully" : "Failed to submit order",
-                    Commands.sendCustomerOrder
-                ));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            break;
+//		case sendCustomerOrder:
+//            List<Object> orderData = (List<Object>) m.getObj();
+//            Map<String, Object> orderDetails = (Map<String, Object>) orderData.get(0);
+//            List<Map<String, Object>> orderItems = (List<Map<String, Object>>) orderData.get(1);
+//
+//            boolean orderAdded = newOrderController.addCustomerOrder(orderDetails, orderItems);
+//            
+//            try {
+//                client.sendToClient(new Message(
+//                    orderAdded ? "Order submitted successfully" : "Failed to submit order",
+//                    Commands.sendCustomerOrder
+//                ));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            break;
 
 		default:
 			break;

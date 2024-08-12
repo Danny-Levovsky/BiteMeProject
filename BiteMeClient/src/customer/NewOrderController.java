@@ -32,7 +32,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;   
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 public class NewOrderController {
 
@@ -1246,60 +1247,75 @@ public class NewOrderController {
     void getBtnFinish(ActionEvent event) {
         if (orderItems.isEmpty()) {
             finishErrorText.setText("Please add items to order before finishing");
-        } else if (!validateDeliveryFields()) {
+            return;
+        }
+        if (!validateDeliveryFields()) {
             finishErrorText.setText("Please correct the errors in the delivery fields");
-        } else {
-            // Save current timestamps
-            java.sql.Timestamp tempBeginUpdate = this.beginUpdate;
-            java.sql.Timestamp tempEndUpdate = this.endUpdate;
+            return;
+        }
 
-            // Set flag to true before calling requestRestaurantMenu
-            this.checkTimeBeforeConfirm = true;
-            requestRestaurantMenu(currentRestaurant);
+        // Save current timestamps
+        java.sql.Timestamp tempBeginUpdate = this.beginUpdate;
+        java.sql.Timestamp tempEndUpdate = this.endUpdate;
 
-            // Compare timestamps
-            if (tempBeginUpdate.equals(this.beginUpdate) && tempEndUpdate.equals(this.endUpdate)) {
-                // Prepare order data
-                List<Map<String, Object>> orderData = new ArrayList<>();
-                for (OrderItem item : orderItems) {
-                    Map<String, Object> itemData = new HashMap<>();
-                    itemData.put("dishID", item.getDishID());
-                    itemData.put("dishName", item.getDishName());
-                    itemData.put("quantity", item.getQuantity());
-                    itemData.put("price", item.getDishPrice());
-                    itemData.put("specification", item.getSelectedSpecification());
-                    orderData.add(itemData);
-                }
+        // Set flag to true before calling requestRestaurantMenu
+        this.checkTimeBeforeConfirm = true;
+        requestRestaurantMenu(currentRestaurant);
 
-                // Add customer and order details
-                Map<String, Object> orderDetails = new HashMap<>();
-                orderDetails.put("customerNumber", currentCustomer.getCustomerNumber());
-                orderDetails.put("restaurantNumber", this.restaurantNumber);
-                orderDetails.put("deliveryType", deliveryTypeComboBox.getValue());
-                orderDetails.put("address", addressField.getText());
-                orderDetails.put("phoneNumber", phoneNumberField.getText());
-                orderDetails.put("deliveryDate", deliveryDatePicker.getValue().toString());
-                orderDetails.put("deliveryTime", deliveryHourPicker.getValue() + ":" + deliveryMinutePicker.getValue());
-                orderDetails.put("totalPrice", Double.parseDouble(totalPriceText.getText().split(":")[1].trim().substring(1)));
-
-                // Combine order items and details
-                List<Object> completeOrderData = new ArrayList<>();
-                completeOrderData.add(orderDetails);
-                completeOrderData.add(orderData);
-
-                // Send order to server
-                Message msg = new Message(completeOrderData, Commands.sendCustomerOrder);
-                ClientController.client.handleMessageFromClientControllers(msg);
-
-                finishErrorText.setText("Order submitted successfully!");
-                resetEntireOrder();
-            } else {
-                finishErrorText.setText("Menu has been updated. Please review your order and try again.");
+        // Compare timestamps, handling null values
+        //Compare as objects instead of TimeStamp because beginUpdate & endUpdate might be null
+        if (Objects.equals(tempBeginUpdate, this.beginUpdate) && Objects.equals(tempEndUpdate, this.endUpdate)) {
+            // Prepare order data
+            List<Map<String, Object>> orderData = new ArrayList<>();
+            for (OrderItem item : orderItems) {
+                Map<String, Object> itemData = new HashMap<>();
+                itemData.put("dishID", item.getDishID());
+                itemData.put("dishName", item.getDishName());
+                itemData.put("quantity", item.getQuantity());
+                itemData.put("price", item.getDishPrice());
+                itemData.put("specification", item.getSelectedSpecification());
+                orderData.add(itemData);
             }
 
-            // Reset the flag
-            this.checkTimeBeforeConfirm = false;
+            // Add customer and order details
+            Map<String, Object> orderDetails = new HashMap<>();
+            orderDetails.put("customerNumber", currentCustomer.getCustomerNumber());
+            orderDetails.put("restaurantNumber", this.restaurantNumber);
+            orderDetails.put("deliveryType", deliveryTypeComboBox.getValue());
+            orderDetails.put("totalPrice", Double.parseDouble(totalPriceText.getText().split(":")[1].trim().substring(1)));
+
+            // Add delivery-specific details only if it's not a pickup order
+            String deliveryType = deliveryTypeComboBox.getValue();
+            if (!"Pickup".equals(deliveryType)) {
+                orderDetails.put("address", addressField.getText());
+                orderDetails.put("phoneNumber", phoneNumberField.getText());
+                
+                if (deliveryDatePicker.getValue() != null) {
+                    orderDetails.put("deliveryDate", deliveryDatePicker.getValue().toString());
+                }
+                
+                if (deliveryHourPicker.getValue() != null && deliveryMinutePicker.getValue() != null) {
+                    orderDetails.put("deliveryTime", deliveryHourPicker.getValue() + ":" + deliveryMinutePicker.getValue());
+                }
+            }
+
+            // Combine order items and details
+            List<Object> completeOrderData = new ArrayList<>();
+            completeOrderData.add(orderDetails);
+            completeOrderData.add(orderData);
+
+            // Send order to server
+            Message msg = new Message(completeOrderData, Commands.sendCustomerOrder);
+            ClientController.client.handleMessageFromClientControllers(msg);
+
+            finishErrorText.setText("Order submitted successfully!");
+            resetEntireOrder();
+        } else {
+            finishErrorText.setText("Menu has been updated. Please review your order and try again.");
         }
+
+        // Reset the flag
+        this.checkTimeBeforeConfirm = false;
     }
     
     public void start(Stage primaryStage) throws Exception {
