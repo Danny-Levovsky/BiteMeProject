@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 //import JDBC.DbController;
 
@@ -281,13 +282,13 @@ public class BiteMeServer extends AbstractServer {
 
 	      case AddDish:
 	          Object[] dishData = (Object[]) m.getObj();
-	          Dish newDish = (Dish) dishData[0];
+	          DishUpdate newDish = (DishUpdate) dishData[0];
 	          Price newPrice = (Price) dishData[1];
 	          DishOption newOption = dishData.length > 2 ? (DishOption) dishData[2] : null;
 	          boolean added;
 	          
 	          // Check if a dish with the same name and different size exists
-	          Dish existingDish = dbController.findDishByNameAndSize(newDish.getDishName(), newPrice.getSize());
+	          DishUpdate existingDish = dbController.findDishByNameAndSize(newDish.getDishName(), newPrice.getSize());
 	          if (existingDish != null) {
 	        	  added = dbController.insertPriceAndOption(existingDish, newPrice, newOption);
 	          }
@@ -303,7 +304,7 @@ public class BiteMeServer extends AbstractServer {
 	          break;
 
 	      case DeleteDish:
-	          Dish dishToDelete = (Dish) m.getObj();
+	          DishUpdate dishToDelete = (DishUpdate) m.getObj();
 	          boolean deleted = dbController.deleteDish(dishToDelete);
 	          try {
 	              client.sendToClient(new Message(deleted ? "Dish deleted successfully" : "Failed to delete dish", Commands.DeleteDish));
@@ -379,6 +380,41 @@ public class BiteMeServer extends AbstractServer {
 	          
 	          dbController.updateExitTime(restaurantNum3, localTime2);
 	          break;
+	          
+	      case getRestaurantList: //NEW ORDER - GET REST NAMES
+	    	  ArrayList<String> restaurantNames = new ArrayList<>();
+	    	  restaurantNames = dbController.getRestaurantNamesFromDB();
+	    	  try {
+	    	        client.sendToClient(new Message(restaurantNames, Commands.gotMyRestaurantList));
+	    	    } catch (IOException e) {
+	    	        e.printStackTrace();
+	    	    }
+	    	    break;
+	    	    
+	      case getRestaurantMenu: //NEW ORDER - GET REST MENU
+	    	  	System.out.println(m.getObj());
+	    	  	String restaurantName2 = (String)m.getObj();
+	    	  	ArrayList<Map<String, Object>> menu = new ArrayList<>();
+	    	  	menu = dbController.getRestaurantMenuFromDB(restaurantName2);
+	    	  	System.out.println(menu);
+	      	  try {
+	      	        client.sendToClient(new Message(menu, Commands.gotMyRestaurantMenu));
+	      	    } catch (IOException e) {
+	      	        e.printStackTrace();
+	      	    }
+	      	    
+	    	    break;
+	    	    
+	      case getCustomerDetails:
+	    	  int userID = (int)m.getObj();
+	    	  Customer customerDetails = dbController.getCustomerFromDB(userID);
+	    	  System.out.println(customerDetails);
+	    	  try {
+	    	        client.sendToClient(new Message(customerDetails, Commands.gotMyCustomerDetails));
+	    	    } catch (IOException e) {
+	    	        e.printStackTrace();
+	    	    }
+	    	  break;
 	  
 
 

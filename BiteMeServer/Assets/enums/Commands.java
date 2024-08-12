@@ -38,5 +38,12 @@ public enum Commands {
     CheckDishExists, //command for updating menu
     updateBegin, //command for updating menu
     EndUpdate,//command for updating menu
+    getRestaurantList,
+    gotMyRestaurantList,
+    getRestaurantMenu, //command to get restaurant menu
+    gotMyRestaurantMenu,
+    getCustomerDetails,
+    gotMyCustomerDetails,
+    getUpdateTimes,
 
 }

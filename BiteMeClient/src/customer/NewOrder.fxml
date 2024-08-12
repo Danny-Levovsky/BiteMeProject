@@ -1,26 +1,153 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="437.0" prefWidth="621.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="customer.NewOrderController">
-   <children>
-      <ComboBox fx:id="restaurantComboBox" layoutX="181.0" layoutY="33.0" prefWidth="150.0" promptText="choose restaurant" />
-      <TableView layoutX="156.0" layoutY="97.0" prefHeight="200.0" prefWidth="200.0">
-        <columns>
-          <TableColumn prefWidth="75.0" text="C1" />
-          <TableColumn prefWidth="75.0" text="C2" />
-        </columns>
-      </TableView>
-      <Label layoutX="28.0" layoutY="325.0" text="item number:" />
-      <Button fx:id="btnBack" layoutX="21.0" layoutY="378.0" mnemonicParsing="false" onAction="#getBtnBack" text="Back" />
-      <TextField fx:id="txt" layoutX="121.0" layoutY="321.0" />
-      <Button fx:id="btnAddItem" layoutX="343.0" layoutY="321.0" mnemonicParsing="false" onAction="#getBtnAddItem" text="add item" />
-      <Button fx:id="btnFinish" layoutX="497.0" layoutY="378.0" mnemonicParsing="false" onAction="#getBtnFinish" text="finish" />
-   </children>
+<AnchorPane prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="customer.NewOrderController">
+<children>
+<TabPane prefHeight="705.0" prefWidth="918.0" tabClosingPolicy="UNAVAILABLE">
+<tabs>
+<Tab text="New Order">
+    <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="646.0" prefWidth="918.0">
+            <children>
+                <ComboBox fx:id="restaurantComboBox" layoutX="14.0" layoutY="46.0" prefHeight="31.0" prefWidth="140.0" promptText="Choose restaurant" />
+                <Button fx:id="btnAddOrder" layoutX="14.0" layoutY="370.0" mnemonicParsing="false" onAction="#getBtnAddOrder" prefHeight="46.0" prefWidth="140.0" text="Add Order" />
+                <Button fx:id="btnBack" layoutX="14.0" layoutY="614.0" mnemonicParsing="false" onAction="#getBtnBack" prefHeight="48.0" prefWidth="140.0" text="Back" />
+                        <TableView fx:id="dishTableViewSalad" layoutX="170.0" layoutY="46.0" prefHeight="291.0" prefWidth="360.0">
+                           <columns>
+                              <TableColumn fx:id="dishNameColumnSalad" prefWidth="106.39994812011719" text="Dish Name" />
+                              <TableColumn fx:id="dishPriceColumnSalad" prefWidth="34.39996337890625" text="Price" />
+                              <TableColumn fx:id="specificationsColumnSalad" prefWidth="157.60003662109375" text="Specifications" />
+                              <TableColumn fx:id="quantityColumnSalad" prefWidth="61.5999755859375" text="Quantity" />
+                           </columns>
+                        </TableView>
+                        <TableView fx:id="dishTableViewMainCourse" layoutX="543.0" layoutY="46.0" prefHeight="291.0" prefWidth="360.0">
+                           <columns>
+                              <TableColumn fx:id="dishNameColumnMain" prefWidth="103.20001220703125" text="Dish Name" />
+                              <TableColumn fx:id="dishPriceColumnMain" prefWidth="33.5999755859375" text="Price" />
+                              <TableColumn fx:id="specificationsColumnMain" prefWidth="157.5999755859375" text="Specifications" />
+                              <TableColumn fx:id="quantityColumnMain" prefWidth="64.800048828125" text="Quantity" />
+                           </columns>
+                        </TableView>
+                        <TableView fx:id="dishTableViewDrink" layoutX="543.0" layoutY="371.0" prefHeight="291.0" prefWidth="360.0">
+                           <columns>
+                              <TableColumn fx:id="dishNameColumnDrink" prefWidth="101.5999755859375" text="Dish Name" />
+                              <TableColumn fx:id="dishPriceColumnDrink" prefWidth="36.0" text="Price" />
+                              <TableColumn fx:id="specificationsColumnDrink" prefWidth="156.800048828125" text="Specifications" />
+                              <TableColumn fx:id="quantityColumnDrink" prefWidth="64.7999267578125" text="Quantity" />
+                           </columns>
+                        </TableView>
+                        <TableView fx:id="dishTableViewDesert" layoutX="170.0" layoutY="371.0" prefHeight="291.0" prefWidth="360.0">
+                           <columns>
+                              <TableColumn fx:id="dishNameColumnDesert" prefWidth="104.80003356933594" text="Dish Name" />
+                              <TableColumn fx:id="dishPriceColumnDesert" prefWidth="34.40008544921875" text="Price" />
+                              <TableColumn fx:id="specificationsColumnDesert" prefWidth="155.20001220703125" text="Specifications" />
+                              <TableColumn fx:id="quantityColumnDesert" prefWidth="64.79998779296875" text="Quantity" />
+                           </columns>
+                        </TableView>
+                        <Label fx:id="SaladLbl" alignment="CENTER" contentDisplay="CENTER" layoutX="169.0" layoutY="12.0" prefHeight="31.0" prefWidth="360.0" text="Salads">
+                           <font>
+                              <Font size="21.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="MainCourseLbl" alignment="CENTER" layoutX="542.0" layoutY="12.0" prefHeight="30.0" prefWidth="360.0" text="Main Course">
+                           <font>
+                              <Font size="20.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="DesertLbl" alignment="CENTER" layoutX="169.0" layoutY="340.0" prefHeight="30.0" prefWidth="360.0" text="Desert">
+                           <font>
+                              <Font size="20.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="DrinkLbl" alignment="CENTER" layoutX="541.0" layoutY="340.0" prefHeight="30.0" prefWidth="360.0" text="Drink">
+                           <font>
+                              <Font size="20.0" />
+                           </font>
+                        </Label>
+            </children>
+        </AnchorPane>
+    </content>
+</Tab>
+<Tab text="Delivery">
+    <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+            <children>
+                <VBox alignment="CENTER" layoutX="150.0" layoutY="30.0" prefWidth="600.0" spacing="15">
+                    <ComboBox fx:id="deliveryTypeComboBox" prefHeight="30.0" prefWidth="258.0" promptText="Select Delivery Type" style="-fx-font-size: 14px;">
+                        <VBox.margin>
+                            <Insets bottom="10.0" />
+                        </VBox.margin>
+                    </ComboBox>
+                    <TextField fx:id="addressField" disable="true" prefWidth="500.0" promptText="Address" style="-fx-font-size: 14px;" />
+                    <Text fx:id="addressErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <TextField fx:id="companyNameField" disable="true" prefWidth="500.0" promptText="Company Name" style="-fx-font-size: 14px;" />
+                    <Text fx:id="companyNameErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <TextField fx:id="userNameField" disable="true" prefWidth="500.0" promptText="User Name" style="-fx-font-size: 14px;" />
+                    <Text fx:id="userNameErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <TextField fx:id="phoneNumberField" disable="true" prefWidth="500.0" promptText="Phone Number" style="-fx-font-size: 14px;" />
+                    <Text fx:id="phoneErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <TextField fx:id="deliveryParticipantsField" managed="false" prefWidth="500.0" promptText="Delivery Participants" style="-fx-font-size: 14px;" visible="false" />
+                    <Text fx:id="deliveryParticipantsErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <HBox alignment="CENTER" spacing="15">
+                        <DatePicker fx:id="deliveryDatePicker" disable="true" prefWidth="240.0" promptText="Delivery Date" style="-fx-font-size: 14px;" />
+                        <ComboBox fx:id="deliveryHourPicker" prefWidth="120" promptText="Hour" style="-fx-font-size: 14px;" />
+                        <ComboBox fx:id="deliveryMinutePicker" prefWidth="120" promptText="Minute" style="-fx-font-size: 14px;" />
+                    </HBox>
+                    <Text fx:id="dateErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <Text fx:id="timeErrorText" fill="RED" style="-fx-font-size: 12px;" />
+                    <Button fx:id="confirmDeliveryButton" disable="true" onAction="#handleConfirmDelivery" style="-fx-font-size: 14px;" text="Confirm Delivery Details">
+                        <VBox.margin>
+                            <Insets top="10.0" />
+                        </VBox.margin>
+                    </Button>
+                    <Text fx:id="confirmDeliveryText" style="-fx-font-size: 14px;" />
+                </VBox>
+            </children>
+        </AnchorPane>
+    </content>
+</Tab>
+<Tab text="View Order">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                            <children>
+<TableView fx:id="orderTableView" layoutX="20.0" layoutY="20.0" prefHeight="500.0" prefWidth="860.0">
+<columns>
+<TableColumn fx:id="orderDishTypeColumn" prefWidth="150.0" text="Dish Type" />
+<TableColumn fx:id="orderDishNameColumn" prefWidth="200.0" text="Dish Name" />
+<TableColumn fx:id="orderDishPriceColumn" prefWidth="100.0" text="Dish Price" />
+<TableColumn fx:id="orderSpecificationsColumn" prefWidth="200.0" text="Specifications" />
+<TableColumn fx:id="orderQuantityColumn" prefWidth="200.0" text="Quantity" />
+</columns>
+</TableView>
+<Text fx:id="orderPriceText" layoutX="53.0" layoutY="549.0" text="Order Price: ₪0.00" />
+<Text fx:id="deliveryFeeText" layoutX="370.0" layoutY="549.0" text="Delivery Fee: ₪0.00" />
+<Text fx:id="totalPriceText" layoutX="640.0" layoutY="549.0" text="Total Price: ₪0.00" />
+<HBox alignment="CENTER" layoutX="20.0" layoutY="582.0" prefWidth="860.0" spacing="20">
+                                    <Button fx:id="btnRemoveItem" mnemonicParsing="false" prefHeight="44.0" prefWidth="111.0" text="Remove Item" />
+                                    <Button fx:id="btnFinish" mnemonicParsing="false" onAction="#getBtnFinish" prefHeight="44.0" prefWidth="111.0" text="Finish" />
+                                </HBox>
+                                 <Text fx:id="removeItemText" fill="RED" layoutX="53.0" layoutY="568.0" style="-fx-font-size: 14px;" textAlignment="CENTER" wrappingWidth="227.0" />
+                                 <Text fx:id="finishErrorText" fill="RED" layoutX="640.0" layoutY="578.0" style="-fx-font-size: 14px;" textAlignment="CENTER" wrappingWidth="184.0" />
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </children>
 </AnchorPane>

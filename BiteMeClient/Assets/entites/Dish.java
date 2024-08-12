@@ -1,82 +1,115 @@
 package entites;
 
-import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Represents a Dish entity based on the corresponding database table.
- * This class implements Serializable for object serialization.
- */
-public class Dish implements Serializable{
-    private static final long serialVersionUID = 1L;
-    
-    private int dishID;
-    private int RestaurantNumber;
-    private int categoryId;
-    private String dishName;
+import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
+public class Dish {
+	private final StringProperty dishID;
+    private final StringProperty dishName;
+    private final StringProperty categoryName;
+    private final IntegerProperty dishPrice;
+    private final ObjectProperty<ObservableList<String>> specifications;
+    private final StringProperty selectedSpecification;
+    private final IntegerProperty quantity;
+    private final ObjectProperty<Map<String, Integer>> sizePrices;
     
-    /**
-     * Constructs a new Dish with the specified details.
-     *
-     * @param dishID           The unique identifier for the dish
-     * @param RestaurantNumber The restaurant number associated with this dish
-     * @param categoryId       The category ID of the dish
-     * @param dishName         The name of the dish
-     */
-    public Dish(int dishID, int RestaurantNumber, int categoryId, String dishName) {
-        this.dishID = dishID;
-        this.RestaurantNumber = RestaurantNumber;
-        this.categoryId = categoryId;
-        this.dishName = dishName;
-    }
 
-    
-    /**
-     * Returns the dish ID.
-     *
-     * @return The dish ID
-     */
-    public int getDishID() {
-        return dishID;
-    }
-
-    
-    /**
-     * Sets the dish ID.
-     *
-     * @param dishID The new dish ID
-     */
-    public void setDishID(int dishID) {
-        this.dishID = dishID;
+    public Dish(String dishID, String dishName, String categoryName, int dishPrice, ObservableList<String> specifications) {
+        this.dishID = new SimpleStringProperty(dishID);
+        this.dishName = new SimpleStringProperty(dishName);
+        this.categoryName = new SimpleStringProperty(categoryName);
+        this.dishPrice = new SimpleIntegerProperty(dishPrice);
+        this.specifications = new SimpleObjectProperty<>(specifications);
+        this.selectedSpecification = new SimpleStringProperty();
+        this.quantity = new SimpleIntegerProperty(0);
+        this.sizePrices = new SimpleObjectProperty<>(new HashMap<>());
     }
     
-    
-    /**
-     * Returns the restaurant number.
-     *
-     * @return The restaurant number
-     */
-    public int getRestaurantNumber() {
-        return RestaurantNumber;
+ // Copy constructor
+    public Dish(Dish other, String selectedSpecification) {
+        this.dishID = new SimpleStringProperty(other.getDishID());
+        this.dishName = new SimpleStringProperty(other.getDishName());
+        this.categoryName = new SimpleStringProperty(other.getCategoryName());
+        this.dishPrice = new SimpleIntegerProperty(other.getDishPrice());
+        this.specifications = new SimpleObjectProperty<>(FXCollections.observableArrayList(other.getSpecifications()));
+        this.selectedSpecification = new SimpleStringProperty(selectedSpecification);
+        this.quantity = new SimpleIntegerProperty(0);
+        this.sizePrices = new SimpleObjectProperty<>(new HashMap<>(other.getSizePrices()));
     }
 
+    // Getters
+    public String getDishID() { return dishID.get(); }
+    public String getDishName() { return dishName.get(); }
+    public String getCategoryName() { return categoryName.get(); }
+    public int getDishPrice() { return dishPrice.get(); }
+    public ObservableList<String> getSpecifications() { return specifications.get(); }
+    public String getSelectedSpecification() { return selectedSpecification.get(); }
+    
+    public int getQuantity() { return quantity.get(); }
+    public IntegerProperty quantityProperty() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity.set(quantity); }
+
+    // Property getters
+    public StringProperty dishIDProperty() { return dishID; }
+    public StringProperty dishNameProperty() { return dishName; }
+    public StringProperty categoryNameProperty() { return categoryName; }
+    public IntegerProperty dishPriceProperty() { return dishPrice; }
+    public ObjectProperty<ObservableList<String>> specificationsProperty() { return specifications; }
+    public StringProperty selectedSpecificationProperty() { return selectedSpecification; }
     
     /**
-     * Returns the category ID.
-     *
-     * @return The category ID
+     * Gets the map of size prices for this dish.
+     * @return A Map where the key is the size and the value is the price.
      */
-    public int getCategoryId() {
-        return categoryId;
+    public Map<String, Integer> getSizePrices() {
+        return sizePrices.get();
     }
 
-    
     /**
-     * Returns the dish name.
-     *
-     * @return The dish name
+     * Sets the map of size prices for this dish.
+     * @param prices A Map where the key is the size and the value is the price.
      */
-    public String getDishName() {
-        return dishName;
+    public void setSizePrices(Map<String, Integer> prices) {
+        this.sizePrices.set(prices);
     }
+
+    /**
+     * Gets the property containing the map of size prices.
+     * @return The ObjectProperty containing the size prices map.
+     */
+    public ObjectProperty<Map<String, Integer>> sizePricesProperty() {
+        return sizePrices;
+    }
+
+    /**
+     * Gets the price for a specific size of this dish.
+     * @param size The size to get the price for.
+     * @return The price for the given size, or the default dish price if the size is not found.
+     */
+    public int getPriceForSize(String size) {
+        return sizePrices.get().getOrDefault(size, getDishPrice());
+    }
+
+    /**
+     * Adds or updates a price for a specific size of this dish.
+     * @param size The size to set the price for.
+     * @param price The price for the given size.
+     */
+    public void addSizePrice(String size, int price) {
+        Map<String, Integer> prices = sizePrices.get();
+        prices.put(size, price);
+        sizePrices.set(prices);
+    }
+
+    // Setters
+    public void setDishID(String id) { dishID.set(id); }
+    public void setDishName(String name) { dishName.set(name); }
+    public void setCategoryName(String category) { categoryName.set(category); }
+    public void setDishPrice(int price) { dishPrice.set(price); }
+    public void setSpecifications(ObservableList<String> specs) { specifications.set(specs); }
+    public void setSelectedSpecification(String spec) { selectedSpecification.set(spec); }
 }

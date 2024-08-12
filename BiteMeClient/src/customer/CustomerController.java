@@ -127,10 +127,13 @@ public class CustomerController {
 	}
 
 	@FXML
-	void getBtnNewOrder(ActionEvent event) {
-
-
-	}
+    void getBtnNewOrder(ActionEvent event) throws Exception {
+		NewOrderController.setCustomer(customer);
+		((Node) event.getSource()).getScene().getWindow().hide();
+		NewOrderController newScreen = new NewOrderController();
+		newScreen.start(new Stage());
+    }
+	
 
 	/**
      * Handles the action for the view order button.

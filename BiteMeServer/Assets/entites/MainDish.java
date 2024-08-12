@@ -2,7 +2,7 @@ package entites;
 import enums.MainCourse;
 import enums.GrillOption;
 
-public class MainDish extends Dish{
+public class MainDish extends DishUpdate{
 	private MainCourse meat;
 	private GrillOption doneness;
 	

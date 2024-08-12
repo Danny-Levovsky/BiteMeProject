@@ -2,7 +2,7 @@ package entites;
 import enums.SaladType;
 import enums.ItemSize;
 
-public class Salad extends Dish{
+public class Salad extends DishUpdate{
 	private SaladType saladType;
 	private ItemSize itemSize;
 

@@ -27,7 +27,7 @@ import java.util.List;
 import client.Client;
 import client.ClientController;
 import entites.Category;
-import entites.Dish;
+import entites.DishUpdate;
 import entites.DishOption;
 import entites.Message;
 import entites.Price;
@@ -100,12 +100,12 @@ public class UpdateMenuController {
      * Combines Dish, DishOption, Price, and Category information for display purposes.
      */
     public static class DishDisplay {
-        private Dish dish;
+        private DishUpdate dish;
         private DishOption option;
         private Price price;
         private Category category;
         
-        public DishDisplay(Dish dish, DishOption option, Price price, Category category) {
+        public DishDisplay(DishUpdate dish, DishOption option, Price price, Category category) {
             this.dish = dish;
             this.option = option;
             this.price = price;
@@ -118,7 +118,7 @@ public class UpdateMenuController {
         public int getPrice() { return price != null ? price.getPrice() : 0; }
         public String getCategoryName() { return category != null ? category.getName() : ""; }
         
-        public Dish getDish() { return dish; }
+        public DishUpdate getDish() { return dish; }
         public DishOption getOption() { return option; }
         public Price getPriceObj() { return price; }
         public Category getCategory() { return category; }
@@ -439,7 +439,7 @@ public class UpdateMenuController {
             dishList.clear();
             
             for (Object[] data : dishData) {
-                Dish dish = (Dish) data[0];
+                DishUpdate dish = (DishUpdate) data[0];
                 DishOption option = (DishOption) data[1];
                 Price price = (Price) data[2];
                 Category category = (Category) data[3];
@@ -490,7 +490,7 @@ public class UpdateMenuController {
             } else { // Proceed to add the dish only if it does not exist
                 try {
                     categoryId = getCategoryId();
-                    Dish newDish = new Dish(0, restaurantNumber, categoryId, txtDishName.getText());
+                    DishUpdate newDish = new DishUpdate(0, restaurantNumber, categoryId, txtDishName.getText());
                     Price newPrice = new Price(0, txtDishSize.getText(), Integer.parseInt(txtDishPrice.getText()));
                     DishOption newOption = null;
                     OptionType selectedOption = getSelectedOptionType();

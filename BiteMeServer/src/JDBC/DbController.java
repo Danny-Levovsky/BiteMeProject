@@ -12,11 +12,14 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.sql.Statement;
 
 import entites.Category;
-import entites.Dish;
+import entites.Customer;
+import entites.DishUpdate;
 import entites.DishOption;
 import enums.OptionType;
 import entites.Order;
@@ -746,7 +749,7 @@ public class DbController {
      * @param user The user whose restaurant's dishes are to be retrieved.
      * @return A list of objects representing the dishes, options, prices, and categories. 
      *         Each element in the list is an array of objects where:
-     *         - index 0 is the {@link Dish} object,
+     *         - index 0 is the {@link DishUpdate} object,
      *         - index 1 is the {@link DishOption} object,
      *         - index 2 is the {@link Price} object,
      *         - index 3 is the {@link Category} object.
@@ -774,7 +777,7 @@ public class DbController {
                 int categoryId = rs.getInt("CategoryId");
                 String dishName = rs.getString("DishName");
                 String categoryName = rs.getString("CategoryName");
-                Dish dish = new Dish(dishId, restaurantNumber, categoryId, dishName);
+                DishUpdate dish = new DishUpdate(dishId, restaurantNumber, categoryId, dishName);
                 Category category = new Category(categoryId, categoryName);  
                 String optionTypeStr = rs.getString("OptionType");
                 String optionValue = rs.getString("OptionValue");
@@ -857,13 +860,13 @@ public class DbController {
     /**
      * Adds a new dish to the database, along with its price and optional options.
      * 
-     * @param dish   The {@link Dish} object representing the dish to be added.
+     * @param dish   The {@link DishUpdate} object representing the dish to be added.
      * @param price  The {@link Price} object representing the price of the dish.
      * @param option The {@link DishOption} object representing the option for the dish, or null if no option is available.
      * @return {@code true} if the dish was successfully added, {@code false} otherwise.
      * @throws SQLException If a database access error occurs or the insertion fails.
      */
-    public boolean addDish(Dish dish, Price price, DishOption option) {
+    public boolean addDish(DishUpdate dish, Price price, DishOption option) {
         String insertDishQuery = "INSERT INTO dishes (RestaurantNumber, CategoryID, DishName) VALUES (?, ?, ?)";
         String insertPriceQuery = "INSERT INTO prices (DishID, Size, Price) VALUES (?, ?, ?)";
         String insertOptionQuery = "INSERT INTO dish_options (DishID, OptionType, OptionValue) VALUES (?, ?, ?)";
@@ -912,13 +915,13 @@ public class DbController {
     /**
      * Inserts a new price and option for the given dish into the database.
      * 
-     * @param dish   The {@link Dish} object representing the dish.
+     * @param dish   The {@link DishUpdate} object representing the dish.
      * @param price  The {@link Price} object representing the price to be added.
      * @param option The {@link DishOption} object representing the option to be added, or null if no option is available.
      * @return {@code true} if the price and option were successfully added, {@code false} otherwise.
      * @throws SQLException If a database access error occurs or the insertion fails.
      */
-    public boolean insertPriceAndOption(Dish dish, Price price, DishOption option) {
+    public boolean insertPriceAndOption(DishUpdate dish, Price price, DishOption option) {
         String insertPriceQuery = "INSERT INTO prices (DishID, Size, Price) VALUES (?, ?, ?)";
         String insertOptionQuery = "INSERT INTO dish_options (DishID, OptionType, OptionValue) VALUES (?, ?, ?)";
         try (PreparedStatement priceStmt = conn.prepareStatement(insertPriceQuery);
@@ -972,10 +975,10 @@ public class DbController {
      * 
      * @param dishName The name of the dish to find.
      * @param size     The size of the dish to exclude.
-     * @return The {@link Dish} object representing the dish found, or null if no matching dish is found.
+     * @return The {@link DishUpdate} object representing the dish found, or null if no matching dish is found.
      * @throws SQLException If a database access error occurs.
      */
-    public Dish findDishByNameAndSize(String dishName, String size) {
+    public DishUpdate findDishByNameAndSize(String dishName, String size) {
         String query = "SELECT * FROM dishes WHERE DishName = ? AND DishID IN (SELECT DishID FROM prices WHERE Size != ?)";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, dishName);
@@ -986,7 +989,7 @@ public class DbController {
                 int restaurantNumber = rs.getInt("RestaurantNumber");
                 int categoryId = rs.getInt("CategoryID");
                 String name = rs.getString("DishName");
-                return new Dish(dishID, restaurantNumber, categoryId, name);
+                return new DishUpdate(dishID, restaurantNumber, categoryId, name);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -998,11 +1001,11 @@ public class DbController {
     /**
      * Deletes the specified dish from the database, including associated dish options, prices, and references in restaurants orders.
      * 
-     * @param dish The {@link Dish} object representing the dish to be deleted.
+     * @param dish The {@link DishUpdate} object representing the dish to be deleted.
      * @return {@code true} if the dish was successfully deleted, {@code false} otherwise.
      * @throws SQLException If a database access error occurs or the deletion fails.
      */
-    public boolean deleteDish(Dish dish) {
+    public boolean deleteDish(DishUpdate dish) {
         String updateOrdersQuery = "UPDATE restaurants_orders SET DishID = NULL WHERE DishID = ?";
         String deleteDishOptionsQuery = "DELETE FROM dish_options WHERE DishID = ?";
         String deletePricesQuery = "DELETE FROM prices WHERE DishID = ?";
@@ -1093,6 +1096,139 @@ public class DbController {
         }
     }
     
+    public ArrayList<Map<String, Object>> getRestaurantMenuFromDB(String restaurantName) {
+        ArrayList<Map<String, Object>> menu = new ArrayList<>();
+        String SQL_QUERY =
+            "SELECT c.name AS dishType, d.dishID AS dishID, d.DishName AS dishName, " +
+            "p.Price AS dishPrice, p.Size AS dishSize, do.OptionType, do.OptionValue, " +
+            "r.BeginUpdate, r.EndUpdate, r.RestaurantNumber " +  // Added RestaurantNumber
+            "FROM dishes d " +
+            "JOIN categories c ON d.CategoryID = c.CategoryID " +
+            "JOIN prices p ON d.dishID = p.dishID " +
+            "LEFT JOIN dish_options do ON d.dishID = do.dishID " +
+            "JOIN restaurants r ON d.RestaurantNumber = r.RestaurantNumber " +
+            "WHERE d.RestaurantNumber = ( " +
+            "  SELECT RestaurantNumber " +
+            "  FROM restaurants " +
+            "  WHERE RestaurantName = ? " +
+            ")";
+
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_QUERY)) {
+            stmt.setString(1, restaurantName);
+            ResultSet rs = stmt.executeQuery();
+
+            Map<String, Map<String, Object>> dishMap = new HashMap<>();
+            Map<String, Object> restaurantInfo = new HashMap<>();  // To store BeginUpdate, EndUpdate, and RestaurantNumber
+            
+            boolean firstRow = true;
+            while (rs.next()) {
+                String dishID = rs.getString("dishID");
+                String dishSize = rs.getString("dishSize");
+                int dishPrice = rs.getInt("dishPrice");
+
+                // Store BeginUpdate, EndUpdate, and RestaurantNumber only once
+                if (restaurantInfo.isEmpty()) {
+                	int restaurantNumber = rs.getInt("RestaurantNumber");
+                    java.sql.Timestamp beginUpdate = rs.getTimestamp("BeginUpdate");
+                    java.sql.Timestamp endUpdate = rs.getTimestamp("EndUpdate");
+                    
+                    restaurantInfo.put("RestaurantNumber", restaurantNumber);
+                    restaurantInfo.put("BeginUpdate", beginUpdate);
+                    restaurantInfo.put("EndUpdate", endUpdate);
+                    
+                    System.out.println("DbController: Retrieved RestaurantNumber: " + restaurantNumber);
+                    System.out.println("DbController: Retrieved BeginUpdate: " + beginUpdate);
+                    System.out.println("DbController: Retrieved EndUpdate: " + endUpdate);
+                }
+
+                Map<String, Object> dish = dishMap.computeIfAbsent(dishID, k -> {
+                    Map<String, Object> newDish = new HashMap<>();
+                    try {
+                        newDish.put("dishID", dishID);
+                        newDish.put("dishType", rs.getString("dishType"));
+                        newDish.put("dishName", rs.getString("dishName"));
+                        newDish.put("dishPrice", dishPrice);
+                        newDish.put("dishOptions", new HashMap<String, List<String>>());
+                        newDish.put("dishPrices", new HashMap<String, Integer>());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    return newDish;
+                });
+
+                // Handle size options, ignoring 'Regular'
+                if (dishSize != null && !dishSize.isEmpty() && !dishSize.equalsIgnoreCase("Regular")) {
+                    Map<String, List<String>> options = (Map<String, List<String>>) dish.get("dishOptions");
+                    options.computeIfAbsent("Size", k -> new ArrayList<>()).add(dishSize);
+                    
+                    // Store price for each size
+                    Map<String, Integer> prices = (Map<String, Integer>) dish.get("dishPrices");
+                    prices.put(dishSize, dishPrice);
+                }
+
+                String optionType = rs.getString("OptionType");
+                String optionValue = rs.getString("OptionValue");
+                
+                if (optionType != null && optionValue != null) {
+                    Map<String, List<String>> options = (Map<String, List<String>>) dish.get("dishOptions");
+                    
+                    if (optionType.equals("cooking_level") && optionValue.startsWith("M, MW, WD")) {
+                        options.computeIfAbsent("Doneness", k -> new ArrayList<>())
+                               .addAll(Arrays.asList("Medium", "Medium Well", "Well Done"));
+                    } else if (optionType.equals("ingredient") && optionValue.startsWith("no ")) {
+                        String ingredient = optionValue.substring(3); // remove "no " prefix
+                        options.computeIfAbsent("Remove", k -> new ArrayList<>())
+                               .add(ingredient);
+                    } else {
+                        options.computeIfAbsent(optionType, k -> new ArrayList<>())
+                               .add(optionValue);
+                    }
+                }
+            }
+
+            menu.addAll(dishMap.values());
+            // Add restaurantInfo as the last item in the menu list
+            menu.add(restaurantInfo);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        
+
+        return menu;
+    }
+    
+    /**
+     * Retrieves customer details from the database for a given user ID.
+     * @param userID The ID of the user.
+     * @return A Customer object containing the customer's details, or null if not found.
+     */
+    public Customer getCustomerFromDB(int userID) {
+        Customer customer = null;
+        String query = "SELECT CustomerNumber, ID, Credit, IsBusiness, Status " +
+                       "FROM customers WHERE ID = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, userID);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    customer = new Customer(
+                        rs.getInt("CustomerNumber"),
+                        rs.getInt("ID"),
+                        rs.getInt("Credit"),
+                        rs.getBoolean("IsBusiness"),
+                        rs.getString("Status")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Consider logging the error or throwing a custom exception
+        }
+
+        return customer;
+    }
     
     /**
      * Updates the EndUpdate timestamp for a specific restaurant in the database.
@@ -1124,6 +1260,39 @@ public class DbController {
             e.printStackTrace();
         }
     }
+    
+    
+    /**
+     * Retrieves a list of restaurant names from the database.
+     * @return An ArrayList of restaurant names.
+     */
+    public ArrayList<String> getRestaurantNamesFromDB() {
+        ArrayList<String> restaurantNames = new ArrayList<>();
+        String query = "SELECT RestaurantName FROM restaurants";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                String restaurantName = rs.getString("RestaurantName");
+                restaurantNames.add(restaurantName);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Consider logging the error or throwing a custom exception
+        }
+        
+        return restaurantNames;
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
     
     /**
      * Imports external data into the application database.
