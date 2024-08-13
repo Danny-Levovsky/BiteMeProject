@@ -23,6 +23,8 @@ import javafx.stage.Stage;
 /**
  * The UpdateClientController class handles the update client UI actions and interactions.
  * This includes initializing the update client window and handling button actions.
+ * It is responsible for updating the client's status and displaying appropriate messages.
+ * 
  * @author yosra
  */
 public class UpdateClientController {
@@ -39,11 +41,19 @@ public class UpdateClientController {
     @FXML
     private Label txtMsg;
     
+    /**
+     * The ID of the client to be updated.
+     */
     private int id; 
+    
+    /**
+     * The district associated with the branch manager.
+     */
     private static String district;
     
     /**
      * Sets the district for the branch manager.
+     * 
      * @param dis the district name
      */
     public static void setbranchManagerDistrict(String dis) {
@@ -52,6 +62,7 @@ public class UpdateClientController {
 
     /**
      * Starts and displays the update client window.
+     * 
      * @param primaryStage the primary stage for this application
      * @throws Exception if there is an error during the loading of the FXML file
      */
@@ -76,6 +87,7 @@ public class UpdateClientController {
     
 	/**
      * Displays a message on the UI.
+     * 
      * @param msg the message to display
      */
     public void appearingMsg( String msg) {
@@ -85,7 +97,8 @@ public class UpdateClientController {
     /**
      * Handles the action for the activate button.
      * This method is triggered when the activate button is clicked.
-     * It sends a request to the server through client to update the client's status.
+     * It sends a request to the server through the client to update the client's status.
+     * 
      * @param event the event triggered by the activate button click
      * @throws Exception if there is an error while sending the request to the server
      */
@@ -103,6 +116,7 @@ public class UpdateClientController {
     
     /**
      * Handles the response from the server.
+     * 
      * @param message the message received from the server
      */
     public void handleServerResponse(Message message) {
@@ -131,6 +145,7 @@ public class UpdateClientController {
      * Handles the action for the back button.
      * This method is triggered when the back button is clicked.
      * It hides the current window and opens the branch manager screen.
+     * 
      * @param event the event triggered by the back button click
      * @throws Exception if there is an error while opening the branch manager screen
      */

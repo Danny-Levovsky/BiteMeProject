@@ -5,11 +5,9 @@ import client.Client;
 import client.ClientController;
 import entites.Message;
 import enums.Commands;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -19,7 +17,6 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 
@@ -28,6 +25,7 @@ import javafx.stage.Stage;
  * Controller class for viewing the quarterly reports in the CEO interface.
  * This class handles the display of order distribution and total income per week 
  * for a selected restaurant and quarter.
+ * 
  * @author yosra
  */
 public class QuarterReportView1 {
@@ -59,15 +57,26 @@ public class QuarterReportView1 {
 	    @FXML
 	    private Label txtTotalIncome; //to show total income in given quarter
 	    
-	    
+	    /**
+	     * The ID of the restaurant for which the report is generated.
+	     */
 	    private static int restaurantId;
+	    
+	    /**
+	     * The name of the restaurant for which the report is generated.
+	     */
 	    private static String restaurantName;
+	    
+	    /**
+	     * The selected quarter for which the report is generated.
+	     */
 	    private static String quarter;
 	    
 	    /**
 	     * Sets the details for the quarterly report.
-	     * @param id the restaurant ID
-	     * @param name the name of the restaurant
+	     * 
+	     * @param id       the restaurant ID
+	     * @param name     the name of the restaurant
 	     * @param quarter1 the selected quarter
 	     */
 	    public static void setDetails(int id, String name, String quarter1) {
@@ -78,6 +87,7 @@ public class QuarterReportView1 {
 	    
 	    /**
 	     * Starts the quarterly report view interface.
+	     * 
 	     * @param primaryStage the primary stage for this application
 	     * @throws Exception if an error occurs during loading the FXML
 	     */
@@ -112,9 +122,10 @@ public class QuarterReportView1 {
 	    /**
 	     * Handles the server response for the quarterly order report. This method 
 	     * updates the bar chart to display the distribution of the number of orders per day.
+	     * 
 	     * @param maxOrders the maximum number of orders in a day
 	     * @param intervals the intervals for the number of orders per day
-	     * @param values the values corresponding to the intervals
+	     * @param values    the values corresponding to the intervals
 	     */
 	    public void handleServerResponseQuarter(int maxOrders, String[] intervals, int[] values) {
 	    	
@@ -150,8 +161,9 @@ public class QuarterReportView1 {
 	     * Handles the server response for the quarterly income report. This method 
 	     * updates the bar chart to display the total income per week and sets the total 
 	     * income for the quarter.
+	     * 
 	     * @param totalIncome the total income for the quarter
-	     * @param values the income values for each week in the quarter
+	     * @param values      the income values for each week in the quarter
 	     */
 	    public void handleServerResponseQuarterIncome(int totalIncome, int[] values) {
 
@@ -192,6 +204,7 @@ public class QuarterReportView1 {
 	    /**
 	     * Handles the action for the back button. This method returns the user to the
 	     * main CEO interface.
+	     * 
 	     * @param event the event triggered by the back button click
 	     * @throws Exception if an error occurs while opening the CEO interface
 	     */

@@ -1,8 +1,9 @@
 package enums;
 
 /**
- * This enum defines various commands for communication between client and
- * server.
+ * This enum defines various commands for communication between client and server.
+ * 
+ * @author yosra
  */
 public enum Commands {
 
@@ -47,9 +48,9 @@ public enum Commands {
     getCustomerDetails,
     gotMyCustomerDetails,
     getUpdateTimes,
-    RestaurantQuarterIncomeReport,
-    RestaurantQuarterReport2,
-    RestaurantQuarterIncomeReport1,
-    RestaurantQuarterReport3,
-    RestaurantQuarterIncomeReport2,
+    RestaurantQuarterIncomeReport, //command for generating quarter reports
+    RestaurantQuarterReport2, //command for generating quarter reports
+    RestaurantQuarterIncomeReport1, //command for generating income reports
+    RestaurantQuarterReport3, //command for generating quarter reports
+    RestaurantQuarterIncomeReport2,//command for generating income reports
 }

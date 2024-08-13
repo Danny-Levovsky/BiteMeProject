@@ -38,11 +38,12 @@ import javafx.stage.Stage;
 
 
 /**
-* Controller class for managing and displaying different types of reports in the branch manager's view.
-* This class handles the generation and display of income, order, and performance reports, 
-* as well as the scheduling of report generation at the end of each month.
-* @author yosra
-*/
+ * Controller class for managing and displaying different types of reports in the branch manager's view.
+ * This class handles the generation and display of income, order, and performance reports, 
+ * as well as the scheduling of report generation at the end of each month.
+ * 
+ * @author yosra
+ */
 public class ReportViewController {
 
 	@FXML
@@ -60,16 +61,40 @@ public class ReportViewController {
 	@FXML
 	private Label txtRestaurant;
 
+	/**
+     * The ID of the restaurant for which the report is generated.
+     */
 	private static int restaurantId;
+	
+	/**
+     * The month and year for which the report is generated.
+     */
 	private static String monthYear;
+	
+	/**
+     * The district of the branch manager.
+     */
 	private static String district;
+	
+	/**
+     * The type of report to generate (e.g., income report, order report, performance report).
+     */
 	private static String reportType;
+	
+	/**
+     * The name of the restaurant for which the report is generated.
+     */
 	private static String restaurantName;
 	
+	/**
+     * The User object representing the user who is currently logged in.
+     */
+
 	private static User user;
 
-	/**
+	 /**
      * Sets the details required for generating the report.
+     * 
      * @param id       the restaurant ID
      * @param month    the month and year for the report
      * @param dis      the district
@@ -84,12 +109,18 @@ public class ReportViewController {
 		restaurantName = name;
 	}
 	
+	/**
+     * Sets the user information.
+     * 
+     * @param user1 the User object representing the user
+     */
 	public static void setUser(User user1) {
 		user = user1;
 	}
 
-	/**
+	 /**
      * Starts the ReportView window.
+     * 
      * @param primaryStage the primary stage for this application
      * @throws Exception if an error occurs during loading the FXML
      */
@@ -123,15 +154,19 @@ public class ReportViewController {
 	
 	/*
 	 * start of Timer
-	 * 
+	 * Timer-related methods for scheduling report generation 
 	 * we need to create an object of the class : ReportViewController scheduler =
 	 * new ReportViewController(); scheduler.startScheduler();
 	 */
 	
-	// Timer-related methods for scheduling report generation 
-	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 	 /**
+     * Scheduler service used to schedule periodic tasks for generating reports.
+     * It uses a single thread executor to run tasks at fixed intervals, such as the end of each month.
+     */
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+	/**
      * Starts the scheduler to generate reports at the end of every month.
      */
 	public void startScheduler() {
@@ -144,6 +179,7 @@ public class ReportViewController {
 
 	/**
      * Calculates the initial delay until the end of the current month.
+     * 
      * @return the initial delay in milliseconds
      */
 	private long calculateInitialDelay() {
@@ -167,7 +203,7 @@ public class ReportViewController {
 	/* end of timer */
 
 
-	 /**
+	/**
      * Sends a request to the server to generate an order report.
      */
 	public void orderReport() {
@@ -176,8 +212,9 @@ public class ReportViewController {
         ClientController.client.handleMessageFromClientControllers(msg); 
 	}
 
-	 /**
+	/**
      * Handles the server response for the order report by displaying the data on a bar chart.
+     * 
      * @param orderReportData an array containing quantities of Salad, Main Course, Dessert, and Drink
      */
 	public void handleServerResponseOrder(int[] orderReportData) {
@@ -239,9 +276,6 @@ public class ReportViewController {
 	    barChart.layout();  
 	}
 
-
-
-
 	 /**
      * Sends a request to the server to generate an income report.
      */
@@ -252,8 +286,9 @@ public class ReportViewController {
 		ClientController.client.handleMessageFromClientControllers(message);	
 	}
 
-	 /**
+	/**
      * Handles the server response for the income report by displaying the data on a bar chart.
+     * 
      * @param incomeReportResultData an array containing income data for each week of the month
      */
 	public void handleServerResponseIncome(int[] incomeReportResultData) {
@@ -307,7 +342,7 @@ public class ReportViewController {
 	    barChart.layout(); 
 	}
 
-	/**
+	 /**
      * Sends a request to the server to generate a performance report.
      */
 	public void performanceReport() {
@@ -315,8 +350,9 @@ public class ReportViewController {
         ClientController.client.handleMessageFromClientControllers(msg); 
 	}
 	
-	 /**
+	/**
      * Handles the server response for the performance report by displaying the data on a bar chart.
+     * 
      * @param performanceReportResultData an array containing the percentage of delivery delays for each week
      */
 	public void handleServerResponsePerformance(int[] performanceReportResultData) {
@@ -373,13 +409,14 @@ public class ReportViewController {
 	}
 
 	/**
-	 * Handles the action for the back button. This method is triggered when the back button is clicked. 
-	 * It hides the current window and opens the appropriate screen based on the user type.
-	 * If the user is a "Branch Manager," it navigates to the Branch Manager screen.
-	 * If the user is a "CEO," it navigates to the CEO screen.
-	 * @param event the event triggered by the back button click
-	 * @throws Exception if there is an error while opening the new screen
-	 */
+     * Handles the action for the back button. This method is triggered when the back button is clicked. 
+     * It hides the current window and opens the appropriate screen based on the user type.
+     * If the user is a "Branch Manager," it navigates to the Branch Manager screen.
+     * If the user is a "CEO," it navigates to the CEO screen.
+     * 
+     * @param event the event triggered by the back button click
+     * @throws Exception if there is an error while opening the new screen
+     */
 	@FXML
 	public void getBackBtn(ActionEvent event) throws Exception {
 		((Node) event.getSource()).getScene().getWindow().hide();

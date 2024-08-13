@@ -27,8 +27,9 @@ import javafx.stage.Stage;
 import javafx.scene.Node;
 
 /**
- * Controller class for the branch manager interface. This class handles user
- * interactions and controls the flow of data between the UI and the backend.
+ * Controller class for managing the branch manager's user interface. 
+ * This class handles user interactions, manages UI components, 
+ * and controls the flow of data between the UI and the backend services.
  * @author yosra
  */
 public class BranchManagerController {
@@ -57,23 +58,31 @@ public class BranchManagerController {
     @FXML
     private TextArea txtError;
     
+    /**
+     * Map that links restaurant names to their corresponding numeric IDs.
+     */
 	private Map<String, Integer> restaurantMap = new HashMap<>();
 
+	/**
+     * The User object representing the branch manager.
+     */
 	private static User branchManager;
 
 	/**
-	 * Sets the branch manager user.
-	 * @param user the User object representing the branch manager
-	 */
+     * Sets the branch manager user.
+     * 
+     * @param user the User object representing the branch manager
+     */
 	public static void setbranchManager(User user) {
 		branchManager = user;
 	}
 
-	/**
-	 * Starts the branch manager interface.
-	 * @param primaryStage the primary stage for this application
-	 * @throws Exception if an error occurs during loading the FXML
-	 */
+	 /**
+     * Starts the branch manager interface.
+     * 
+     * @param primaryStage the primary stage for this application
+     * @throws Exception if an error occurs during loading the FXML
+     */
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/branch_manager/BranchManager.fxml"));
 		Parent root = loader.load();
@@ -83,7 +92,7 @@ public class BranchManagerController {
 		primaryStage.show();
 	}
 
-	/**
+	 /**
      * Initializes the controller class. This method is automatically called after
      * the FXML file has been loaded. It populates the ComboBoxes with month/year
      * strings, report options, and restaurant names. It also updates the branch
@@ -122,9 +131,10 @@ public class BranchManagerController {
 		txtError.setVisible(false);
 	}
 
-	/**
+	 /**
      * Handles the logout button action. Sends a logout message to the server
-     * through the client and transitions to the login screen.
+     * through the client, hides the current window, and transitions to the login screen.
+     * 
      * @param event the event triggered by the logout button
      * @throws Exception if an error occurs during the process
      */
@@ -140,10 +150,11 @@ public class BranchManagerController {
 
 	}
 
-	/**
+	 /**
      * Handles the update client button action. This method is triggered when the
      * update client button is clicked. It hides the current window and opens the
      * update client screen, passing the branch manager's district.
+     * 
      * @param event the event triggered by the update client button click
      * @throws Exception if there is an error while opening the update client screen
      */
@@ -155,11 +166,12 @@ public class BranchManagerController {
 		newScreen.start(new Stage());
 	}
 
-	/**
+	 /**
      * Handles the view reports button action. This method is triggered when the
      * view reports button is clicked. It gathers the selected restaurant, month,
      * report type, and the branch manager's district, then opens the report view
      * screen.
+     * 
      * @param event the event triggered by the view reports button click
      * @throws Exception if there is an error while opening the report view screen
      */
@@ -198,12 +210,13 @@ public class BranchManagerController {
 		newScreen.start(new Stage());
 	}
 
-	/**
+	 /**
      * Handles the action when a month is selected from the ComboBox. This method
      * checks if the selected month/year is before or the same as the current
      * month/year. If it is, the "View Reports" button is enabled, and any error
      * message is hidden. Otherwise, the button is disabled, and an error message is
      * displayed.
+     * 
      * @param event the event triggered by selecting a month/year
      */
 	@FXML
@@ -239,9 +252,10 @@ public class BranchManagerController {
 		}
 	}
 	
-	 /**
+	/**
      * Handles the action when a report type is selected from the ComboBox. Enables
      * the restaurant ComboBox if the selected report type is not "performance report".
+     * 
      * @param event the event triggered by selecting a report type
      */
     @FXML

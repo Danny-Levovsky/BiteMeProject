@@ -34,7 +34,7 @@ import java.util.List;
  * This includes initializing the view order window, fetching and displaying orders,
  * and handling button actions for navigating back to the customer screen and marking orders as received.
  * 
- *@author yosra
+ * @author yosra
  */
 public class ViewOrderController {
 
@@ -62,28 +62,36 @@ public class ViewOrderController {
 	@FXML
 	private Label txtEmpty;
 
-	private int orderId; // for saving the order Id that customer wants to approve receiving
-	private static int id; // customer id
+	/**
+     * The ID of the order that the customer wants to mark as received.
+     */
+	private int orderId; 
+	
+	/**
+     * The ID of the customer.
+     */
+	private static int id; 
+	
+	/**
+     * The date and time when the order was marked as received.
+     */
 	private String receivedDateTime;
 	
-	 //private String dateTime; //to store the date we get from DB private int
-	 //private int isEarlyOrder; 
-	 //private int price;
-	
-
 	/**
-	 * Sets the ID for the view order controller.
-	 * @param id1 the ID to set
-	 */
+     * Sets the ID for the view order controller.
+     * 
+     * @param id1 the ID to set
+     */
 	public static void setId(int id1) {
 		id = id1;
 	}
 
 	/**
-	 * Starts and displays the view order window.
-	 * @param primaryStage the primary stage for this application
-	 * @throws Exception if there is an error during the loading of the FXML file
-	 */
+     * Starts and displays the view order window.
+     * 
+     * @param primaryStage the primary stage for this application
+     * @throws Exception if there is an error during the loading of the FXML file
+     */
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/customer/ViewOrder.fxml"));
 		Parent root = loader.load();
@@ -114,18 +122,20 @@ public class ViewOrderController {
 	}
 
 	/**
-	 * Fetches pending orders for the current customer and populates the table.
-	 * @throws Exception
-	 */
+     * Fetches pending orders for the current customer and populates the table.
+     * 
+     * @throws Exception if there is an error while fetching orders
+     */
 	private void fetchOrders() throws Exception {
 		Message msg = new Message(id, Commands.getPendingOrders);
 		ClientController.client.handleMessageFromClientControllers(msg);
 	}
 
 	/**
-	 * Updates the table with the list of orders.
-	 * @param orders the list of orders to display
-	 */
+     * Updates the table with the list of orders.
+     * 
+     * @param orders the list of orders to display
+     */
 	public void updateOrderTable(List<Order> orders) {
 		ObservableList<Order> orderList = FXCollections.observableArrayList(orders);
 		table.setItems(orderList);
@@ -136,19 +146,21 @@ public class ViewOrderController {
 		}
 	}
 
-	 /**
+	/**
      * Displays a message on the UI.
+     * 
      * @param msg the message to display
      */
 	public void appearingMsg(String msg) {
 		txtMsg.setText(msg);
 	}
 
-	 /**
+	/**
      * Handles the action for the received button.
      * This method is triggered when the received button is clicked.
      * It verifies the order ID entered by the customer, sends a request to the server to update the order status,
      * and refreshes the table.
+     * 
      * @param event the event triggered by the received button click
      * @throws Exception if there is an error while sending the request to the server
      */
@@ -182,20 +194,18 @@ public class ViewOrderController {
 		}
 	}
 
-	/**
+	 /**
      * Handles the response from the server.
      * This method processes the server response to determine if the order was late
      * and calculates any credit to be applied to the customer's account.
+     * 
      * @param isEarlyOrder flag indicating if the order is an early order
-     * @param dateTime the date and time the order was placed
-     * @param totalPrice the total price of the order
+     * @param dateTime     the date and time the order was placed
+     * @param totalPrice   the total price of the order
      * @throws Exception if there is an error while processing the response
      */
 	public void handleServerResponse(int isEarlyOrder, String dateTime, int totalPrice) throws Exception {
-		/*
-		 * this.isEarlyOrder = isEarlyOrder; this.dateTime = dateTime; this.price =
-		 * totalPrice;
-		 */
+
 		int credit = 0;
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -222,13 +232,13 @@ public class ViewOrderController {
 	}
 
 	/**
-	 * Handles the action for the back button. This method is triggered when the
-	 * back button is clicked. It hides the current window and opens the customer
-	 * screen.
-	 *
-	 * @param event the event triggered by the back button click
-	 * @throws Exception if there is an error while opening the customer screen
-	 */
+     * Handles the action for the back button. This method is triggered when the
+     * back button is clicked. It hides the current window and opens the customer
+     * screen.
+     * 
+     * @param event the event triggered by the back button click
+     * @throws Exception if there is an error while opening the customer screen
+     */
 	@FXML
 	void getBtnBack(ActionEvent event) throws Exception {
 		((Node) event.getSource()).getScene().getWindow().hide();

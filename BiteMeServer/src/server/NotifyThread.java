@@ -1,40 +1,42 @@
 package server;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-import entites.*;
-import ocsf.server.ConnectionToClient;
-//import JDBC.DbController;
-import enums.Commands;
 
-
-
+/**
+ * The NotifyThread class represents a thread that can be controlled 
+ * to run or stop based on a flag. This thread is designed to perform 
+ * periodic tasks but currently has no task implemented in the run method.
+ * 
+ * @author yosra
+ */
 public class NotifyThread implements Runnable {
-
+	
+	/**
+     * Constant representing one second in milliseconds.
+     */
 	private final int second = 1000;
+	
+	/**
+     * Constant representing one minute in milliseconds.
+     */
 	private final int minute = second * 60;
 	
-	private volatile boolean running = true; // Flag to control the execution of the thread
+	/**
+     * A volatile boolean flag used to control the execution of the thread.
+     * The thread will continue running while this flag is true.
+     */
+	private volatile boolean running = true; 
 
-    // Method to stop the thread gracefully
+	/**
+     * Method to stop the thread gracefully by setting the running flag to false.
+     */
     public void stopThread() {
         running = false;
     }
 
-
+    /**
+     * The run method of the thread. This method is invoked when the thread is started.
+     * Currently, it does not perform any actions.
+     */
 	@Override
 	public void run() {	
 	}
