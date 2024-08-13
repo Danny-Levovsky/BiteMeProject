@@ -224,10 +224,10 @@ public class ReportViewController {
 	            if (node != null) {
 	                StackPane stackPane = (StackPane) node;
 	                Label label = new Label(data.getYValue().toString());
-	                label.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+	                label.setStyle("-fx-font-size: 14; -fx-font-weight: bold;"); // Bold font weight
 	                
-	                // Position the label at the top of the bar
-	                label.setTranslateY(-label.getHeight()); // Adjust as necessary
+	                // Position the label above the bar
+	                label.setTranslateY(-label.getHeight() - 10); // Move the label above the bar, adjust -10 as necessary
 	                
 	                stackPane.getChildren().add(label);
 	                StackPane.setAlignment(label, Pos.TOP_CENTER);
@@ -238,6 +238,9 @@ public class ReportViewController {
 	    // Ensure the chart is refreshed correctly
 	    barChart.layout();  
 	}
+
+
+
 
 	 /**
      * Sends a request to the server to generate an income report.
@@ -286,7 +289,7 @@ public class ReportViewController {
 	                label.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
 	                
 	                // Position the label at the top of the bar
-	                label.setTranslateY(-label.getHeight()); // Adjust as necessary
+	                label.setTranslateY(-label.getHeight() -10); // Adjust as necessary
 	                
 	                stackPane.getChildren().add(label);
 	                StackPane.setAlignment(label, Pos.TOP_CENTER);
@@ -346,7 +349,7 @@ public class ReportViewController {
 	                label.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
 	                
 	                // Position the label at the top of the bar
-	                label.setTranslateY(-label.getHeight()); // Adjust as necessary
+	                label.setTranslateY(-label.getHeight() -10); // Adjust as necessary
 	                
 	                stackPane.getChildren().add(label);
 	                StackPane.setAlignment(label, Pos.TOP_CENTER);

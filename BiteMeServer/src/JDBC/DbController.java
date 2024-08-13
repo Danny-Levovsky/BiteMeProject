@@ -225,16 +225,20 @@ public class DbController {
     }
     
     /**
-     * Retrieves the pending orders for a given customer.
-     * @param customerId the customer ID
-     * @return a list of pending orders
+     * Retrieves a list of pending orders for a given customer. 
+     * The orders are filtered by the customer ID and are considered pending if 
+     * their status in the `customer_orders` table is 'pending' and their status in the 
+     * `orders` table is 'completed'.
+     * @param customerId the ID of the customer for whom the pending orders are being retrieved
+     * @return a list of {@link Order} objects representing the pending orders for the specified customer
      */
     public List<Order> getPendingOrders(int customerId) {
         List<Order> orders = new ArrayList<>();
-        String query = "SELECT o.OrderID, o.OrderDateTime FROM orders o " +
+        String query = "SELECT o.OrderID, o.OrderDateTime " +
+                       "FROM orders o " +
                        "JOIN customer_orders co ON o.OrderID = co.OrderID " +
                        "JOIN customers c ON o.CustomerNumber = c.CustomerNumber " +
-                       "WHERE c.ID = ? AND co.Status = 'pending'";
+                       "WHERE c.ID = ? AND co.Status = 'pending' AND o.StatusRestaurant = 'completed'";
         try {
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, customerId);
@@ -250,7 +254,7 @@ public class DbController {
         }
         return orders;
     }
-    
+
     /**
      * Updates the status of an order to 'received' and records the received date and time.
      * Also retrieves the details of the order to calculate any credit if applicable.
@@ -1288,13 +1292,14 @@ public class DbController {
 
     
     /**
-     * Retrieves quarter report data from the database. If the data does not exist, 
-     * it calculates the data and saves it to the database before returning it.
-     * @param restaurantNumber The restaurant's ID.
-     * @param quarter The quarter to retrieve the data for.
-     * @return An Object array containing MaxOrders, Intervals array, and Values array.
+     * Retrieves the quarter report data for the specified restaurant and quarter.
+     * @param restaurantNumber the ID of the restaurant
+     * @param quarter          the quarter for which the report is requested (e.g., "Q1", "Q2")
+     * @return an Object array containing the maximum orders per day, an array of intervals,
+     *         and an array of corresponding values for the number of days in each interval
      */
-    public Object[] getQuarterReportData(int restaurantNumber, String quarter) {
+   public Object[] getQuarterReportData(int restaurantNumber, String quarter) {
+        // Step 1: Check if the quarter report already exists in the database
         String query = "SELECT MaxOrders, Interval1, value1, Interval2, value2, Interval3, value3, " +
                        "Interval4, value4, Interval5, value5, Interval6, value6, Interval7, value7, " +
                        "Interval8, value8, Interval9, value9, Interval10, value10 " +
@@ -1305,6 +1310,7 @@ public class DbController {
             stmt.setString(2, quarter);
             ResultSet rs = stmt.executeQuery();
 
+            // If the report exists, return the data
             if (rs.next()) {
                 int maxOrders = rs.getInt("MaxOrders");
                 String[] intervals = new String[10];
@@ -1317,6 +1323,7 @@ public class DbController {
 
                 return new Object[]{maxOrders, intervals, values};
             } else {
+                // If no data found, calculate and save the quarter report
                 return calculateAndSaveQuarterReport(restaurantNumber, quarter);
             }
         } catch (SQLException e) {
@@ -1325,126 +1332,128 @@ public class DbController {
         return null;  // Return null if something goes wrong
     }
 
-    /**
-     * Calculates the quarter report data and saves it to the database.
-     * @param restaurantNumber The restaurant's ID.
-     * @param quarter The quarter to calculate the data for.
-     * @return An Object array containing MaxOrders, Intervals array, and Values array.
-     */
-    private Object[] calculateAndSaveQuarterReport(int restaurantNumber, String quarter) {
-        // Determine the months corresponding to the quarter
-        String[] months = getMonthsForQuarter(quarter);
+   /**
+    * Calculates and saves the quarter report for the specified restaurant and quarter.
+    * @param restaurantNumber the ID of the restaurant
+    * @param quarter          the quarter for which the report is being calculated (e.g., "Q1", "Q2")
+    * @return an Object array containing the maximum orders per day, an array of intervals,
+    *         and an array of corresponding values for the number of days in each interval
+    */
+   private Object[] calculateAndSaveQuarterReport(int restaurantNumber, String quarter) {
+	    // Determine the months corresponding to the quarter
+	    String[] months = getMonthsForQuarter(quarter);
 
-        // Step 1: Calculate the max orders per day
-        String queryMaxOrders = "SELECT MAX(orderCount) AS MaxOrders FROM ( " +
-                                "SELECT COUNT(*) AS orderCount " +
-                                "FROM orders " +
-                                "WHERE RestaurantNumber = ? AND DATE_FORMAT(OrderDateTime, '%c') IN (?, ?, ?) " +
-                                "GROUP BY DATE(OrderDateTime)) AS dailyOrders";
+	    // Step 1: Calculate the max orders per day within the quarter
+	    String queryMaxOrders = "SELECT MAX(orderCount) AS MaxOrders FROM ( " +
+	                            "SELECT COUNT(*) AS orderCount " +
+	                            "FROM orders " +
+	                            "WHERE RestaurantNumber = ? AND MONTH(OrderDateTime) IN (?, ?, ?) " +
+	                            "GROUP BY DATE(OrderDateTime)) AS dailyOrders";
 
-        int maxOrders = 0;
-        try (PreparedStatement stmtMaxOrders = conn.prepareStatement(queryMaxOrders)) {
-            stmtMaxOrders.setInt(1, restaurantNumber);
-            stmtMaxOrders.setString(2, months[0]);
-            stmtMaxOrders.setString(3, months[1]);
-            stmtMaxOrders.setString(4, months[2]);
+	    int maxOrders = 0;
+	    try (PreparedStatement stmtMaxOrders = conn.prepareStatement(queryMaxOrders)) {
+	        stmtMaxOrders.setInt(1, restaurantNumber);
+	        stmtMaxOrders.setString(2, months[0]);
+	        stmtMaxOrders.setString(3, months[1]);
+	        stmtMaxOrders.setString(4, months[2]);
 
-            ResultSet rsMaxOrders = stmtMaxOrders.executeQuery();
-            if (rsMaxOrders.next()) {
-                maxOrders = rsMaxOrders.getInt("MaxOrders");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
+	        ResultSet rsMaxOrders = stmtMaxOrders.executeQuery();
+	        if (rsMaxOrders.next()) {
+	            maxOrders = rsMaxOrders.getInt("MaxOrders");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return null;
+	    }
 
-        // Step 2: Calculate the intervals
-        String[] intervals = new String[10];
-        int[] values = new int[10];
-        
-        if (maxOrders < 10) {
-            // If maxOrders is less than 10, create intervals of size 1
-            for (int i = 0; i < 10; i++) {
-                intervals[i] = i + "-" + (i + 1);
-            }
-        } else {
-            // For larger maxOrders, create appropriate intervals
-            int intervalSize = maxOrders / 10;
-            int remainder = maxOrders % 10;
+	    // Step 2: Calculate the intervals
+	    String[] intervals = new String[10];
+	    int[] values = new int[10];
 
-            for (int i = 0; i < 10; i++) {
-                int lowerBound = i * intervalSize;
-                int upperBound = (i + 1) * intervalSize - 1;
-                if (i == 9) { // Add any remainder to the last interval
-                    upperBound += remainder;
-                }
-                intervals[i] = lowerBound + "-" + upperBound;
-            }
-        }
+	    if (maxOrders < 10) {
+	        // If maxOrders is less than 10, create intervals of size 1
+	        for (int i = 0; i < 10; i++) {
+	            intervals[i] = i + "-" + (i + 1);
+	        }
+	        intervals[9] = "9-" + maxOrders; // Adjust the last interval to end at maxOrders
+	    } else {
+	        // For larger maxOrders, create appropriate intervals
+	        int intervalSize = maxOrders / 10;
+	        int lowerBound, upperBound;
 
-        // Step 3: Calculate the number of days in each interval
-        for (int i = 0; i < 10; i++) {
-            String[] bounds = intervals[i].split("-");
-            int lowerBound = Integer.parseInt(bounds[0]);
-            int upperBound = Integer.parseInt(bounds[1]);
+	        for (int i = 0; i < 9; i++) {
+	            lowerBound = i * intervalSize;
+	            upperBound = (i + 1) * intervalSize - 1;
+	            intervals[i] = lowerBound + "-" + upperBound;
+	        }
 
-            String queryInterval = "SELECT COUNT(*) AS dayCount FROM ( " +
-                                   "SELECT COUNT(*) AS orderCount " +
-                                   "FROM orders " +
-                                   "WHERE RestaurantNumber = ? AND DATE_FORMAT(OrderDateTime, '%c') IN (?, ?, ?) " +
-                                   "GROUP BY DATE(OrderDateTime) " +
-                                   "HAVING orderCount BETWEEN ? AND ?) AS intervalOrders";
+	        // Adjust the last interval to ensure it includes up to maxOrders
+	        lowerBound = 9 * intervalSize;
+	        upperBound = maxOrders;
+	        intervals[9] = lowerBound + "-" + upperBound;
+	    }
 
-            try (PreparedStatement stmtInterval = conn.prepareStatement(queryInterval)) {
-                stmtInterval.setInt(1, restaurantNumber);
-                stmtInterval.setString(2, months[0]);
-                stmtInterval.setString(3, months[1]);
-                stmtInterval.setString(4, months[2]);
-                stmtInterval.setInt(5, lowerBound);
-                stmtInterval.setInt(6, upperBound);
+	    // Step 3: Calculate the number of days in each interval
+	    for (int i = 0; i < 10; i++) {
+	        String[] bounds = intervals[i].split("-");
+	        int lowerBound = Integer.parseInt(bounds[0]);
+	        int upperBound = Integer.parseInt(bounds[1]);
 
-                ResultSet rsInterval = stmtInterval.executeQuery();
-                if (rsInterval.next()) {
-                    values[i] = rsInterval.getInt("dayCount");
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
+	        String queryInterval = "SELECT COUNT(*) AS dayCount FROM ( " +
+	                               "SELECT COUNT(*) AS orderCount " +
+	                               "FROM orders " +
+	                               "WHERE RestaurantNumber = ? AND MONTH(OrderDateTime) IN (?, ?, ?) " +
+	                               "GROUP BY DATE(OrderDateTime) " +
+	                               "HAVING orderCount BETWEEN ? AND ?) AS intervalOrders";
 
-        // Step 4: Save the data to the quarter_reports table
-        String insertQuery = "INSERT INTO quarter_reports (Quarter, Year, RestaurantNumber, MaxOrders, " +
-                "Interval1, value1, Interval2, value2, Interval3, value3, " +
-                "Interval4, value4, Interval5, value5, Interval6, value6, " +
-                "Interval7, value7, Interval8, value8, Interval9, value9, " +
-                "Interval10, value10) " +
-                "VALUES (?, '2024', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+	        try (PreparedStatement stmtInterval = conn.prepareStatement(queryInterval)) {
+	            stmtInterval.setInt(1, restaurantNumber);
+	            stmtInterval.setString(2, months[0]);
+	            stmtInterval.setString(3, months[1]);
+	            stmtInterval.setString(4, months[2]);
+	            stmtInterval.setInt(5, lowerBound);
+	            stmtInterval.setInt(6, upperBound);
 
-        try (PreparedStatement stmtInsert = conn.prepareStatement(insertQuery)) {
-            stmtInsert.setString(1, quarter);
-            stmtInsert.setInt(2, restaurantNumber);
-            stmtInsert.setInt(3, maxOrders);
-            int index = 4;
-            for (int i = 0; i < 10; i++) {
-                stmtInsert.setString(index, intervals[i]);
-                stmtInsert.setInt(index + 1, values[i]);
-                index += 2;
-            }
-            stmtInsert.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
+	            ResultSet rsInterval = stmtInterval.executeQuery();
+	            if (rsInterval.next()) {
+	                values[i] = rsInterval.getInt("dayCount");
+	            }
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	            return null;
+	        }
+	    }
 
-        return new Object[]{maxOrders, intervals, values};
-    }
+	    // Step 4: Save the data to the quarter_reports table
+	    String insertQuery = "INSERT INTO quarter_reports (Quarter, Year, RestaurantNumber, MaxOrders, " +
+	            "Interval1, value1, Interval2, value2, Interval3, value3, " +
+	            "Interval4, value4, Interval5, value5, Interval6, value6, " +
+	            "Interval7, value7, Interval8, value8, Interval9, value9, " +
+	            "Interval10, value10) " +
+	            "VALUES (?, '2024', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    /**
-     * Helper method to determine the months corresponding to a given quarter.
-     * @param quarter The quarter (e.g., "Q1", "Q2").
-     * @return An array of three strings representing the months in the quarter.
-     */
+	    try (PreparedStatement stmtInsert = conn.prepareStatement(insertQuery)) {
+	        stmtInsert.setString(1, quarter);
+	        stmtInsert.setInt(2, restaurantNumber);
+	        stmtInsert.setInt(3, maxOrders);
+	        int index = 4;
+	        for (int i = 0; i < 10; i++) {
+	            stmtInsert.setString(index, intervals[i]);
+	            stmtInsert.setInt(index + 1, values[i]);
+	            index += 2;
+	        }
+	        stmtInsert.executeUpdate();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return null;
+	    }
+
+	    return new Object[]{maxOrders, intervals, values};
+	}
+
+
+    
+
     private String[] getMonthsForQuarter(String quarter) {
         switch (quarter) {
             case "Q1":
@@ -1460,7 +1469,13 @@ public class DbController {
         }
     }
 
-    
+
+    /**
+     * Retrieves the quarterly income report for the specified restaurant and quarter.
+     * @param restaurantNumber the ID of the restaurant
+     * @param quarter          the quarter for which the income report is requested (e.g., "Q1", "Q2")
+     * @return an Object array containing the total income and an array of income values per week
+     */
     public Object[] getQuarterIncomeReport(int restaurantNumber, String quarter) {
         String[] months = getMonthsForQuarter(quarter);
 
@@ -1550,16 +1565,11 @@ public class DbController {
 
         return new Object[]{totalIncome, values};
     }
-
-
-    
-    
-    
-    
+ 
     /**
      * Imports external data into the application database.
      * This method performs multiple data import and update operations on the users, customers,
-     * restaurants, and employee tables in bite_me DB
+     * ,employee, orders tables in bite_me DB
      */
     public void importExternalData() {
         try {
@@ -1612,6 +1622,144 @@ public class DbController {
 
             PreparedStatement insertEmployeeStmt = conn.prepareStatement(insertEmployeeQuery);
             insertEmployeeStmt.executeUpdate();       
+            
+            
+            
+         // Insert into orders table - order 1 
+            String insertOrderQuery = "INSERT INTO bite_me.orders (CustomerNumber, RestaurantNumber, TotalPrice, Salad, MainCourse, Dessert, Drink, IsDelivery, IsEarlyOrder, RequestedDateTime, OrderDateTime, StatusRestaurant) " +
+                                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            // Use PreparedStatement.RETURN_GENERATED_KEYS to get the generated OrderID
+            PreparedStatement insertOrderStmt = conn.prepareStatement(insertOrderQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+            insertOrderStmt.setInt(1, 1); // CustomerNumber
+            insertOrderStmt.setInt(2, 1); // RestaurantNumber
+            insertOrderStmt.setInt(3, 191); // TotalPrice
+            insertOrderStmt.setInt(4, 1); // Salad
+            insertOrderStmt.setInt(5, 2); // MainCourse
+            insertOrderStmt.setInt(6, 0); // Dessert
+            insertOrderStmt.setInt(7, 2); // Drink
+            insertOrderStmt.setInt(8, 1); // IsDelivery
+            insertOrderStmt.setInt(9, 0); // IsEarlyOrder
+            insertOrderStmt.setString(10, "2024-08-14 13:00:00"); // RequestedDateTime
+            insertOrderStmt.setString(11, "2024-08-14 09:00:00"); // OrderDateTime
+            insertOrderStmt.setString(12, "completed"); // StatusRestaurant
+
+            insertOrderStmt.executeUpdate();
+
+            // Retrieve the generated OrderID
+            ResultSet generatedKeys = insertOrderStmt.getGeneratedKeys();
+            int orderId = 0;
+            if (generatedKeys.next()) {
+                orderId = generatedKeys.getInt(1);
+            }
+
+            // Insert into restaurant_orders table
+            String insertRestaurantOrdersQuery = "INSERT INTO bite_me.restaurants_orders (OrderID, DishID, Size, Quantity) VALUES (?, ?, ?, ?)";
+            PreparedStatement insertRestaurantOrdersStmt = conn.prepareStatement(insertRestaurantOrdersQuery);
+
+            insertRestaurantOrdersStmt.setInt(1, orderId);
+            insertRestaurantOrdersStmt.setInt(2, 1); // DishID
+            insertRestaurantOrdersStmt.setString(3, "regular"); // Size
+            insertRestaurantOrdersStmt.setInt(4, 1); // Quantity
+            insertRestaurantOrdersStmt.addBatch();
+
+            insertRestaurantOrdersStmt.setInt(1, orderId);
+            insertRestaurantOrdersStmt.setInt(2, 7); // DishID
+            insertRestaurantOrdersStmt.setString(3, "regular"); // Size
+            insertRestaurantOrdersStmt.setInt(4, 1); // Quantity
+            insertRestaurantOrdersStmt.addBatch();
+
+            insertRestaurantOrdersStmt.setInt(1, orderId);
+            insertRestaurantOrdersStmt.setInt(2, 8); // DishID
+            insertRestaurantOrdersStmt.setString(3, "regular"); // Size
+            insertRestaurantOrdersStmt.setInt(4, 1); // Quantity
+            insertRestaurantOrdersStmt.addBatch();
+
+            insertRestaurantOrdersStmt.setInt(1, orderId);
+            insertRestaurantOrdersStmt.setInt(2, 16); // DishID
+            insertRestaurantOrdersStmt.setString(3, "small"); // Size
+            insertRestaurantOrdersStmt.setInt(4, 1); // Quantity
+            insertRestaurantOrdersStmt.addBatch();
+
+            insertRestaurantOrdersStmt.setInt(1, orderId);
+            insertRestaurantOrdersStmt.setInt(2, 13); // DishID
+            insertRestaurantOrdersStmt.setString(3, "regular"); // Size
+            insertRestaurantOrdersStmt.setInt(4, 1); // Quantity
+            insertRestaurantOrdersStmt.addBatch();
+
+            insertRestaurantOrdersStmt.executeBatch();
+
+            // Insert into customer_orders table
+            String insertCustomerOrdersQuery = "INSERT INTO bite_me.customer_orders (OrderID) VALUES (?)";
+            PreparedStatement insertCustomerOrdersStmt = conn.prepareStatement(insertCustomerOrdersQuery);
+            insertCustomerOrdersStmt.setInt(1, orderId);
+            insertCustomerOrdersStmt.executeUpdate();
+            
+            
+            // Insert into orders table - order 2 
+            String insertOrderQuery1 = "INSERT INTO bite_me.orders (CustomerNumber, RestaurantNumber, TotalPrice, Salad, MainCourse, Dessert, Drink, IsDelivery, IsEarlyOrder, RequestedDateTime, OrderDateTime) " +
+                                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            // Use PreparedStatement.RETURN_GENERATED_KEYS to get the generated OrderID
+            PreparedStatement insertOrderStmt1 = conn.prepareStatement(insertOrderQuery1, PreparedStatement.RETURN_GENERATED_KEYS);
+            insertOrderStmt1.setInt(1, 1); // CustomerNumber
+            insertOrderStmt1.setInt(2, 1); // RestaurantNumber
+            insertOrderStmt1.setInt(3, 124); // TotalPrice
+            insertOrderStmt1.setInt(4, 1); // Salad
+            insertOrderStmt1.setInt(5, 1); // MainCourse
+            insertOrderStmt1.setInt(6, 1); // Dessert
+            insertOrderStmt1.setInt(7, 1); // Drink
+            insertOrderStmt1.setInt(8, 1); // IsDelivery
+            insertOrderStmt1.setInt(9, 1); // IsEarlyOrder
+            insertOrderStmt1.setString(10, "2024-08-15 11:00:00"); // RequestedDateTime
+            insertOrderStmt1.setString(11, "2024-08-15 09:00:00"); // OrderDateTime
+
+
+            insertOrderStmt1.executeUpdate();
+
+            // Retrieve the generated OrderID
+            ResultSet generatedKeys1 = insertOrderStmt1.getGeneratedKeys();
+            int orderId1 = 0;
+            if (generatedKeys1.next()) {
+                orderId1 = generatedKeys1.getInt(1);
+            }
+
+            // Insert into restaurant_orders table
+            String insertRestaurantOrdersQuery1 = "INSERT INTO bite_me.restaurants_orders (OrderID, DishID, Size, Quantity) VALUES (?, ?, ?, ?)";
+            PreparedStatement insertRestaurantOrdersStmt1 = conn.prepareStatement(insertRestaurantOrdersQuery1);
+
+            insertRestaurantOrdersStmt1.setInt(1, orderId1);
+            insertRestaurantOrdersStmt1.setInt(2, 2); // DishID
+            insertRestaurantOrdersStmt1.setString(3, "large"); // Size
+            insertRestaurantOrdersStmt1.setInt(4, 1); // Quantity
+            insertRestaurantOrdersStmt1.addBatch();
+
+            insertRestaurantOrdersStmt1.setInt(1, orderId1);
+            insertRestaurantOrdersStmt1.setInt(2, 5); // DishID
+            insertRestaurantOrdersStmt1.setString(3, "regular"); // Size
+            insertRestaurantOrdersStmt1.setInt(4, 1); // Quantity
+            insertRestaurantOrdersStmt1.addBatch();
+
+            insertRestaurantOrdersStmt1.setInt(1, orderId1);
+            insertRestaurantOrdersStmt1.setInt(2, 11); // DishID
+            insertRestaurantOrdersStmt1.setString(3, "regular"); // Size
+            insertRestaurantOrdersStmt1.setInt(4, 1); // Quantity
+            insertRestaurantOrdersStmt1.addBatch();
+
+            insertRestaurantOrdersStmt1.setInt(1, orderId1);
+            insertRestaurantOrdersStmt1.setInt(2, 15); // DishID
+            insertRestaurantOrdersStmt1.setString(3, "small"); // Size
+            insertRestaurantOrdersStmt1.setInt(4, 1); // Quantity
+            insertRestaurantOrdersStmt1.addBatch();
+
+
+            insertRestaurantOrdersStmt1.executeBatch();
+
+            // Insert into customer_orders table
+            String insertCustomerOrdersQuery1 = "INSERT INTO bite_me.customer_orders (OrderID) VALUES (?)";
+            PreparedStatement insertCustomerOrdersStmt1 = conn.prepareStatement(insertCustomerOrdersQuery1);
+            insertCustomerOrdersStmt1.setInt(1, orderId1);
+            insertCustomerOrdersStmt1.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }

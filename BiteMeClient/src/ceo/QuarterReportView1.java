@@ -128,7 +128,7 @@ public class QuarterReportView1 {
 		    XYChart.Series<String, Number> series1 = new XYChart.Series<>();
 		    series1.setName(quarter + " report");
 		    
-		    for (int i = 0; i < maxOrders+1; i++) {  //origin < intervals.length
+		    for (int i = 0; i < intervals.length; i++) {  
 		    	 XYChart.Data<String, Number> data = new XYChart.Data<>(intervals[i], values[i]);
 			        series1.getData().add(data); 		
 		    }
