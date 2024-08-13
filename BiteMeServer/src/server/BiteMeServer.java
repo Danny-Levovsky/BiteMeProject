@@ -213,16 +213,16 @@ public class BiteMeServer extends AbstractServer
     	    }
     	  break;
     	  
-      case updateClientCredit:
-    	  System.out.println("Credit: " + m.getObj());
-    	  int clientCredit = (int)m.getObj();
-    	 boolean answer = dbController.updateClientCredit(clientCredit);
-    	  try {
-  	        client.sendToClient(new Message(answer, Commands.updatedClientCredit));
-  	    } catch (IOException e) {
-  	        e.printStackTrace();
-  	    }
-  	  break;
+      case updateCustomerCredit:
+    	    System.out.println("Credit update request received: " + m.getObj());
+    	    Map<String, Object> creditUpdateData = (Map<String, Object>) m.getObj();
+    	    boolean updateSuccess = dbController.updateCustomerCredit(creditUpdateData);
+//    	    try {
+//    	        client.sendToClient(new Message(updateSuccess, Commands.updatedCustomerCredit));
+//    	    } catch (IOException e) {
+//    	        e.printStackTrace();
+//    	    }
+    	    break;
     	  
     	  
       case sendCustomerOrder:

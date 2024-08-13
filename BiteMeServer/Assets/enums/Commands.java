@@ -25,6 +25,6 @@ public enum Commands {
     getCustomerDetails,
     gotMyCustomerDetails,
     sendCustomerOrder,
-    updateClientCredit,
-    updatedClientCredit
+    updateCustomerCredit,
+    updatedCustomerCredit
 }

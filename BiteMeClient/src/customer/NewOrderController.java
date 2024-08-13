@@ -1313,18 +1313,17 @@ public class NewOrderController {
             System.out.println("BEFORE Total price is:" + totalPrice + "\n");
             if (currentCustomer.getCredit()!=0) {
             	boolean feeResponse = feeAlert();
-            	if (feeResponse == true) {
-            		if (totalPrice > currentCustomer.getCredit()) {
-            			totalPrice = totalPrice - currentCustomer.getCredit();
-            			currentCustomer.setCredit(0);
-            			//TODO: update customer credit in db
-            		}
-            		else {
-            			totalPrice = 0;
-            			currentCustomer.setCredit(currentCustomer.getCredit()-(int)totalPrice);
-            			//TODO: update customer credit in db
-            		}
-            	}
+            	if (feeResponse) {
+                    if (totalPrice > currentCustomer.getCredit()) {
+                        int newCreditBalance = 0;
+                        totalPrice = totalPrice - currentCustomer.getCredit();
+                        updateCustomerCredit(currentCustomer.getCustomerNumber(), newCreditBalance);
+                    } else {
+                        int newCreditBalance = currentCustomer.getCredit() - (int)totalPrice;
+                        totalPrice = 0;
+                        updateCustomerCredit(currentCustomer.getCustomerNumber(), newCreditBalance);
+                    }
+                }
             }
             System.out.println("AFTER Total price is:" + totalPrice + "\n");
 
@@ -1389,6 +1388,15 @@ public class NewOrderController {
         
         
         orderSummaryAlert(deliveryTypeComboBox.getValue(),totalPrice,isItEarlyOrder);
+    }
+    
+    private void updateCustomerCredit(int customerNumber, int newCreditBalance) {
+        Map<String, Object> creditUpdateData = new HashMap<>();
+        creditUpdateData.put("customerNumber", customerNumber);
+        creditUpdateData.put("newCreditBalance", newCreditBalance);
+        
+        Message msg = new Message(creditUpdateData, Commands.updateCustomerCredit);
+        ClientController.client.handleMessageFromClientControllers(msg);
     }
     
     public void start(Stage primaryStage) throws Exception {

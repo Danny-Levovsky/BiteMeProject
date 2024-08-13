@@ -342,11 +342,9 @@ public class DbController {
 //    }
     
     public void addCustomerOrder(Map<String, Object> orderDetails, List<Map<String, Object>> orderItems) {
-        System.out.println("DBController Order Information: " + orderDetails);
-        System.out.println("DBController Order Information: " + orderItems);
-        
         String insertOrderQuery = "INSERT INTO orders (CustomerNumber, RestaurantNumber, TotalPrice, Salad, MainCourse, Dessert, Drink, IsDelivery, IsEarlyOrder, RequestedDateTime, OrderDateTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String insertOrderItemQuery = "INSERT INTO restaurants_orders (OrderID, DishID, Size, Specification, Quantity) VALUES (?, ?, ?, ?, ?)";
+        String insertCustomerOrderQuery = "INSERT INTO customer_orders (OrderID) VALUES (?)";
 
         try {
             conn.setAutoCommit(false);
@@ -379,6 +377,13 @@ public class DbController {
                     if (generatedKeys.next()) {
                         orderId = generatedKeys.getInt(1);
                         System.out.println("Generated Order ID: " + orderId);
+
+                        // Insert into customer_orders table
+                        try (PreparedStatement customerOrderStmt = conn.prepareStatement(insertCustomerOrderQuery)) {
+                            customerOrderStmt.setInt(1, orderId);
+                            customerOrderStmt.executeUpdate();
+                            System.out.println("Inserted into customer_orders table");
+                        }
                     } else {
                         throw new SQLException("Creating order failed, no ID obtained.");
                     }
@@ -447,8 +452,22 @@ public class DbController {
         }
     }
     
-    public boolean updateClientCredit (int ClientCredit) {
-    	
+    public boolean updateCustomerCredit(Map<String, Object> creditUpdateData) {
+        int customerNumber = (int) creditUpdateData.get("customerNumber");
+        int newCreditBalance = (int) creditUpdateData.get("newCreditBalance");
+        
+        String updateQuery = "UPDATE customers SET Credit = ? WHERE CustomerNumber = ?";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+            pstmt.setInt(1, newCreditBalance);
+            pstmt.setInt(2, customerNumber);
+            
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     
     
