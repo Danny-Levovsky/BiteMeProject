@@ -447,6 +447,9 @@ public class DbController {
         }
     }
     
+    public boolean updateClientCredit (int ClientCredit) {
+    	
+    }
     
     
     
