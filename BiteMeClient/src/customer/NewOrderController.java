@@ -141,6 +141,10 @@ public class NewOrderController {
     private ObservableList<OrderItem> orderItems = FXCollections.observableArrayList();
     private static User customer;
     private Customer currentCustomer;
+    
+  //THE FOLLOWING ARE INVOLVED IN SENDING THE ORDER TO DB
+    private boolean isItDelivery = false;
+    private boolean isItEarlyOrder = false;
 
     @FXML
     private void initialize() {
@@ -1045,7 +1049,7 @@ public class NewOrderController {
             }
             
             if (deliveryTypeComboBox.getValue() != null && deliveryTypeComboBox.getValue().equals("Shared Delivery")) {
-                deliveryParticipantsErrorText.setText(showErrorMessages && !isDeliveryParticipantsValid ? "Please enter a number between 1 and 100" : "");
+            	deliveryParticipantsErrorText.setText(showErrorMessages && !isDeliveryParticipantsValid ? "number of participants can only be 2-4" : "");
             } else {
                 deliveryParticipantsErrorText.setText("");
             }
@@ -1118,8 +1122,8 @@ public class NewOrderController {
     private void validateDeliveryParticipants() {
         String participants = deliveryParticipantsField.getText().trim();
         isDeliveryParticipantsValid = participants.matches("\\d+") && 
-                                      Integer.parseInt(participants) > 0 && 
-                                      Integer.parseInt(participants) <= 100;
+        		Integer.parseInt(participants) > 1 && 
+                Integer.parseInt(participants) <= 4;
         if (showErrorMessages) {
             updateErrorMessages();
         }
@@ -1131,12 +1135,14 @@ public class NewOrderController {
             String deliveryType = deliveryTypeComboBox.getValue();
             switch (deliveryType) {
                 case "Regular Delivery":
-                    deliveryCharge = 25;
+                	deliveryCharge = 25;
                     discountPercentage = 0;
+                    isItDelivery = true;
                     break;
                 case "Shared Delivery":
-                    deliveryCharge = 15;
-                    discountPercentage = 0;
+                	discountPercentage = 0;
+                	deliveryCharge = calculateSharedFee();
+                    isItDelivery = true;
                     break;
                 case "Robot Delivery":
                     deliveryCharge = 0;
@@ -1145,6 +1151,7 @@ public class NewOrderController {
                 default:
                     deliveryCharge = 0;
                     discountPercentage = 0;
+                    isItDelivery = false;
             }
             updateOrderTotal();
             isDeliveryConfirmed = true;
@@ -1412,5 +1419,18 @@ public class NewOrderController {
             updateButtonStates();
             removeItemText.setVisible(true);
         }
+    }
+    
+    private double calculateSharedFee() {
+    	String participantsString = deliveryParticipantsField.getText().trim();
+    	int participants = Integer.parseInt(participantsString);
+    	 	if (participants == 2) {
+    	 		deliveryCharge = 30;
+    	 		return deliveryCharge;
+    	 	}
+    	 	else {
+    	 		deliveryCharge = participants * 10;
+    	 		return deliveryCharge;
+    	 	}
     }
 }
