@@ -65,9 +65,9 @@ public class BiteMeServer extends AbstractServer
   
   public void handleMessageFromClient (Object msg, ConnectionToClient client)
   {
-	  //System.out.println(msg);
-
 	  Message m = (Message)msg ;
+	  System.out.println("Received message from client:" +  m.getObj());
+
 	  
 	  switch(m.getCmd()) {
 	  
@@ -165,6 +165,8 @@ public class BiteMeServer extends AbstractServer
           }
           
           break;
+          
+          
       case getPendingOrders:
           int customerId = (int) m.getObj();
           List<Order> pendingOrders = dbController.getPendingOrders(customerId);
@@ -174,6 +176,8 @@ public class BiteMeServer extends AbstractServer
               e.printStackTrace();
           }
           break;
+          
+          
       case getRestaurantList: //NEW ORDER - GET REST NAMES
     	  ArrayList<String> restaurantNames = new ArrayList<>();
     	  restaurantNames = dbController.getRestaurantNamesFromDB();
@@ -211,15 +215,17 @@ public class BiteMeServer extends AbstractServer
     	  
     	  
       case sendCustomerOrder:
-    	    List<Object> orderData = (List<Object>) m.getObj();
+    	  System.out.println("BiteMeServer Order Information: " + m.getObj() ); //DEBUGGING
+    	      	    List<Object> orderData = (List<Object>) m.getObj();
     	    Map<String, Object> orderDetails = (Map<String, Object>) orderData.get(0);
     	    List<Map<String, Object>> orderItems = (List<Map<String, Object>>) orderData.get(1);
-    	    boolean orderAdded = dbController.addCustomerOrder(orderDetails, orderItems);
-    	    try {
-    	        client.sendToClient(new Message(orderAdded ? "Order submitted successfully" : "Failed to submit order", Commands.sendCustomerOrder));
-    	    } catch (IOException e) {
-    	        e.printStackTrace();
-    	    }
+//    	    boolean orderAdded = dbController.addCustomerOrder(orderDetails, orderItems);
+    	    dbController.addCustomerOrder(orderDetails, orderItems);
+//    	    try {
+//    	        client.sendToClient(new Message(orderAdded ? "Order submitted successfully" : "Failed to submit order", Commands.sendCustomerOrder));
+//    	    } catch (IOException e) {
+//    	        e.printStackTrace();
+//    	    }
     	    break;
     	  
     	  
@@ -228,6 +234,8 @@ public class BiteMeServer extends AbstractServer
 	  		break;	  			  	
 	  }  	  
   }
+  
+  
   
   
   //TODO: CONNECTION TO DB CONTROLLER

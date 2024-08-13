@@ -271,29 +271,105 @@ public class DbController {
      * @param orderItems A list of maps, each containing details of an individual order item.
      * @return true if the order was successfully added, false otherwise.
      */
-    public boolean addCustomerOrder(Map<String, Object> orderDetails, List<Map<String, Object>> orderItems) {
-        String insertOrderQuery = "INSERT INTO orders (CustomerNumber, RestaurantNumber, TotalPrice, IsDelivery, RequestedDateTime, OrderDateTime) VALUES (?, ?, ?, ?, ?, ?)";
+    
+//    public void addCustomerOrder(Map<String, Object> orderDetails, List<Map<String, Object>> orderItems) {
+//        System.out.println("DBController Order Information: " + orderDetails); //DEBUGGING
+//        System.out.println("DBController Order Information: " + orderItems); //DEBUGGING
+//        
+//        String insertOrderQuery = "INSERT INTO orders (CustomerNumber, RestaurantNumber, TotalPrice, Salad, MainCourse, Dessert, Drink, IsDelivery, IsEarlyOrder, RequestedDateTime, OrderDateTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+//        String insertOrderItemQuery = "INSERT INTO restaurants_orders (OrderID, DishID, Size, Specification, Quantity) VALUES (?, ?, ?, ?, ?)";
+//
+//        try {
+//            // Insert order details
+//            try (PreparedStatement orderStmt = conn.prepareStatement(insertOrderQuery, Statement.RETURN_GENERATED_KEYS)) {
+//                orderStmt.setInt(1, (Integer) orderDetails.get("customerNumber"));
+//                orderStmt.setInt(2, (Integer) orderDetails.get("restaurantNumber"));
+//                orderStmt.setDouble(3, (Double) orderDetails.get("totalPrice"));
+//                orderStmt.setInt(4, (Integer) orderDetails.get("quantitySalad"));
+//                orderStmt.setInt(5, (Integer) orderDetails.get("quantityMain"));
+//                orderStmt.setInt(6, (Integer) orderDetails.get("quantityDessert"));
+//                orderStmt.setInt(7, (Integer) orderDetails.get("quantityDrink"));
+//                orderStmt.setBoolean(8, (Boolean) orderDetails.get("isDelivery"));
+//                orderStmt.setBoolean(9, (Boolean) orderDetails.get("isEarlyOrder"));
+//                orderStmt.setTimestamp(10, (Timestamp) orderDetails.get("requestedDateTime"));
+//                orderStmt.setTimestamp(11, (Timestamp) orderDetails.get("orderDateTime"));
+//
+//                
+//                if (conn == null || conn.isClosed()) {
+//                    throw new SQLException("Database connection is not valid.");
+//                }
+//                
+//                
+//                int affectedRows = orderStmt.executeUpdate();
+//                if (affectedRows == 0) {
+//                    throw new SQLException("Creating order failed, no rows affected.");
+//                }
+//
+//                int orderId;
+//                try (ResultSet generatedKeys = orderStmt.getGeneratedKeys()) {
+//                    if (generatedKeys.next()) {
+//                        orderId = generatedKeys.getInt(1);
+//                    } else {
+//                        throw new SQLException("Creating order failed, no ID obtained.");
+//                    }
+//                }
+//
+//                // Insert order items
+//                try (PreparedStatement itemStmt = conn.prepareStatement(insertOrderItemQuery)) {
+//                    for (Map<String, Object> item : orderItems) {
+//                        itemStmt.setInt(1, orderId);
+//                        itemStmt.setInt(2, (Integer) item.get("dishID"));
+//                        
+//                        String specification = (String) item.get("specification");
+//                        String size = "Regular";
+//                        if (specification.startsWith("Size:")) {
+//                            String[] parts = specification.split(":");
+//                            size = parts[1].trim();
+//                            specification = parts.length > 2 ? parts[2].trim() : "";
+//                        }
+//                        
+//                        itemStmt.setString(3, size);
+//                        itemStmt.setString(4, specification);
+//                        itemStmt.setInt(5, (Integer) item.get("quantity"));
+//                        itemStmt.addBatch();
+//                    }
+//                    itemStmt.executeBatch();
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+    
+    public void addCustomerOrder(Map<String, Object> orderDetails, List<Map<String, Object>> orderItems) {
+        System.out.println("DBController Order Information: " + orderDetails);
+        System.out.println("DBController Order Information: " + orderItems);
+        
+        String insertOrderQuery = "INSERT INTO orders (CustomerNumber, RestaurantNumber, TotalPrice, Salad, MainCourse, Dessert, Drink, IsDelivery, IsEarlyOrder, RequestedDateTime, OrderDateTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String insertOrderItemQuery = "INSERT INTO restaurants_orders (OrderID, DishID, Size, Specification, Quantity) VALUES (?, ?, ?, ?, ?)";
 
         try {
             conn.setAutoCommit(false);
+            System.out.println("Auto-commit set to false");
 
             // Insert order details
-            //Statement.RETURN_GENERATED_KEYS -> this grabs the last key generated by the table 
-            //Useful since Yosra made it so the keys in the tables are auto incremented.
             try (PreparedStatement orderStmt = conn.prepareStatement(insertOrderQuery, Statement.RETURN_GENERATED_KEYS)) {
                 orderStmt.setInt(1, (Integer) orderDetails.get("customerNumber"));
                 orderStmt.setInt(2, (Integer) orderDetails.get("restaurantNumber"));
                 orderStmt.setDouble(3, (Double) orderDetails.get("totalPrice"));
-                orderStmt.setBoolean(4, !"Pickup".equals(orderDetails.get("deliveryType")));
+                orderStmt.setInt(4, (Integer) orderDetails.get("quantitySalad"));
+                orderStmt.setInt(5, (Integer) orderDetails.get("quantityMain"));
+                orderStmt.setInt(6, (Integer) orderDetails.get("quantityDessert"));
+                orderStmt.setInt(7, (Integer) orderDetails.get("quantityDrink"));
+                orderStmt.setInt(8, (Integer) orderDetails.get("isDelivery"));
+                orderStmt.setInt(9, (Integer) orderDetails.get("isEarlyOrder"));
+                orderStmt.setTimestamp(10, (Timestamp) orderDetails.get("requestedDateTime"));
+                orderStmt.setTimestamp(11, (Timestamp) orderDetails.get("orderDateTime"));
 
-                String requestedDateTime = orderDetails.get("deliveryDate") + " " + orderDetails.get("deliveryTime");
-                orderStmt.setTimestamp(5, orderDetails.get("deliveryDate") != null ? 
-                                          Timestamp.valueOf(requestedDateTime) : 
-                                          null);
-                orderStmt.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
-
+                System.out.println("Executing order insert query: " + orderStmt);
                 int affectedRows = orderStmt.executeUpdate();
+                System.out.println("Affected rows after order insert: " + affectedRows);
+                
                 if (affectedRows == 0) {
                     throw new SQLException("Creating order failed, no rows affected.");
                 }
@@ -302,6 +378,7 @@ public class DbController {
                 try (ResultSet generatedKeys = orderStmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         orderId = generatedKeys.getInt(1);
+                        System.out.println("Generated Order ID: " + orderId);
                     } else {
                         throw new SQLException("Creating order failed, no ID obtained.");
                     }
@@ -311,44 +388,68 @@ public class DbController {
                 try (PreparedStatement itemStmt = conn.prepareStatement(insertOrderItemQuery)) {
                     for (Map<String, Object> item : orderItems) {
                         itemStmt.setInt(1, orderId);
-                        itemStmt.setInt(2, (Integer) item.get("dishID"));
+                        itemStmt.setInt(2, Integer.parseInt(String.valueOf(item.get("dishID"))));
                         
                         String specification = (String) item.get("specification");
-                        String size = "Regular";
+                        int size = 1; // Default size
                         if (specification.startsWith("Size:")) {
                             String[] parts = specification.split(":");
-                            size = parts[1].trim();
+                            size = getSizeAsInt(parts[1].trim());
                             specification = parts.length > 2 ? parts[2].trim() : "";
                         }
                         
-                        itemStmt.setString(3, size);
+                        itemStmt.setInt(3, size);
                         itemStmt.setString(4, specification);
-                        itemStmt.setInt(5, (Integer) item.get("quantity"));
+                        itemStmt.setInt(5, Integer.parseInt(String.valueOf(item.get("quantity"))));
                         itemStmt.addBatch();
                     }
-                    itemStmt.executeBatch();
+                    System.out.println("Executing order items batch insert");
+                    int[] itemAffectedRows = itemStmt.executeBatch();
+                    System.out.println("Affected rows after item inserts: " + Arrays.toString(itemAffectedRows));
                 }
             }
 
             conn.commit();
-            return true;
+            System.out.println("Transaction committed successfully");
         } catch (SQLException e) {
             try {
                 conn.rollback();
+                System.out.println("Transaction rolled back due to error");
             } catch (SQLException ex) {
-                ex.printStackTrace();
+                System.err.println("Error during rollback: " + ex.getMessage());
             }
+            System.err.println("SQL Exception occurred: " + e.getMessage());
+            System.err.println("SQL State: " + e.getSQLState());
+            System.err.println("Error Code: " + e.getErrorCode());
             e.printStackTrace();
-            return false;
         } finally {
             try {
                 conn.setAutoCommit(true);
+                System.out.println("Auto-commit reset to true");
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.err.println("Error resetting auto-commit: " + e.getMessage());
             }
         }
     }
 
+    // Helper method to convert size string to int
+    private int getSizeAsInt(String sizeStr) {
+        switch (sizeStr.toLowerCase()) {
+            case "small":
+                return 1;
+            case "medium":
+                return 2;
+            case "large":
+                return 3;
+            case "regular":
+            default:
+                return 0;
+        }
+    }
+    
+    
+    
+    
     /**
      * Retrieves the ID of the last inserted order.
      * 
@@ -436,9 +537,9 @@ public class DbController {
                     restaurantInfo.put("BeginUpdate", beginUpdate);
                     restaurantInfo.put("EndUpdate", endUpdate);
                     
-                    System.out.println("DbController: Retrieved RestaurantNumber: " + restaurantNumber);
-                    System.out.println("DbController: Retrieved BeginUpdate: " + beginUpdate);
-                    System.out.println("DbController: Retrieved EndUpdate: " + endUpdate);
+//                    System.out.println("DbController: Retrieved RestaurantNumber: " + restaurantNumber);
+//                    System.out.println("DbController: Retrieved BeginUpdate: " + beginUpdate);
+//                    System.out.println("DbController: Retrieved EndUpdate: " + endUpdate);
                 }
 
                 Map<String, Object> dish = dishMap.computeIfAbsent(dishID, k -> {

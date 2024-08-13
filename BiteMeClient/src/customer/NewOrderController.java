@@ -12,6 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -26,9 +27,11 @@ import enums.Commands;
 
 import entites.OrderItem;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -278,14 +281,13 @@ public class NewOrderController {
         dishes4.clear();
         orderQuantitiesDrink.clear();
         
-        System.out.println("NewOrderController: Received menu size: " + menu.size());
         Map<String, Dish> dishMap = new HashMap<>();
         
         // The last item in the menu list contains the restaurant info
         Map<String, Object> restaurantInfo = menu.remove(menu.size() - 1);
         
         // Debug log
-        System.out.println("NewOrderController: Restaurant Info map: " + restaurantInfo);
+//        System.out.println("NewOrderController: Restaurant Info map: " + restaurantInfo);
         
         // Handle potential null values for BeginUpdate and EndUpdate
         Object beginUpdateObj = restaurantInfo.get("BeginUpdate");
@@ -306,15 +308,15 @@ public class NewOrderController {
         Object restaurantNumberObj = restaurantInfo.get("RestaurantNumber");
         if (restaurantNumberObj != null) {
             this.restaurantNumber = (Integer) restaurantNumberObj;
-            System.out.println("NewOrderController: RestaurantNumber set to: " + this.restaurantNumber);
+//            System.out.println("NewOrderController: RestaurantNumber set to: " + this.restaurantNumber);
         } else {
             this.restaurantNumber = -1;
-            System.out.println("NewOrderController: RestaurantNumber is null, set to -1");
+//            System.out.println("NewOrderController: RestaurantNumber is null, set to -1");
         }
         
         // Print statements to verify the data
-        System.out.println("Restaurant Information:");
-        System.out.println("Restaurant Number: " + this.restaurantNumber);
+//        System.out.println("Restaurant Information:");
+//        System.out.println("Restaurant Number: " + this.restaurantNumber);
         if (this.timeIsNull) {
             System.out.println("Update times are NULL");
         } else {
@@ -828,31 +830,31 @@ public class NewOrderController {
     
     private void handleSpecificationChange(Dish dish, String newValue) {
         if (dish == null || newValue == null) {
-            System.out.println("Dish or newValue is null in handleSpecificationChange");
+//            System.out.println("Dish or newValue is null in handleSpecificationChange");
             if (dish == null) {
-                System.out.println("Dish is null");
+//                System.out.println("Dish is null");
             } else {
-                System.out.println("Dish: " + dish.getDishName() + ", but newValue is null");
+//                System.out.println("Dish: " + dish.getDishName() + ", but newValue is null");
             }
             return;
         }
 
-        System.out.println("Handling specification change for dish: " + dish.getDishName() + ", new value: " + newValue);
+//        System.out.println("Handling specification change for dish: " + dish.getDishName() + ", new value: " + newValue);
 
         if (newValue.startsWith("Size: ")) {
             String selectedSize = newValue.substring(6).toLowerCase();
             Map<String, Integer> sizePrices = dish.getSizePrices();
             if (sizePrices == null) {
-                System.out.println("SizePrices is null for dish: " + dish.getDishName());
+//                System.out.println("SizePrices is null for dish: " + dish.getDishName());
                 return;
             }
             Integer newPrice = sizePrices.get(selectedSize);
             if (newPrice != null) {
                 dish.setDishPrice(newPrice);
                 updateDishPrice(dish);
-                System.out.println("Updated price for " + dish.getDishName() + " to " + newPrice + " for size " + selectedSize);
+//                System.out.println("Updated price for " + dish.getDishName() + " to " + newPrice + " for size " + selectedSize);
             } else {
-                System.out.println("No price found for size: " + selectedSize + " in dish: " + dish.getDishName());
+//                System.out.println("No price found for size: " + selectedSize + " in dish: " + dish.getDishName());
             }
         }
     }
@@ -1268,12 +1270,19 @@ public class NewOrderController {
         // Set flag to true before calling requestRestaurantMenu
         this.checkTimeBeforeConfirm = true;
         requestRestaurantMenu(currentRestaurant);
+        
+        
+        double totalPrice = Double.parseDouble(totalPriceText.getText().split(":")[1].trim().substring(1));
 
         // Compare timestamps, handling null values
-        //Compare as objects instead of TimeStamp because beginUpdate & endUpdate might be null
         if (Objects.equals(tempBeginUpdate, this.beginUpdate) && Objects.equals(tempEndUpdate, this.endUpdate)) {
             // Prepare order data
             List<Map<String, Object>> orderData = new ArrayList<>();
+            int quantitySalad = 0;
+            int quantityMain = 0;
+            int quantityDessert = 0;
+            int quantityDrink = 0;
+
             for (OrderItem item : orderItems) {
                 Map<String, Object> itemData = new HashMap<>();
                 itemData.put("dishID", item.getDishID());
@@ -1282,34 +1291,88 @@ public class NewOrderController {
                 itemData.put("price", item.getDishPrice());
                 itemData.put("specification", item.getSelectedSpecification());
                 orderData.add(itemData);
+
+                // Increment the appropriate counter based on dish type
+                switch (item.getCategoryName()) {
+                    case "salad":
+                        quantitySalad += item.getQuantity();
+                        break;
+                    case "main course":
+                        quantityMain += item.getQuantity();
+                        break;
+                    case "dessert":
+                        quantityDessert += item.getQuantity();
+                        break;
+                    case "drink":
+                        quantityDrink += item.getQuantity();
+                        break;
+                }
             }
+            
+            
+            System.out.println("BEFORE Total price is:" + totalPrice + "\n");
+            if (currentCustomer.getCredit()!=0) {
+            	boolean feeResponse = feeAlert();
+            	if (feeResponse == true) {
+            		if (totalPrice > currentCustomer.getCredit()) {
+            			totalPrice = totalPrice - currentCustomer.getCredit();
+            			currentCustomer.setCredit(0);
+            			//TODO: update customer credit in db
+            		}
+            		else {
+            			totalPrice = 0;
+            			currentCustomer.setCredit(currentCustomer.getCredit()-(int)totalPrice);
+            			//TODO: update customer credit in db
+            		}
+            	}
+            }
+            System.out.println("AFTER Total price is:" + totalPrice + "\n");
 
             // Add customer and order details
             Map<String, Object> orderDetails = new HashMap<>();
             orderDetails.put("customerNumber", currentCustomer.getCustomerNumber());
             orderDetails.put("restaurantNumber", this.restaurantNumber);
-            orderDetails.put("deliveryType", deliveryTypeComboBox.getValue());
             orderDetails.put("totalPrice", Double.parseDouble(totalPriceText.getText().split(":")[1].trim().substring(1)));
 
-            // Add delivery-specific details only if it's not a pickup order
+            // Add IsDelivery
             String deliveryType = deliveryTypeComboBox.getValue();
-            if (!"Pickup".equals(deliveryType)) {
+            int isDelivery = deliveryType.equals("Pickup") ? 0 : 1;
+            orderDetails.put("isDelivery", isDelivery);
+
+            // Add IsEarlyOrder
+            LocalDateTime now = LocalDateTime.now();
+            LocalDate deliveryDate = deliveryDatePicker.getValue();
+            LocalTime deliveryTime = LocalTime.of(
+                Integer.parseInt(deliveryHourPicker.getValue()),
+                Integer.parseInt(deliveryMinutePicker.getValue())
+            );
+            LocalDateTime requestedDateTime = LocalDateTime.of(deliveryDate, deliveryTime);
+            long hoursDifference = ChronoUnit.HOURS.between(now, requestedDateTime);
+            int isEarlyOrder = (deliveryDate.equals(now.toLocalDate()) && hoursDifference <= 2) ? 1 : 0;
+            orderDetails.put("isEarlyOrder", isEarlyOrder);
+
+            // Add dish type quantities
+            orderDetails.put("quantitySalad", quantitySalad);
+            orderDetails.put("quantityMain", quantityMain);
+            orderDetails.put("quantityDessert", quantityDessert);
+            orderDetails.put("quantityDrink", quantityDrink);
+
+            // Add timestamps
+            orderDetails.put("orderDateTime", Timestamp.valueOf(now));
+            orderDetails.put("requestedDateTime", Timestamp.valueOf(requestedDateTime));
+
+            // Add delivery-specific details only if it's not a pickup order
+            if (isDelivery == 1) {
+                orderDetails.put("deliveryType", deliveryType);
                 orderDetails.put("address", addressField.getText());
                 orderDetails.put("phoneNumber", phoneNumberField.getText());
-                
-                if (deliveryDatePicker.getValue() != null) {
-                    orderDetails.put("deliveryDate", deliveryDatePicker.getValue().toString());
-                }
-                
-                if (deliveryHourPicker.getValue() != null && deliveryMinutePicker.getValue() != null) {
-                    orderDetails.put("deliveryTime", deliveryHourPicker.getValue() + ":" + deliveryMinutePicker.getValue());
-                }
             }
 
             // Combine order items and details
             List<Object> completeOrderData = new ArrayList<>();
             completeOrderData.add(orderDetails);
             completeOrderData.add(orderData);
+            System.out.println("Order Information: " + completeOrderData);
 
             // Send order to server
             Message msg = new Message(completeOrderData, Commands.sendCustomerOrder);
@@ -1323,6 +1386,9 @@ public class NewOrderController {
 
         // Reset the flag
         this.checkTimeBeforeConfirm = false;
+        
+        
+        orderSummaryAlert(deliveryTypeComboBox.getValue(),totalPrice,isItEarlyOrder);
     }
     
     public void start(Stage primaryStage) throws Exception {
@@ -1335,32 +1401,70 @@ public class NewOrderController {
     }
     
     private void updateDeliveryFields(String deliveryType) {
-    	boolean fieldsEnabled = !deliveryType.equals("Pickup") && deliveryType != null;
-        addressField.setDisable(!fieldsEnabled);
-        companyNameField.setDisable(!fieldsEnabled);
-        userNameField.setDisable(!fieldsEnabled);
-        phoneNumberField.setDisable(!fieldsEnabled);
-        deliveryDatePicker.setDisable(!fieldsEnabled);
-        deliveryHourPicker.setDisable(!fieldsEnabled);
-        deliveryMinutePicker.setDisable(!fieldsEnabled);
-        
-        // Show/hide shared delivery based on User type 
-        deliveryParticipantsField.setVisible(deliveryType.equals("Shared Delivery"));
-        deliveryParticipantsField.setManaged(deliveryType.equals("Shared Delivery"));
+    	boolean isRobotDelivery = "Robot Delivery".equals(deliveryType);
+        boolean isPickup = "Pickup".equals(deliveryType);
+        boolean isOtherDelivery = !isRobotDelivery && !isPickup && deliveryType != null;
+
+        // Disable everything for Robot Delivery
+        if (isRobotDelivery) {
+            setAllFieldsDisabled(true);
+            confirmDeliveryButton.setDisable(true);
+            confirmDeliveryText.setText("Feature not yet available");
+            confirmDeliveryText.setFill(Color.RED);
+        } 
+        // For Pickup, disable everything except pickers
+        else if (isPickup) {
+            setAllFieldsDisabled(true);
+            enablePickers();
+            confirmDeliveryButton.setDisable(false);
+            confirmDeliveryText.setText(null);
+        } 
+        // For other delivery types, enable everything
+        else if (isOtherDelivery) {
+            setAllFieldsDisabled(false);
+            confirmDeliveryButton.setDisable(false);
+            confirmDeliveryText.setText(null);
+        }
+   
+        // Show/hide shared delivery based on User type
+        boolean isSharedDelivery = "Shared Delivery".equals(deliveryType);
+        deliveryParticipantsField.setVisible(isSharedDelivery);
+        deliveryParticipantsField.setManaged(isSharedDelivery);
         
         // Reset fields when choosing new delivery option
-        if (fieldsEnabled || deliveryType.equals("Pickup")) {
-            addressField.clear();
-            companyNameField.clear();
-            userNameField.clear();
-            phoneNumberField.clear();
-            deliveryDatePicker.setValue(null);
-            deliveryHourPicker.setValue(null);
-            deliveryMinutePicker.setValue(null);
-            deliveryParticipantsField.clear();
-            showErrorMessages = false;
-            updateErrorMessages();
+        if (isOtherDelivery || isPickup) {
+            resetFields();
         }
+    }
+    
+    private void setAllFieldsDisabled(boolean disabled) {
+        addressField.setDisable(disabled);
+        companyNameField.setDisable(disabled);
+        userNameField.setDisable(disabled);
+        phoneNumberField.setDisable(disabled);
+        deliveryDatePicker.setDisable(disabled);
+        deliveryHourPicker.setDisable(disabled);
+        deliveryMinutePicker.setDisable(disabled);
+        deliveryParticipantsField.setDisable(disabled);
+    }
+    
+    private void enablePickers() {
+        deliveryDatePicker.setDisable(false);
+        deliveryHourPicker.setDisable(false);
+        deliveryMinutePicker.setDisable(false);
+    }
+    
+    private void resetFields() {
+        addressField.clear();
+        companyNameField.clear();
+        userNameField.clear();
+        phoneNumberField.clear();
+        deliveryDatePicker.setValue(null);
+        deliveryHourPicker.setValue(null);
+        deliveryMinutePicker.setValue(null);
+        deliveryParticipantsField.clear();
+        showErrorMessages = false;
+        updateErrorMessages();
     }
     
     private void validateAddress() {
@@ -1433,4 +1537,88 @@ public class NewOrderController {
     	 		return deliveryCharge;
     	 	}
     }
+    
+  //alert of credit 
+    private boolean feeAlert() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Before you continue");
+        alert.setHeaderText("You have: " + currentCustomer.getCredit());
+        alert.setContentText("Do you want to pay with credit?");
+
+        ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(yesButton, noButton);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == yesButton) {
+            return true;
+        } else if (result.isPresent() && result.get() == noButton) {
+            return false;
+        }
+        
+        return false;  // Default return in case the alert is closed in another way
+    }
+    
+    	private void orderSummaryAlert(String deliveryChoice, double totalPrice, boolean isItEarlyOrder) {
+    	    // Create a StringBuilder to construct the order summary
+    		
+    	    StringBuilder orderSummary = new StringBuilder();
+    	    
+    	    // Append each item in the ObservableList to the order summary
+    	    for (OrderItem item : orderItems) {
+    	        orderSummary.append(" - Dish Type: ")
+    	        			.append(item.getCategoryName())
+    	        			.append(" - Dish Name: ")
+    	                    .append(item.getDishName())
+    	                    .append(", Price: $")
+    	                    .append(item.getDishPrice())
+    	                    .append(", specifications: ")
+    	                    .append(item.getSelectedSpecification())
+    	         	        .append(" - Quantity: ")
+    	                    .append(item.getQuantity())    
+    	                    .append("\n");
+    	    }
+    	    
+    	    // Construct the full message
+    	    String message;
+    	    if (isItEarlyOrder) {
+    	        message = "Your Order:\n" + orderSummary.toString() +
+    	            "\nDelivery Choice: " + deliveryChoice + " with early order" +
+    	            "\nTotal Price: $" + String.format("%.2f", totalPrice);
+    	    } else {
+    	        message = "Your Order:\n" + orderSummary.toString() +
+    	            "\nDelivery Choice: " + deliveryChoice +
+    	            "\nTotal Price: $" + String.format("%.2f", totalPrice);
+    	    }
+
+    	    // Create the alert
+    	    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+    	    alert.setTitle("Order Confirmation");
+    	    alert.setHeaderText("Please review your order");
+    	    alert.setContentText(message);
+    	    
+    	    alert.getDialogPane().setPrefSize(800, 600); // Set width to 600 and height to 400
+
+    	    // You can also set a minimum size if needed
+    	    alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+    	    alert.getDialogPane().setMinWidth(Region.USE_PREF_SIZE);
+
+    	    // Create the Yes and No buttons
+    	    ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+    	    
+
+    	    // Set the buttons in the alert
+    	    alert.getButtonTypes().setAll(yesButton);
+
+    	    // Show the alert and wait for a response
+    	    Optional<ButtonType> result = alert.showAndWait();
+    	    if (result.isPresent() && result.get() == yesButton) {
+    	    	System.out.println("okay");
+    	    }
+    	    
+    	    //TODO: SEND ORDER INFO , ORDERITEMS TO DB AND SEND CUSTOMER TO CUSTOMER WINDOW
+    	    // table of "customer order" = orders that have IsDelivery = 1 
+    	}
+
 }

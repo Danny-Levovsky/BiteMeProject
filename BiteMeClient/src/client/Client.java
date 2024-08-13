@@ -11,6 +11,7 @@ import customer.ViewOrderController;
 import entites.Customer;
 import entites.Message;
 import entites.Order;
+import entites.User;
 import enums.Commands;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -134,7 +135,6 @@ public class Client extends AbstractClient {
 		        ArrayList<String> restaurantNames = (ArrayList<String>) m.getObj();
 		        if (newOrderController != null) {
 		            newOrderController.setRestaurantNames(restaurantNames);
-		            System.out.println(restaurantNames); //checking debugging
 		        }
 		    });
 		    break;
@@ -144,7 +144,6 @@ public class Client extends AbstractClient {
 		        ArrayList<Map<String, Object>> menu = (ArrayList<Map<String, Object>>) m.getObj();
 		        if (newOrderController != null) {
 		            newOrderController.setRestaurantMenu(menu);
-		            System.out.println(menu); //checking debugging
 		        }
 		    });
 		    break;
@@ -154,7 +153,6 @@ public class Client extends AbstractClient {
 			Customer customerDetails = (Customer) m.getObj();
 			if (newOrderController != null) {
 	            newOrderController.setCustomerDetails(customerDetails);
-	            System.out.println(customerDetails); //checking debugging
 	        }
 	    });
 			
@@ -221,7 +219,9 @@ public class Client extends AbstractClient {
 
 	public void handleMessageFromClientControllers(Object message) {
 		try {
+			Message m = (Message)message;
 			System.out.println("sendtoserver");
+
 			sendToServer(message);
 
 		} catch (IOException e) {

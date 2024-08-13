@@ -1,5 +1,6 @@
 package entites;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import javafx.beans.property.*;
