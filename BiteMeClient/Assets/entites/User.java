@@ -13,22 +13,66 @@ import java.io.Serializable;
  */
 public class User implements Serializable {
 	
-	//private static final long serialVersionUID = 1L;
+	/**
+     * A unique identifier for the serialization runtime to associate with the User class.
+     * This value ensures that a deserialized object is compatible with the current class definition.
+     */
+	private static final long serialVersionUID = 1L;
 	
+	/**
+     * The user ID.
+     */
     private int id;
+    
+    /**
+     * The username of the user.
+     */
     private String username;
+    
+    /**
+     * The password of the user.
+     */
     private String password;
+    
+    /**
+     * The first name of the user.
+     */
     private String firstName;
+    
+    /**
+     * The last name of the user.
+     */
     private String lastName;
+    
+    /**
+     * The email address of the user.
+     */
     private String email;
+    
+    /**
+     * The phone number of the user.
+     */
     private String phone;
+    
+    /**
+     * The type of the user (e.g., customer, employee).
+     */
     private String type;
+    
+    /**
+     * The district associated with the user.
+     */
     private String district;
+    
+    /**
+     * The login status of the user (1 if logged in, 0 otherwise).
+     */
     private int isLoggedIn;
     
     
     /**
      * Constructor to initialize a User object with all attributes.
+     * 
      * @param id the user ID
      * @param username the username
      * @param password the password
@@ -56,6 +100,7 @@ public class User implements Serializable {
     
     /**
      * Constructor to initialize a User object with username and password.
+     * 
      * @param username the username
      * @param password the password
      */
@@ -66,6 +111,7 @@ public class User implements Serializable {
     
     /**
      * Constructor to initialize a User object with only the user ID.
+     * 
      * @param id the user ID
      */
     public User(int id) {
@@ -74,6 +120,7 @@ public class User implements Serializable {
 
     /**
      * Gets the user ID.
+     * 
      * @return the user ID
      */
     public int getId() {
@@ -82,6 +129,7 @@ public class User implements Serializable {
 
     /**
      * Gets the username.
+     * 
      * @return the username
      */
     public String getUsername() {
@@ -90,6 +138,7 @@ public class User implements Serializable {
 
     /**
      * Gets the password.
+     * 
      * @return the password
      */
     public String getPassword() {
@@ -98,6 +147,7 @@ public class User implements Serializable {
 
     /**
      * Gets the first name.
+     * 
      * @return the first name
      */
     public String getFirstName() {
@@ -106,6 +156,7 @@ public class User implements Serializable {
 
     /**
      * Gets the last name.
+     * 
      * @return the last name
      */
     public String getLastName() {
@@ -114,6 +165,7 @@ public class User implements Serializable {
 
     /**
      * Gets the email address.
+     * 
      * @return the email address
      */
     public String getEmail() {
@@ -122,6 +174,7 @@ public class User implements Serializable {
 
     /**
      * Gets the phone number.
+     * 
      * @return the phone number
      */
     public String getPhone() {
@@ -130,6 +183,7 @@ public class User implements Serializable {
 
     /**
      * Gets the user type.
+     * 
      * @return the user type
      */
     public String getType() {
@@ -138,6 +192,7 @@ public class User implements Serializable {
 
     /**
      * Gets the login status.
+     * 
      * @return the login status (1 if logged in, 0 otherwise)
      */
     public int getIsLoggedIn() {
@@ -146,6 +201,7 @@ public class User implements Serializable {
     
     /**
      * Gets the district.
+     * 
      * @return the district
      */
     public String getDistrict() {
