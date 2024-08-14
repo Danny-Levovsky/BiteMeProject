@@ -78,7 +78,7 @@ public class RestaurantOrder implements Serializable {
 	 * @param orderDateTime  the order date and time
 	 * @param dishName       the name of the dish
 	 * @param quantity       the quantity of the dish
-	 * @param isDelivery     the delivery status (1 if delivery, 0 otherwise)
+	 * @param IsDelivery     the delivery status (1 if delivery, 0 otherwise)
 	 * @param orderStatus    the status of the order
 	 */
 	public RestaurantOrder(int orderID, int customerNumber, String orderDateTime, String dishName, int quantity,

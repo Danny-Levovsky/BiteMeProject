@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -365,6 +366,13 @@ public class NewOrderController {
 	 * Flag indicating whether the current order qualifies as an early order.
 	 */
 	private int isItEarlyOrder;
+
+	/**
+	 * Stores the date and time when the order summary was generated or finalized.
+	 * This field is used to track and reference the specific time associated with
+	 * the summary details of an order.
+	 */
+	private LocalDateTime summaryDateTime;
 
 	/**
 	 * Initializes the `NewOrderController` class. This method is automatically
@@ -1050,7 +1058,15 @@ public class NewOrderController {
 		dishTableViewDrink.setItems(dishes4);
 	}
 
-	/// Might need to delete if this da
+	/**
+	 * Sets up the specifications column in the TableView to display a ComboBox for
+	 * selecting dish options. Each ComboBox is populated with the available
+	 * specifications (e.g., size, customization) for a dish, and the selected
+	 * specification is updated when the user selects an option.
+	 *
+	 * @param column The TableColumn in which the ComboBox for specifications will
+	 *               be displayed.
+	 */
 	private void setupSpecificationColumn(TableColumn<Dish, String> column) {
 		column.setCellFactory(col -> new TableCell<Dish, String>() {
 			private final ComboBox<String> comboBox = new ComboBox<>();
@@ -1080,6 +1096,15 @@ public class NewOrderController {
 		});
 	}
 
+	/**
+	 * Handles changes in the selected specification for a dish. If the selected
+	 * specification is a size (e.g., "Size: Small"), the dish's price is updated
+	 * accordingly. This method checks for null values and ensures the price is only
+	 * updated if the new specification is valid.
+	 *
+	 * @param dish     The dish whose specification has changed.
+	 * @param newValue The new specification value selected by the user.
+	 */
 	private void handleSpecificationChange(Dish dish, String newValue) {
 		if (dish == null || newValue == null) {
 
@@ -1109,6 +1134,14 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Updates the displayed price of a dish and refreshes the corresponding
+	 * TableView. This method identifies which TableView contains the specified dish
+	 * and refreshes it to reflect the updated price. It also updates the total
+	 * order price if necessary.
+	 *
+	 * @param dish The dish whose price has been updated.
+	 */
 	private void updateDishPrice(Dish dish) {
 		// Refresh the TableView that contains this dish
 		if (dishes1.contains(dish)) {
@@ -1124,6 +1157,13 @@ public class NewOrderController {
 		updateOrderTotal();
 	}
 
+	/**
+	 * Configures the TableView for displaying order items in the user's current
+	 * order. This method sets up the columns in the TableView to display the
+	 * relevant properties of each order item, such as the dish type, dish name,
+	 * price, selected specifications, and quantity. It also binds the observable
+	 * list of order items to the TableView.
+	 */
 	private void setupOrderTableView() {
 		orderDishTypeColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
 		orderDishNameColumn.setCellValueFactory(new PropertyValueFactory<>("dishName"));
@@ -1134,6 +1174,13 @@ public class NewOrderController {
 		orderTableView.setItems(orderItems);
 	}
 
+	/**
+	 * Adds listeners to various UI components to handle user interactions and
+	 * updates in real-time. This method attaches listeners to the order items, dish
+	 * tables, form fields, and other controls to monitor changes and trigger
+	 * appropriate actions such as enabling/disabling buttons, validating input, and
+	 * updating the state of the order.
+	 */
 	private void addListeners() {
 
 		orderItems.addListener((ListChangeListener<OrderItem>) c -> updateButtonStates()); // Listener to update
@@ -1241,6 +1288,12 @@ public class NewOrderController {
 
 	}
 
+	/**
+	 * Invalidates the current delivery confirmation if any delivery-related details
+	 * change. This method sets the delivery confirmation flag to false and updates
+	 * the confirmation text to inform the user that they need to re-confirm the
+	 * delivery details due to changes.
+	 */
 	private void invalidateDeliveryConfirmation() {
 		if (isDeliveryConfirmed) {
 			isDeliveryConfirmed = false;
@@ -1249,6 +1302,13 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Updates the state of buttons based on the current state of the order and
+	 * restaurant selection. This method enables or disables the "Add Order,"
+	 * "Finish," and "Remove Item" buttons based on whether a restaurant is
+	 * selected, if there are items in the order, and if the order has been changed.
+	 * It also resets any error messages related to the finish action.
+	 */
 	private void updateButtonStates() {
 		boolean restaurantSelected = currentRestaurant != null;
 		boolean hasOrderItems = !orderItems.isEmpty();
@@ -1260,6 +1320,15 @@ public class NewOrderController {
 
 	}
 
+	/**
+	 * Validates the delivery fields based on the selected delivery type and ensures
+	 * that all necessary information is provided and correctly formatted. The
+	 * validation checks differ depending on whether the delivery type is "Pickup,"
+	 * "Shared Delivery," or other delivery methods.
+	 * 
+	 * @return {@code true} if all required fields are valid according to the
+	 *         selected delivery type; {@code false} otherwise.
+	 */
 	private boolean validateDeliveryFields() {
 		if (deliveryTypeComboBox.getValue() == null) {
 			return false;
@@ -1283,51 +1352,17 @@ public class NewOrderController {
 		return isValid;
 	}
 
+	/**
+	 * Updates the error messages for the delivery form based on the current state
+	 * of the input fields and the selected delivery type. If any fields are invalid
+	 * or missing, appropriate error messages are displayed. The method handles
+	 * different validation rules for "Pickup," "Shared Delivery," and other
+	 * delivery types.
+	 */
 	private void updateErrorMessages() {
 
 		String deliveryType;
 		deliveryType = deliveryTypeComboBox.getValue();
-//    	if (deliveryType == "Pickup") {
-//    		if (showErrorMessages) {
-//                if (deliveryDatePicker.getValue() == null) {
-//                    dateErrorText.setText("Please select a date");
-//                } else if (deliveryDatePicker.getValue().isBefore(LocalDate.now())) {
-//                    dateErrorText.setText("Selected date is in the past");
-//                } else {
-//                    dateErrorText.setText("");
-//                }
-//                
-//                if (deliveryHourPicker.getValue() == null || deliveryMinutePicker.getValue() == null) {
-//                    timeErrorText.setText("Please select a time");
-//                } else if (!isDeliveryDateTimeValid()) {
-//                    timeErrorText.setText("Selected time is in the past");
-//                } else {
-//                    timeErrorText.setText("");
-//                }
-//                if (deliveryDatePicker.getValue() == null) {
-//                    dateErrorText.setText("Please select a date");
-//                } else if (deliveryDatePicker.getValue().isBefore(LocalDate.now())) {
-//                    dateErrorText.setText("Selected date is in the past");
-//                } else {
-//                    dateErrorText.setText("");
-//                }
-//                
-//                if (deliveryHourPicker.getValue() == null || deliveryMinutePicker.getValue() == null) {
-//                    timeErrorText.setText("Please select a time");
-//                } else if (!isDeliveryDateTimeValid()) {
-//                    timeErrorText.setText("Selected time is in the past");
-//                } else {
-//                    timeErrorText.setText("");
-//                }
-//                
-//               
-//            } else {
-//                dateErrorText.setText("");
-//                timeErrorText.setText("");
-//            }
-//    		return;
-//    	}
-
 		if (deliveryType != "Pickup") {
 			addressErrorText.setText(
 					showErrorMessages && !isAddressValid ? "Please use 'City, Street Name (optional number)'" : "");
@@ -1368,6 +1403,15 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Validates the selected delivery date and time to ensure it is in the future.
+	 * The method checks if the selected date is today or later and if the selected
+	 * time (if provided) is later than the current time. If no time is selected, it
+	 * validates based on the date alone.
+	 *
+	 * @return {@code true} if the selected delivery date and time are valid (i.e.,
+	 *         in the future); {@code false} otherwise.
+	 */
 	private boolean isDeliveryDateTimeValid() {
 		if (deliveryDatePicker.getValue() == null) {
 			return false;
@@ -1390,6 +1434,14 @@ public class NewOrderController {
 		return selectedDateTime.isAfter(now);
 	}
 
+	/**
+	 * Displays a confirmation dialog when the user attempts to change the selected
+	 * restaurant. If the user confirms the change, the current order is reset, and
+	 * the new restaurant's menu is requested. If the user cancels the action, the
+	 * restaurant selection remains unchanged.
+	 *
+	 * @param newRestaurant The name of the newly selected restaurant.
+	 */
 	private void showRestaurantChangeConfirmation(String newRestaurant) {
 		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 		alert.setTitle("Change Restaurant");
@@ -1407,6 +1459,11 @@ public class NewOrderController {
 		updateButtonStates();
 	}
 
+	/**
+	 * Validates the company name entered by the user. The company name is
+	 * considered valid if it is not empty. If error messages are enabled, this
+	 * method will trigger an update of the error messages displayed in the UI.
+	 */
 	private void validateCompanyName() {
 		String companyName = companyNameField.getText().trim();
 		isCompanyNameValid = !companyName.isEmpty();
@@ -1415,6 +1472,11 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Validates the user name entered by the user. The user name is considered
+	 * valid if it is not empty. If error messages are enabled, this method will
+	 * trigger an update of the error messages displayed in the UI.
+	 */
 	private void validateUserName() {
 		String userName = userNameField.getText().trim();
 		isUserNameValid = !userName.isEmpty();
@@ -1423,6 +1485,12 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Validates the number of delivery participants entered by the user. The number
+	 * is considered valid if it is a numeric value between 2 and 4 inclusive. If
+	 * error messages are enabled, this method will trigger an update of the error
+	 * messages displayed in the UI.
+	 */
 	private void validateDeliveryParticipants() {
 		String participants = deliveryParticipantsField.getText().trim();
 		isDeliveryParticipantsValid = participants.matches("\\d+") && Integer.parseInt(participants) > 1
@@ -1432,6 +1500,21 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Handles the confirmation of delivery details when the user clicks the confirm
+	 * delivery button. This method validates the delivery fields, sets delivery
+	 * charges and discounts based on the selected delivery type, and updates the
+	 * order total. If the delivery details are confirmed successfully, the method
+	 * displays a confirmation message. Otherwise, it displays error messages for
+	 * any invalid fields. The method also updates the button states and error
+	 * messages in the UI.
+	 * 
+	 * If the delivery type is "Pickup," no delivery charge is applied. If the
+	 * delivery type is "Regular Delivery," a fixed delivery charge is applied. If
+	 * the delivery type is "Shared Delivery," the delivery charge is calculated
+	 * based on the number of participants. If the delivery type is "Robot
+	 * Delivery," no delivery charge or discount is applied.
+	 */
 	@FXML
 	private void handleConfirmDelivery() {
 		if (validateDeliveryFields()) {
@@ -1471,6 +1554,24 @@ public class NewOrderController {
 		updateErrorMessages();
 	}
 
+	/**
+	 * Updates the total price of the order by calculating the sum of the prices of
+	 * all items in the order, adding any applicable delivery fee, and applying any
+	 * discounts. The method updates the text displayed in the UI for the order
+	 * price, delivery fee, and total price. Additionally, it updates the states of
+	 * relevant buttons based on the current state of the order.
+	 * 
+	 * The method considers the following: - The total order price is the sum of the
+	 * price of each dish multiplied by its quantity. - The delivery fee is added
+	 * unless a discount is applied. - If a discount percentage is applied, the
+	 * delivery fee may be reduced or even become negative.
+	 * 
+	 * The UI elements updated by this method include: - The order price text, which
+	 * shows the sum of the prices of all ordered items. - The delivery fee text,
+	 * which shows the delivery charge along with the selected delivery type. - The
+	 * total price text, which shows the final amount including both the order price
+	 * and delivery fee.
+	 */
 	private void updateOrderTotal() {
 		double orderPrice = orderItems.stream().mapToDouble(item -> item.getDishPrice() * item.getQuantity()).sum();
 
@@ -1490,6 +1591,24 @@ public class NewOrderController {
 		updateButtonStates();
 	}
 
+	/**
+	 * Handles the event triggered by clicking the "Add Order" button. This method
+	 * processes the selected dishes and their quantities, creates order items, and
+	 * adds them to the order. It also updates the total price and relevant UI
+	 * elements accordingly.
+	 * 
+	 * The method performs the following steps: 1. Clears any existing dishes in the
+	 * order list. 2. Iterates over the available dishes (salad, main course,
+	 * dessert, and drink) and checks if the quantity for each dish is greater than
+	 * 0. If so, an order item is created and added to the list of new items. 3.
+	 * Calculates the total price based on the selected quantities and prices of the
+	 * dishes. 4. Displays an error message if no items were added to the order;
+	 * otherwise, adds the new items to the order. 5. Resets the order fields and
+	 * updates the total price display. 6. Updates the states of relevant buttons
+	 * and the overall order total.
+	 * 
+	 * @param event The event triggered by the "Add Order" button.
+	 */
 	@FXML
 	void getBtnAddOrder(ActionEvent event) {
 		List<OrderItem> newItems = new ArrayList<>();
@@ -1545,6 +1664,19 @@ public class NewOrderController {
 		updateOrderTotal();
 	}
 
+	/**
+	 * Handles the event triggered by clicking the "Back" button. This method hides
+	 * the current window and navigates the user back to the previous screen,
+	 * specifically to the CustomerController view.
+	 * 
+	 * The method performs the following steps: 1. Hides the current window
+	 * associated with the "Back" button. 2. Initializes and displays the
+	 * CustomerController screen as a new stage.
+	 * 
+	 * @param event The event triggered by the "Back" button.
+	 * @throws Exception If an error occurs during the loading of the
+	 *                   CustomerController view.
+	 */
 	@FXML
 	void getBtnBack(ActionEvent event) throws Exception {
 		((Node) event.getSource()).getScene().getWindow().hide();
@@ -1552,6 +1684,22 @@ public class NewOrderController {
 		newScreen.start(new Stage());
 	}
 
+	/**
+	 * Handles the event triggered by clicking the "Finish" button. This method
+	 * performs the following tasks: 1. Validates if there are items in the order
+	 * and checks if the delivery fields are correctly filled. If validation fails,
+	 * an appropriate error message is displayed. 2. Saves the current timestamps
+	 * for validation and tracking purposes. 3. Sets flags to prepare for checking
+	 * the restaurant's menu and any potential updates before finalizing the order.
+	 * 4. Calls `requestRestaurantMenu` to ensure the latest menu information is
+	 * retrieved and to handle any updates. 5. Sets a flag (`callBetween`) to true,
+	 * indicating that the next step in processing should continue in the
+	 * `inBetween` method.
+	 *
+	 * @param event The event triggered by the "Finish" button.
+	 * @throws Exception If an error occurs during the processing of the order or
+	 *                   while interacting with the restaurant menu.
+	 */
 	@FXML
 	void getBtnFinish(ActionEvent event) throws Exception {
 		if (orderItems.isEmpty()) {
@@ -1578,6 +1726,12 @@ public class NewOrderController {
 		callBetween = true;
 	}
 
+	/**
+	 * Handles the process of confirming an order, including validation, updating
+	 * customer credit, and sending the order data to the server.
+	 *
+	 * @throws Exception if an error occurs during the order confirmation process.
+	 */
 	private void inBetween() throws Exception {
 
 		callBetween = false;
@@ -1653,6 +1807,7 @@ public class NewOrderController {
 			LocalTime deliveryTime = LocalTime.of(Integer.parseInt(deliveryHourPicker.getValue()),
 					Integer.parseInt(deliveryMinutePicker.getValue()));
 			LocalDateTime requestedDateTime = LocalDateTime.of(deliveryDate, deliveryTime);
+			summaryDateTime = requestedDateTime;
 			long hoursDifference = ChronoUnit.HOURS.between(now, requestedDateTime);
 			int isEarlyOrder = (deliveryDate.equals(now.toLocalDate()) && hoursDifference <= 2) ? 1 : 0;
 			isItEarlyOrder = isEarlyOrder;
@@ -1691,7 +1846,7 @@ public class NewOrderController {
 			ClientController.client.handleMessageFromClientControllers(msg);
 
 			finishErrorText.setText("Order submitted successfully!");
-			orderSummaryAlert(deliveryTypeComboBox.getValue(), totalPrice, isItEarlyOrder, requestedDateTime);
+			orderSummaryAlert(deliveryTypeComboBox.getValue(), totalPrice, isItEarlyOrder, summaryDateTime);
 //        resetEntireOrder();
 			((Node) this.event.getSource()).getScene().getWindow().hide();
 			CustomerController newScreen = new CustomerController();
@@ -1708,6 +1863,10 @@ public class NewOrderController {
 
 	}
 
+	/**
+	 * Displays an alert informing the user that they have been logged out due to a
+	 * restaurant menu update during their order process.
+	 */
 	private void kickedOutAlert() {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
 		alert.setTitle("Order Update");
@@ -1733,6 +1892,13 @@ public class NewOrderController {
 		alert.showAndWait();
 	}
 
+	/**
+	 * Sends a message to the server to update the customer's credit balance.
+	 *
+	 * @param customerNumber   the unique identifier of the customer whose credit is
+	 *                         being updated.
+	 * @param newCreditBalance the new credit balance for the customer.
+	 */
 	private void updateCustomerCredit(int customerNumber, int newCreditBalance) {
 		Map<String, Object> creditUpdateData = new HashMap<>();
 		creditUpdateData.put("customerNumber", customerNumber);
@@ -1742,6 +1908,13 @@ public class NewOrderController {
 		ClientController.client.handleMessageFromClientControllers(msg);
 	}
 
+	/**
+	 * Starts the New Order screen by loading the corresponding FXML file and
+	 * displaying the GUI in a new stage.
+	 *
+	 * @param primaryStage the primary stage for this application.
+	 * @throws Exception if the FXML file cannot be loaded.
+	 */
 	public void start(Stage primaryStage) throws Exception {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/customer/NewOrder.fxml"));
 		Parent root = loader.load();
@@ -1751,6 +1924,12 @@ public class NewOrderController {
 		primaryStage.show();
 	}
 
+	/**
+	 * Updates the delivery fields based on the selected delivery type. Disables or
+	 * enables specific input fields and buttons according to the selected option.
+	 *
+	 * @param deliveryType the type of delivery selected by the customer.
+	 */
 	private void updateDeliveryFields(String deliveryType) {
 		boolean isRobotDelivery = "Robot Delivery".equals(deliveryType);
 		boolean isPickup = "Pickup".equals(deliveryType);
@@ -1788,6 +1967,11 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Sets the disabled state of all input fields in the form.
+	 *
+	 * @param disabled true to disable the fields, false to enable them
+	 */
 	private void setAllFieldsDisabled(boolean disabled) {
 		addressField.setDisable(disabled);
 		companyNameField.setDisable(disabled);
@@ -1799,12 +1983,18 @@ public class NewOrderController {
 		deliveryParticipantsField.setDisable(disabled);
 	}
 
+	/**
+	 * Enables the date, hour, and minute pickers for delivery selection.
+	 */
 	private void enablePickers() {
 		deliveryDatePicker.setDisable(false);
 		deliveryHourPicker.setDisable(false);
 		deliveryMinutePicker.setDisable(false);
 	}
 
+	/**
+	 * Resets all input fields in the form to their default values.
+	 */
 	private void resetFields() {
 		addressField.clear();
 		companyNameField.clear();
@@ -1818,6 +2008,10 @@ public class NewOrderController {
 		updateErrorMessages();
 	}
 
+	/**
+	 * Validates the address entered by the user. The address must consist of two
+	 * parts (e.g., street name and number), separated by a comma.
+	 */
 	private void validateAddress() {
 		String address = addressField.getText().trim();
 		String[] parts = address.split(",");
@@ -1828,6 +2022,10 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Validates the phone number entered by the user. The phone number must be a
+	 * 10-digit number.
+	 */
 	private void validatePhoneNumber() {
 		String phone = phoneNumberField.getText().trim();
 		isPhoneValid = phone.matches("\\d{10}");
@@ -1836,11 +2034,18 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Sends a request to the server to retrieve the list of available restaurants.
+	 */
 	void getRestaurantList() {
 		Message msg = new Message(null, Commands.getRestaurantList);
 		ClientController.client.handleMessageFromClientControllers(msg);
 	}
 
+	/**
+	 * Resets the order fields for all dish categories (e.g., salad, main course,
+	 * dessert, drink).
+	 */
 	private void resetOrderFields() {
 		resetTableFields(dishTableViewSalad, orderQuantitiesSalad);
 		resetTableFields(dishTableViewMainCourse, orderQuantitiesMain);
@@ -1848,6 +2053,12 @@ public class NewOrderController {
 		resetTableFields(dishTableViewDrink, orderQuantitiesDrink);
 	}
 
+	/**
+	 * Resets the specified table fields and quantity map to their default values.
+	 *
+	 * @param tableView   the TableView containing the dishes
+	 * @param quantityMap the map storing dish quantities
+	 */
 	private void resetTableFields(TableView<Dish> tableView, Map<String, Integer> quantityMap) {
 		for (Dish dish : tableView.getItems()) {
 			quantityMap.put(dish.getDishID(), 0);
@@ -1857,6 +2068,10 @@ public class NewOrderController {
 		tableView.refresh();
 	}
 
+	/**
+	 * Resets the entire order, including clearing the order items and resetting the
+	 * order total.
+	 */
 	private void resetEntireOrder() {
 		orderItems.clear();
 		resetOrderFields();
@@ -1864,6 +2079,12 @@ public class NewOrderController {
 		orderChanged = false;
 	}
 
+	/**
+	 * Handles the removal of an item from the order when the user clicks the remove
+	 * button.
+	 *
+	 * @param event the ActionEvent triggered by the remove button
+	 */
 	private void handleRemoveItem(ActionEvent event) {
 		OrderItem selectedItem = orderTableView.getSelectionModel().getSelectedItem();
 		if (selectedItem != null) {
@@ -1875,6 +2096,11 @@ public class NewOrderController {
 		}
 	}
 
+	/**
+	 * Calculates the shared delivery fee based on the number of participants.
+	 *
+	 * @return the calculated delivery fee
+	 */
 	private double calculateSharedFee() {
 		String participantsString = deliveryParticipantsField.getText().trim();
 		int participants = Integer.parseInt(participantsString);
@@ -1887,7 +2113,12 @@ public class NewOrderController {
 		}
 	}
 
-	// alert of credit
+	/**
+	 * Displays an alert asking the user if they want to pay with their available
+	 * credit.
+	 *
+	 * @return true if the user chooses to pay with credit, false otherwise
+	 */
 	private boolean feeAlert() {
 		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
 		alert.setTitle("Before you continue");
@@ -1909,8 +2140,19 @@ public class NewOrderController {
 		return false; // Default return in case the alert is closed in another way
 	}
 
+	/**
+	 * Displays an alert dialog summarizing the order details, including delivery
+	 * choice, total price, and expected arrival time.
+	 *
+	 * @param deliveryChoice  The type of delivery selected (e.g., "Regular
+	 *                        Delivery", "Shared Delivery").
+	 * @param totalPrice      The total price of the order.
+	 * @param isItEarlyOrder  A flag indicating whether the order qualifies for an
+	 *                        early order discount (1 if early, 0 if not).
+	 * @param summaryDateTime The expected arrival time of the order.
+	 */
 	private void orderSummaryAlert(String deliveryChoice, double totalPrice, int isItEarlyOrder,
-			LocalDateTime requestedDateTime) {
+			LocalDateTime summaryDateTime) {
 		// Create a StringBuilder to construct the order summary
 
 		StringBuilder orderSummary = new StringBuilder();
@@ -1924,15 +2166,19 @@ public class NewOrderController {
 
 		}
 
-		// Construct the full message
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+		// Format the LocalDateTime
+		String formattedSummaryTime = summaryDateTime.format(formatter);
+
 		String message;
 		if (isItEarlyOrder == 1) {
 			message = "Your Order:\n" + orderSummary.toString() + "\nDelivery Choice: " + deliveryChoice
-					+ " with early order" + "\nTotal Price: $" + String.format("%.2f", totalPrice) + "\nArrival at: "
-					+ requestedDateTime;
+					+ " with early order" + "\nTotal Price: $" + String.format("%.2f", totalPrice) + "\nArrival at :"
+					+ formattedSummaryTime;
 		} else {
 			message = "Your Order:\n" + orderSummary.toString() + "\nDelivery Choice: " + deliveryChoice
-					+ "\nTotal Price: $" + String.format("%.2f", totalPrice) + "\nArrival at: " + requestedDateTime;
+					+ "\nTotal Price: $" + String.format("%.2f", totalPrice) + "\nArrival at :" + formattedSummaryTime;
 		}
 
 		// Create the alert

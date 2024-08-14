@@ -152,7 +152,6 @@ public class Customer implements Serializable {
     /**
      * Returns the status of the customer.
      * 
-     * @return The status of the customer.
      */
     public void setStatus(String status) {
         this.status = status;

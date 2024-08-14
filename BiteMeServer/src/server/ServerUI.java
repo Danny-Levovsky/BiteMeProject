@@ -62,8 +62,6 @@ public class ServerUI extends Application {
 	/**
 	 * Starts the JavaFX application by initializing the server's GUI.
 	 *
-	 * @param primaryStage the primary stage for this application
-	 * @throws Exception if an error occurs during the loading of the GUI
 	 */
 	public static void disconnect() {
 		if (isServerRunning() == true) {

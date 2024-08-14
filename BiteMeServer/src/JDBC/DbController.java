@@ -860,7 +860,6 @@ public class DbController {
 	 * 
 	 * @param user The user whose restaurant number is to be retrieved.
 	 * @return The restaurant number if found, or -1 if no restaurant is found.
-	 * @throws SQLException If a database access error occurs or the user is not
 	 *                      associated with a restaurant.
 	 */
 	public int getRestaurantNum(User user) {
@@ -885,8 +884,6 @@ public class DbController {
 	 * @param user The user whose restaurant name is to be retrieved.
 	 * @return The restaurant name if found, or null if no restaurant is found or an
 	 *         error occurs.
-	 * @throws SQLException If a database access error occurs or the user is not
-	 *                      associated with a restaurant.
 	 */
 	public String getRestaurantName(User user) {
 		String query = "SELECT r.RestaurantName " + "FROM restaurants r "
@@ -915,8 +912,6 @@ public class DbController {
 	 *               dish, or null if no option is available.
 	 * @return {@code true} if the dish was successfully added, {@code false}
 	 *         otherwise.
-	 * @throws SQLException If a database access error occurs or the insertion
-	 *                      fails.
 	 */
 	public boolean addDish(DishUpdate dish, Price price, DishOption option) {
 		String insertDishQuery = "INSERT INTO dishes (RestaurantNumber, CategoryID, DishName) VALUES (?, ?, ?)";
@@ -972,8 +967,6 @@ public class DbController {
 	 *               added, or null if no option is available.
 	 * @return {@code true} if the price and option were successfully added,
 	 *         {@code false} otherwise.
-	 * @throws SQLException If a database access error occurs or the insertion
-	 *                      fails.
 	 */
 	public boolean insertPriceAndOption(DishUpdate dish, Price price, DishOption option) {
 		String insertPriceQuery = "INSERT INTO prices (DishID, Size, Price) VALUES (?, ?, ?)";
@@ -1008,7 +1001,6 @@ public class DbController {
 	 * @param size     The size of the dish to check.
 	 * @return {@code true} if a dish with the specified name and size exists,
 	 *         {@code false} otherwise.
-	 * @throws SQLException If a database access error occurs.
 	 */
 	public boolean isDishExists(String dishName, String size) {
 		String query = "SELECT * FROM dishes d JOIN prices p ON d.DishID = p.DishID WHERE d.DishName = ? AND p.Size = ?";
@@ -1031,7 +1023,6 @@ public class DbController {
 	 * @param size     The size of the dish to exclude.
 	 * @return The {@link DishUpdate} object representing the dish found, or null if
 	 *         no matching dish is found.
-	 * @throws SQLException If a database access error occurs.
 	 */
 	public DishUpdate findDishByNameAndSize(String dishName, String size) {
 		String query = "SELECT * FROM dishes WHERE DishName = ? AND DishID IN (SELECT DishID FROM prices WHERE Size != ?)";
@@ -1060,7 +1051,6 @@ public class DbController {
 	 *             deleted.
 	 * @return {@code true} if the dish was successfully deleted, {@code false}
 	 *         otherwise.
-	 * @throws SQLException If a database access error occurs or the deletion fails.
 	 */
 	public boolean deleteDish(DishUpdate dish) {
 		String updateOrdersQuery = "UPDATE restaurants_orders SET DishID = NULL WHERE DishID = ?";
@@ -1106,7 +1096,6 @@ public class DbController {
 	 *              information.
 	 * @return {@code true} if the price was successfully updated, {@code false}
 	 *         otherwise.
-	 * @throws SQLException If a database access error occurs or the update fails.
 	 */
 	public boolean updateDishPrice(Price price) {
 		String query = "UPDATE prices SET Price = ? WHERE DishID = ? AND Size = ?";
@@ -1129,8 +1118,6 @@ public class DbController {
 	 * @param restaurantNum The unique identifier of the restaurant to update.
 	 * @param localTime     The Timestamp representing the time when the update
 	 *                      began.
-	 *
-	 * @throws SQLException If there's an error executing the SQL statement.
 	 *
 	 */
 	public void updateEntryTime(int restaurantNum, Timestamp localTime) {
@@ -1293,7 +1280,6 @@ public class DbController {
 	 * @param localTime     The Timestamp representing the time when the update
 	 *                      ended.
 	 *
-	 * @throws SQLException If there's an error executing the SQL statement.
 	 *
 	 */
 	public void updateExitTime(int restaurantNum, Timestamp localTime) {
@@ -1640,8 +1626,6 @@ public class DbController {
 	 *                     date and time.
 	 * @param orderItems   A list of maps, each containing details of an order item,
 	 *                     including dish ID, specification, and quantity.
-	 * @throws SQLException If any SQL error occurs during the transaction, the
-	 *                      transaction is rolled back.
 	 */
 	public void addCustomerOrder(Map<String, Object> orderDetails, List<Map<String, Object>> orderItems) {
 		String insertOrderQuery = "INSERT INTO orders (CustomerNumber, RestaurantNumber, TotalPrice, Salad, MainCourse, Dessert, Drink, IsDelivery, IsEarlyOrder, RequestedDateTime, OrderDateTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
