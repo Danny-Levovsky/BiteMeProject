@@ -7,12 +7,30 @@ import enums.OptionType;
 /**
  * Represents a DishOption entity based on the corresponding database table.
  * This class implements Serializable for object serialization.
+ * 
+ * @author yosra
  */
 public class DishOption implements Serializable{
+	
+	 /**
+     * A unique identifier for the serialization runtime to associate with the DishOption class.
+     * This value ensures that a deserialized object is compatible with the current class definition.
+     */
 	private static final long serialVersionUID = 1L;
-	 
+	
+	/**
+     * The unique identifier of the dish this option belongs to.
+     */
     private int dishID;
+    
+    /**
+     * The type of the option.
+     */
     private OptionType optionType;
+    
+    /**
+     * The value of the option.
+     */
     private String optionValue;
     
   
@@ -29,7 +47,7 @@ public class DishOption implements Serializable{
         this.optionValue = optionValue;
     }
 
-    
+
     /**
      * Returns the dish ID.
      *

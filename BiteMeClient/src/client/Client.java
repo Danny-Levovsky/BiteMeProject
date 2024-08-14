@@ -271,7 +271,11 @@ public class Client extends AbstractClient {
 			Platform.runLater(() -> {
 				ArrayList<Map<String, Object>> menu = (ArrayList<Map<String, Object>>) m.getObj();
 				if (newOrderController != null) {
-					newOrderController.setRestaurantMenu(menu);
+					try {
+						newOrderController.setRestaurantMenu(menu);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 					System.out.println(menu); // checking debugging
 				}
 			});
@@ -358,6 +362,7 @@ public class Client extends AbstractClient {
 				}
 			});
 			break;
+
 		default:
 			break;
 

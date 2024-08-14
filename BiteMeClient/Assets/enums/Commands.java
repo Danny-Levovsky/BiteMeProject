@@ -53,4 +53,8 @@ public enum Commands {
     RestaurantQuarterIncomeReport1, //command for generating income reports
     RestaurantQuarterReport3, //command for generating quarter reports
     RestaurantQuarterIncomeReport2,//command for generating income reports
+    sendCustomerOrder,
+    updateCustomerCredit,
+    updatedCustomerCredit
+
 }

@@ -514,6 +514,19 @@ public class BiteMeServer extends AbstractServer {
 	    	        e.printStackTrace();
 	    	    }
 	    	    break;
+	      case updateCustomerCredit:
+	    	    Map<String, Object> creditUpdateData = (Map<String, Object>) m.getObj();
+	    	    boolean updateSuccess = dbController.updateCustomerCredit(creditUpdateData);
+	    	    break;
+	    	  
+	    	  
+	      case sendCustomerOrder:
+	    	    List<Object> orderData = (List<Object>) m.getObj();
+	    	    Map<String, Object> orderDetails = (Map<String, Object>) orderData.get(0);
+	    	    List<Map<String, Object>> orderItems = (List<Map<String, Object>>) orderData.get(1);
+	    	    dbController.addCustomerOrder(orderDetails, orderItems);
+
+	    	    break;
 		default:
 			break;
 		}

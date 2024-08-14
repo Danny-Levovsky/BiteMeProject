@@ -34,8 +34,8 @@ import entites.User;
 public class DbController {
 
 	/**
-     * The database connection used for executing queries.
-     */
+	 * The database connection used for executing queries.
+	 */
 	private Connection conn;
 
 	/**
@@ -505,6 +505,22 @@ public class DbController {
 		return null;
 	}
 
+	/**
+	 * Retrieves the order report for a specific restaurant and district within a
+	 * given month and year. If the report already exists in the `order_reports`
+	 * table, it is returned directly. Otherwise, the report is calculated from the
+	 * `orders` table and saved in the `order_reports` table.
+	 *
+	 * @param district         The district for which the report is requested.
+	 * @param restaurantNumber The restaurant number for which the report is
+	 *                         requested.
+	 * @param monthYear        The month and year in the format "MM/YYYY" for which
+	 *                         the report is requested.
+	 * @return An array of integers representing the total count of salads, main
+	 *         courses, desserts, and drinks in the report. The array is in the
+	 *         order: [salad, main course, dessert, drink]. If no data is found, an
+	 *         array of zeros is returned.
+	 */
 	public int[] getOrderReport(String district, int restaurantNumber, String monthYear) {
 		// Step 1: Check if the report already exists in the order_reports table
 		String checkReportQuery = "SELECT Salad, MainCourse, Dessert, Drink FROM order_reports WHERE MonthYear = ? AND District = ? AND RestaurantNumber = ?";
@@ -574,6 +590,19 @@ public class DbController {
 		return new int[] { 0, 0, 0, 0 };
 	}
 
+	/**
+	 * Generates or retrieves the income report for a specific restaurant, district,
+	 * and month-year. The report consists of the total income for each of the four
+	 * weeks in the specified month.
+	 *
+	 * @param restaurantNumber The restaurant number for which the report is
+	 *                         generated.
+	 * @param monthYear        The month and year for the report in the format
+	 *                         "MM/YYYY".
+	 * @param district         The district for which the report is generated.
+	 * @return An array of integers representing the total income for each of the
+	 *         four weeks. If no data is found, the array will contain zeros.
+	 */
 	public int[] IncomeReport(int restaurantNumber, String monthYear, String district) {
 		int[] incomeReportResultData = new int[4]; // Array to hold income data for 4 weeks
 
@@ -686,6 +715,17 @@ public class DbController {
 		return incomeReportResultData;
 	}
 
+	/**
+	 * Generates or retrieves the performance report for a specific district and
+	 * month-year. The report consists of the percentage of late orders for each of
+	 * the four weeks in the specified month.
+	 *
+	 * @param monthYear The month and year for the report in the format "MM/YYYY".
+	 * @param district  The district for which the report is generated.
+	 * @return An array of integers representing the percentage of late orders for
+	 *         each of the four weeks. If no data is found, the array will contain
+	 *         zeros.
+	 */
 	public int[] performanceReport(String monthYear, String district) {
 		// Step 1: Check if the report already exists in the performance_reports table
 		String checkReportQuery = "SELECT Week1, Week2, Week3, Week4 FROM performance_reports WHERE MonthYear = ? AND District = ?";
@@ -1114,6 +1154,17 @@ public class DbController {
 		}
 	}
 
+	/**
+	 * Retrieves the menu of a specific restaurant from the database, including
+	 * dishes, their prices, sizes, and options. The method also retrieves the
+	 * restaurant's update times and number.
+	 *
+	 * @param restaurantName The name of the restaurant whose menu is being
+	 *                       retrieved.
+	 * @return An ArrayList of Maps, where each Map represents a dish with its
+	 *         details, and the last item in the list contains restaurant
+	 *         information such as update times and restaurant number.
+	 */
 	public ArrayList<Map<String, Object>> getRestaurantMenuFromDB(String restaurantName) {
 		ArrayList<Map<String, Object>> menu = new ArrayList<>();
 		String SQL_QUERY = "SELECT c.name AS dishType, d.dishID AS dishID, d.DishName AS dishName, "
@@ -1450,6 +1501,17 @@ public class DbController {
 		return new Object[] { maxOrders, intervals, values };
 	}
 
+	/**
+	 * Returns an array of month numbers as strings corresponding to the given
+	 * quarter.
+	 *
+	 * @param quarter The quarter for which to retrieve the months. Expected values
+	 *                are "Q1", "Q2", "Q3", or "Q4".
+	 * @return An array of strings representing the month numbers for the given
+	 *         quarter. For example, "Q1" returns {"1", "2", "3"}.
+	 * @throws IllegalArgumentException if the provided quarter is not one of "Q1",
+	 *                                  "Q2", "Q3", or "Q4".
+	 */
 	private String[] getMonthsForQuarter(String quarter) {
 		switch (quarter) {
 		case "Q1":
@@ -1562,6 +1624,149 @@ public class DbController {
 		}
 
 		return new Object[] { totalIncome, values };
+	}
+
+	/**
+	 * Adds a customer order to the database, including the order details and items.
+	 * This method handles the insertion of data into the `orders`,
+	 * `restaurants_orders`, and `customer_orders` tables within a single
+	 * transaction. If the order is marked for delivery, it also inserts a record
+	 * into the `customer_orders` table.
+	 *
+	 * @param orderDetails A map containing the order details such as customer
+	 *                     number, restaurant number, total price, quantities of
+	 *                     salad, main course, dessert, and drink, delivery status,
+	 *                     early order status, requested date and time, and order
+	 *                     date and time.
+	 * @param orderItems   A list of maps, each containing details of an order item,
+	 *                     including dish ID, specification, and quantity.
+	 * @throws SQLException If any SQL error occurs during the transaction, the
+	 *                      transaction is rolled back.
+	 */
+	public void addCustomerOrder(Map<String, Object> orderDetails, List<Map<String, Object>> orderItems) {
+		String insertOrderQuery = "INSERT INTO orders (CustomerNumber, RestaurantNumber, TotalPrice, Salad, MainCourse, Dessert, Drink, IsDelivery, IsEarlyOrder, RequestedDateTime, OrderDateTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String insertOrderItemQuery = "INSERT INTO restaurants_orders (OrderID, DishID, Size, Specification, Quantity) VALUES (?, ?, ?, ?, ?)";
+		String insertCustomerOrderQuery = "INSERT INTO customer_orders (OrderID) VALUES (?)";
+
+		try {
+			conn.setAutoCommit(false);
+			System.out.println("Auto-commit set to false");
+
+			// Insert order details
+			try (PreparedStatement orderStmt = conn.prepareStatement(insertOrderQuery,
+					Statement.RETURN_GENERATED_KEYS)) {
+				orderStmt.setInt(1, (Integer) orderDetails.get("customerNumber"));
+				orderStmt.setInt(2, (Integer) orderDetails.get("restaurantNumber"));
+				orderStmt.setDouble(3, (Double) orderDetails.get("totalPrice"));
+				orderStmt.setInt(4, (Integer) orderDetails.get("quantitySalad"));
+				orderStmt.setInt(5, (Integer) orderDetails.get("quantityMain"));
+				orderStmt.setInt(6, (Integer) orderDetails.get("quantityDessert"));
+				orderStmt.setInt(7, (Integer) orderDetails.get("quantityDrink"));
+				orderStmt.setInt(8, (Integer) orderDetails.get("isDelivery"));
+				orderStmt.setInt(9, (Integer) orderDetails.get("isEarlyOrder"));
+				orderStmt.setTimestamp(10, (Timestamp) orderDetails.get("requestedDateTime"));
+				orderStmt.setTimestamp(11, (Timestamp) orderDetails.get("orderDateTime"));
+				int affectedRows = orderStmt.executeUpdate();
+
+				if (affectedRows == 0) {
+					throw new SQLException("Creating order failed, no rows affected.");
+				}
+
+				int orderId;
+				try (ResultSet generatedKeys = orderStmt.getGeneratedKeys()) {
+					if (generatedKeys.next()) {
+						orderId = generatedKeys.getInt(1);
+						System.out.println("Generated Order ID: " + orderId);
+
+						// Insert into customer_orders table only if IsDelivery is 1
+						if ((Integer) orderDetails.get("isDelivery") == 1) {
+							try (PreparedStatement customerOrderStmt = conn
+									.prepareStatement(insertCustomerOrderQuery)) {
+								customerOrderStmt.setInt(1, orderId);
+								customerOrderStmt.executeUpdate();
+							}
+						}
+					} else {
+						throw new SQLException("Creating order failed, no ID obtained.");
+					}
+				}
+
+				// Insert order items
+				try (PreparedStatement itemStmt = conn.prepareStatement(insertOrderItemQuery)) {
+					for (Map<String, Object> item : orderItems) {
+						itemStmt.setInt(1, orderId);
+						itemStmt.setInt(2, Integer.parseInt(String.valueOf(item.get("dishID"))));
+
+						String specification = (String) item.get("specification");
+						String size = "regular"; // Default size
+						if (specification.startsWith("Size:")) {
+							String[] parts = specification.split(":");
+							size = parts[1].trim();
+							specification = parts.length > 2 ? parts[2].trim() : "";
+						}
+
+						itemStmt.setString(3, size);
+						itemStmt.setString(4, specification);
+						itemStmt.setInt(5, Integer.parseInt(String.valueOf(item.get("quantity"))));
+						itemStmt.addBatch();
+					}
+					itemStmt.executeBatch();
+				}
+			}
+
+			conn.commit();
+			System.out.println("Transaction committed successfully");
+		} catch (SQLException e) {
+			try {
+				conn.rollback();
+				System.out.println("Transaction rolled back due to error");
+			} catch (SQLException ex) {
+				System.err.println("Error during rollback: " + ex.getMessage());
+			}
+			System.err.println("SQL Exception occurred: " + e.getMessage());
+			System.err.println("SQL State: " + e.getSQLState());
+			System.err.println("Error Code: " + e.getErrorCode());
+			e.printStackTrace();
+		} finally {
+			try {
+				conn.setAutoCommit(true);
+				System.out.println("Auto-commit reset to true");
+			} catch (SQLException e) {
+				System.err.println("Error resetting auto-commit: " + e.getMessage());
+			}
+		}
+	}
+
+	/**
+	 * Updates the credit balance of a customer in the database.
+	 * 
+	 * This method takes a map containing the customer number and the new credit
+	 * balance, and updates the corresponding customer's credit balance in the
+	 * database.
+	 * 
+	 * @param creditUpdateData A map containing the following key-value pairs: -
+	 *                         "customerNumber": the customer's unique identifier
+	 *                         (Integer) - "newCreditBalance": the new credit
+	 *                         balance to be set (Integer)
+	 * @return true if the update was successful (i.e., at least one row was
+	 *         affected), false otherwise.
+	 */
+	public boolean updateCustomerCredit(Map<String, Object> creditUpdateData) {
+		int customerNumber = (int) creditUpdateData.get("customerNumber");
+		int newCreditBalance = (int) creditUpdateData.get("newCreditBalance");
+
+		String updateQuery = "UPDATE customers SET Credit = ? WHERE CustomerNumber = ?";
+
+		try (PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+			pstmt.setInt(1, newCreditBalance);
+			pstmt.setInt(2, customerNumber);
+
+			int affectedRows = pstmt.executeUpdate();
+			return affectedRows > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	/**
