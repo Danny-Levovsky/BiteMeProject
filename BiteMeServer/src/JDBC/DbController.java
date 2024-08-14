@@ -270,77 +270,7 @@ public class DbController {
      * @param orderDetails A map containing the overall order details.
      * @param orderItems A list of maps, each containing details of an individual order item.
      * @return true if the order was successfully added, false otherwise.
-     */
-    
-//    public void addCustomerOrder(Map<String, Object> orderDetails, List<Map<String, Object>> orderItems) {
-//        System.out.println("DBController Order Information: " + orderDetails); //DEBUGGING
-//        System.out.println("DBController Order Information: " + orderItems); //DEBUGGING
-//        
-//        String insertOrderQuery = "INSERT INTO orders (CustomerNumber, RestaurantNumber, TotalPrice, Salad, MainCourse, Dessert, Drink, IsDelivery, IsEarlyOrder, RequestedDateTime, OrderDateTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-//        String insertOrderItemQuery = "INSERT INTO restaurants_orders (OrderID, DishID, Size, Specification, Quantity) VALUES (?, ?, ?, ?, ?)";
-//
-//        try {
-//            // Insert order details
-//            try (PreparedStatement orderStmt = conn.prepareStatement(insertOrderQuery, Statement.RETURN_GENERATED_KEYS)) {
-//                orderStmt.setInt(1, (Integer) orderDetails.get("customerNumber"));
-//                orderStmt.setInt(2, (Integer) orderDetails.get("restaurantNumber"));
-//                orderStmt.setDouble(3, (Double) orderDetails.get("totalPrice"));
-//                orderStmt.setInt(4, (Integer) orderDetails.get("quantitySalad"));
-//                orderStmt.setInt(5, (Integer) orderDetails.get("quantityMain"));
-//                orderStmt.setInt(6, (Integer) orderDetails.get("quantityDessert"));
-//                orderStmt.setInt(7, (Integer) orderDetails.get("quantityDrink"));
-//                orderStmt.setBoolean(8, (Boolean) orderDetails.get("isDelivery"));
-//                orderStmt.setBoolean(9, (Boolean) orderDetails.get("isEarlyOrder"));
-//                orderStmt.setTimestamp(10, (Timestamp) orderDetails.get("requestedDateTime"));
-//                orderStmt.setTimestamp(11, (Timestamp) orderDetails.get("orderDateTime"));
-//
-//                
-//                if (conn == null || conn.isClosed()) {
-//                    throw new SQLException("Database connection is not valid.");
-//                }
-//                
-//                
-//                int affectedRows = orderStmt.executeUpdate();
-//                if (affectedRows == 0) {
-//                    throw new SQLException("Creating order failed, no rows affected.");
-//                }
-//
-//                int orderId;
-//                try (ResultSet generatedKeys = orderStmt.getGeneratedKeys()) {
-//                    if (generatedKeys.next()) {
-//                        orderId = generatedKeys.getInt(1);
-//                    } else {
-//                        throw new SQLException("Creating order failed, no ID obtained.");
-//                    }
-//                }
-//
-//                // Insert order items
-//                try (PreparedStatement itemStmt = conn.prepareStatement(insertOrderItemQuery)) {
-//                    for (Map<String, Object> item : orderItems) {
-//                        itemStmt.setInt(1, orderId);
-//                        itemStmt.setInt(2, (Integer) item.get("dishID"));
-//                        
-//                        String specification = (String) item.get("specification");
-//                        String size = "Regular";
-//                        if (specification.startsWith("Size:")) {
-//                            String[] parts = specification.split(":");
-//                            size = parts[1].trim();
-//                            specification = parts.length > 2 ? parts[2].trim() : "";
-//                        }
-//                        
-//                        itemStmt.setString(3, size);
-//                        itemStmt.setString(4, specification);
-//                        itemStmt.setInt(5, (Integer) item.get("quantity"));
-//                        itemStmt.addBatch();
-//                    }
-//                    itemStmt.executeBatch();
-//                }
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//    }
-    
+     */    
     public void addCustomerOrder(Map<String, Object> orderDetails, List<Map<String, Object>> orderItems) {
         String insertOrderQuery = "INSERT INTO orders (CustomerNumber, RestaurantNumber, TotalPrice, Salad, MainCourse, Dessert, Drink, IsDelivery, IsEarlyOrder, RequestedDateTime, OrderDateTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String insertOrderItemQuery = "INSERT INTO restaurants_orders (OrderID, DishID, Size, Specification, Quantity) VALUES (?, ?, ?, ?, ?)";
@@ -364,9 +294,9 @@ public class DbController {
                 orderStmt.setTimestamp(10, (Timestamp) orderDetails.get("requestedDateTime"));
                 orderStmt.setTimestamp(11, (Timestamp) orderDetails.get("orderDateTime"));
 
-                System.out.println("Executing order insert query: " + orderStmt);
+                
                 int affectedRows = orderStmt.executeUpdate();
-                System.out.println("Affected rows after order insert: " + affectedRows);
+                
                 
                 if (affectedRows == 0) {
                     throw new SQLException("Creating order failed, no rows affected.");
@@ -382,7 +312,7 @@ public class DbController {
                         try (PreparedStatement customerOrderStmt = conn.prepareStatement(insertCustomerOrderQuery)) {
                             customerOrderStmt.setInt(1, orderId);
                             customerOrderStmt.executeUpdate();
-                            System.out.println("Inserted into customer_orders table");
+                            
                         }
                     } else {
                         throw new SQLException("Creating order failed, no ID obtained.");
@@ -408,14 +338,13 @@ public class DbController {
                         itemStmt.setInt(5, Integer.parseInt(String.valueOf(item.get("quantity"))));
                         itemStmt.addBatch();
                     }
-                    System.out.println("Executing order items batch insert");
-                    int[] itemAffectedRows = itemStmt.executeBatch();
-                    System.out.println("Affected rows after item inserts: " + Arrays.toString(itemAffectedRows));
+                    
+                    
                 }
             }
 
             conn.commit();
-            System.out.println("Transaction committed successfully");
+            System.out.println("Order Transaction committed successfully");
         } catch (SQLException e) {
             try {
                 conn.rollback();
@@ -470,26 +399,7 @@ public class DbController {
         }
     }
     
-    
-    
-    /**
-     * Retrieves the ID of the last inserted order.
-     * 
-     * @return The ID of the last inserted order.
-     * @throws SQLException If a database access error occurs.
-     */
-    private int getLastInsertedOrderId() throws SQLException {
-        String query = "SELECT LAST_INSERT_ID()";
-        try (PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt(1);
-            } else {
-                throw new SQLException("Failed to get last inserted order ID.");
-            }
-        }
-    }
-		
+    	
 
 
     /**
@@ -542,8 +452,7 @@ public class DbController {
 
             Map<String, Map<String, Object>> dishMap = new HashMap<>();
             Map<String, Object> restaurantInfo = new HashMap<>();  // To store BeginUpdate, EndUpdate, and RestaurantNumber
-            
-            boolean firstRow = true;
+           
             while (rs.next()) {
                 String dishID = rs.getString("dishID");
                 String dishSize = rs.getString("dishSize");

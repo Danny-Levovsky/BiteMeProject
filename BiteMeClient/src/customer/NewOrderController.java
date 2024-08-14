@@ -1253,7 +1253,7 @@ public class NewOrderController {
     }
 
     @FXML
-    void getBtnFinish(ActionEvent event) {
+    void getBtnFinish(ActionEvent event) throws Exception {
         if (orderItems.isEmpty()) {
             finishErrorText.setText("Please add items to order before finishing");
             return;
@@ -1266,10 +1266,16 @@ public class NewOrderController {
         // Save current timestamps
         java.sql.Timestamp tempBeginUpdate = this.beginUpdate;
         java.sql.Timestamp tempEndUpdate = this.endUpdate;
-
+        
+        
+        System.out.println("BEFORE tempBeginUpdate  is:" + tempBeginUpdate);
+        System.out.println("BEFORE tempBeginUpdate  is:" + tempEndUpdate);
         // Set flag to true before calling requestRestaurantMenu
         this.checkTimeBeforeConfirm = true;
         requestRestaurantMenu(currentRestaurant);
+        
+        System.out.println("AFTER tempBeginUpdate  is:" + tempBeginUpdate);
+        System.out.println("AFTER tempBeginUpdate  is:" + tempEndUpdate);
         
         
         double totalPrice = Double.parseDouble(totalPriceText.getText().split(":")[1].trim().substring(1));
@@ -1309,8 +1315,7 @@ public class NewOrderController {
                 }
             }
             
-            
-            System.out.println("BEFORE Total price is:" + totalPrice + "\n");
+           
             if (currentCustomer.getCredit()!=0) {
             	boolean feeResponse = feeAlert();
             	if (feeResponse) {
@@ -1325,7 +1330,7 @@ public class NewOrderController {
                     }
                 }
             }
-            System.out.println("AFTER Total price is:" + totalPrice + "\n");
+
 
             // Add customer and order details
             Map<String, Object> orderDetails = new HashMap<>();
@@ -1381,6 +1386,9 @@ public class NewOrderController {
             resetEntireOrder();
         } else {
             finishErrorText.setText("Menu has been updated. Please review your order and try again.");
+            ((Node) event.getSource()).getScene().getWindow().hide();
+    		CustomerController newScreen = new CustomerController();
+    		newScreen.start(new Stage()); //Adds throw exception
         }
 
         // Reset the flag
