@@ -4,17 +4,17 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import ocsf.server.ConnectionToClient;
 import controller.ServerScreenController;
-
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Vector;
-
 import entites.Message;
 import enums.Commands;
-import server.BiteMeServer;
 
+/**
+ * The ServerUI class is responsible for launching the server application. It
+ * provides methods to start and stop the server, manage client connections, and
+ * interact with the server's graphical user interface (GUI).
+ * 
+ * @author yosra
+ */
 public class ServerUI extends Application {
 
 	// private static Connection conn = null;
@@ -25,14 +25,32 @@ public class ServerUI extends Application {
 	 * "Aa123456";
 	 */
 
+	/**
+	 * The server instance responsible for handling client connections.
+	 */
 	public static BiteMeServer sv = null;
 
+	/**
+	 * A flag to indicate whether a response has been received from the client.
+	 */
 	public static boolean gotResponse = false;
 
+	/**
+	 * The main method that launches the JavaFX application.
+	 *
+	 * @param args the command line arguments
+	 * @throws Exception if an error occurs during the application launch
+	 */
 	public static void main(String args[]) throws Exception {
 		launch(args);
 	} // end main
 
+	/**
+	 * Starts the JavaFX application by initializing the server's GUI.
+	 *
+	 * @param primaryStage the primary stage for this application
+	 * @throws Exception if an error occurs during the loading of the GUI
+	 */
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
@@ -41,6 +59,10 @@ public class ServerUI extends Application {
 
 	}
 
+	/**
+	 * Starts the JavaFX application by initializing the server's GUI.
+	 *
+	 */
 	public static void disconnect() {
 		if (isServerRunning() == true) {
 			for (ConnectionToClient client : BiteMeServer.ClientList) {
@@ -82,6 +104,13 @@ public class ServerUI extends Application {
 	 * }
 	 */
 
+	/**
+	 * Runs the server on the specified port. If the server starts successfully, it
+	 * begins listening for client connections.
+	 *
+	 * @param p the port number as a String
+	 * @return true if the server starts successfully, false otherwise
+	 */
 	public static boolean runServer(String p) {
 		boolean flag = false;
 		int port = 0; // Port to listen on
@@ -107,6 +136,12 @@ public class ServerUI extends Application {
 		return flag;
 	}
 
+	/**
+	 * Checks if the server is currently running and listening for client
+	 * connections.
+	 *
+	 * @return true if the server is running and listening, false otherwise
+	 */
 	public static boolean isServerRunning() {
 		return (sv != null && sv.isListening());
 	}

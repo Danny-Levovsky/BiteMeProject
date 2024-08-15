@@ -29,7 +29,9 @@ import javafx.stage.Stage;
 
 /**
  * Controller class for the login screen of the application.
- * Manages user interactions with the login screen and communicates with the server through client to authenticate users.
+ * Manages user interactions with the login screen and communicates with the server through the client to authenticate users.
+ * Handles different user types and navigates to the appropriate screen upon successful login.
+ * 
  * @author yosra
  */
 public class LoginScreenController {
@@ -52,11 +54,19 @@ public class LoginScreenController {
     @FXML
     private Label txtmsg;
     
-    private String username, password; 
+    /**
+     * Stores the username entered by the user.
+     */
+    private String username;
     
-
+    /**
+     * Stores the password entered by the user.
+     */
+    private String password; 
+    
     /**
      * Starts the JavaFX application by setting up the primary stage with the login screen. 
+     * 
      * @param primaryStage the primary stage for this application, onto which the application scene can be set
      * @throws Exception if the FXML file cannot be loaded
      */
@@ -83,6 +93,7 @@ public class LoginScreenController {
 	/**
      * Handles the action event for the disconnect button.
      * Disables the login and disconnect buttons and sends a disconnect message to the server.
+     * 
      * @param event the action event triggered by the disconnect button
      * @throws Exception if there is an error sending the message to the server
      */
@@ -99,8 +110,10 @@ public class LoginScreenController {
 	
     /**
      * Handles the action event for the back button.
-     * Loads the connection screen FXML and sets it as the last screen
+     * Loads the connection screen FXML and sets it as the current screen.
+     * 
      * @param event the action event triggered by the back button
+     * @throws Exception if there is an error while loading the connection screen
      */
     @FXML
     public void getBtnBack(ActionEvent event) throws Exception{
@@ -113,6 +126,7 @@ public class LoginScreenController {
     
     /**
      * Sets the login message to be displayed on the login screen.
+     * 
      * @param msg the login message to be displayed
      */
     public void loginMsg( String msg) {
@@ -120,11 +134,12 @@ public class LoginScreenController {
     }
     
     /**
-    * Handles the action event for the login button.
-    * Validates the input fields and sends a login request to the server through client.
-    * @param event the action event triggered by the login button
-    * @throws Exception if there is an error sending the message to the server
-    */
+     * Handles the action event for the login button.
+     * Validates the input fields and sends a login request to the server through the client.
+     * 
+     * @param event the action event triggered by the login button
+     * @throws Exception if there is an error sending the message to the server
+     */
     @FXML
     public void getBtnLogin(ActionEvent event) throws Exception {
     	username =  txtUserName.getText();
@@ -144,6 +159,7 @@ public class LoginScreenController {
     /**
      * Handles the server response for the login request.
      * Processes the server response and performs the appropriate action based on the response.
+     * 
      * @param message the message received from the server
      * @param currentStage the current stage of the application
      * @throws Exception if there is an error handling the server response
@@ -175,6 +191,7 @@ public class LoginScreenController {
     
     /**
      * Opens a specific window based on the user type.
+     * 
      * @param user the user object containing user details
      * @param currentStage the current stage of the application
      */
@@ -203,6 +220,7 @@ public class LoginScreenController {
                     employeeController.start(new Stage());
                     break;
                 case "Certified Employee":
+                    CertifiedEmployeeController.setCertifiedEmployee(user);
                     CertifiedEmployeeController certifiedEmployeeController = new CertifiedEmployeeController();
                     certifiedEmployeeController.start(new Stage());
                     break;

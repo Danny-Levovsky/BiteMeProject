@@ -14,17 +14,24 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 import java.net.InetAddress;
-
 import entites.ClientDetails;
-import server.BiteMeServer;
 import server.NotifyThread;
 import server.ServerUI;
 
+
+/**
+ * The ServerScreenController class manages the server's GUI, allowing the user to start and stop the server, 
+ * manage client connections, and handle database connectivity. It also provides functionality to import data 
+ * and update the client table view.
+ * 
+ * @author yosra
+ */
 public class ServerScreenController {
 
+	/**
+     * The thread responsible for sending notifications to clients.
+     */
 	NotifyThread alertThread;
 
 	@FXML
@@ -58,38 +65,70 @@ public class ServerScreenController {
 	// TODO: Make The X button Functional.
 	// TODO: Make Stop Server Button.
 
-//	private String getIpAddress() {
-//		return ipAddressT.getText();
-//	}
-
+	/**
+     * Retrieves the port number entered by the user.
+     * 
+     * @return the port number as a String
+     */
 	private String getPort() {
 		return portT.getText();
 	}
 
+	/**
+     * Retrieves the database name entered by the user.
+     * 
+     * @return the database name as a String
+     */
 	private String getDbName() {
 		return dbNameT.getText();
 	}
 
+	/**
+     * Retrieves the database username entered by the user.
+     * 
+     * @return the database username as a String
+     */
 	private String getDbUsername() {
 		return dbUsernameT.getText();
 	}
 
+	/**
+     * Retrieves the database password entered by the user.
+     * 
+     * @return the database password as a String
+     */
 	private String getDbPassword() {
 		return dbPasswordT.getText();
 	}
 
+	/**
+     * Loads client details into the TableView.
+     * 
+     * @param clientDetail the ClientDetails object containing client information
+     */
 	public void loadTable(ClientDetails clientDetail) {// Client : {String IP, String Host, String Status}
 
 		tableView.getItems().add(clientDetail);
 
 	}
 
+	/**
+     * Updates the TableView by removing the specified client details.
+     * 
+     * @param clientDetail the ClientDetails object to be removed
+     */
 	public void updateTable(ClientDetails clientDetail) {
 
 		boolean returnVal = tableView.getItems().remove(clientDetail);
 
 	}
 
+	/**
+     * Handles the stop server button action. Stops the server, stops the notification thread, 
+     * and updates the UI accordingly.
+     * 
+     * @param event the ActionEvent triggered by the stop server button
+     */
 	public void stopServerBtn(ActionEvent event) {
 		// Stop the NotifyThread gracefully
 		alertThread.stopThread(); // Assuming alertThread is accessible here
@@ -103,17 +142,12 @@ public class ServerScreenController {
 
 	}
 
-	/*
-	 * void connectServer(ActionEvent event) { EchoServer.main(null);
-	 * EchoServer.startServer(dbNameField.getText(), usernameField.getText(),
-	 * passwordField.getText()); }
-	 *
-	 * DB_URL = "jdbc:mysql://localhost/gonature?serverTimezone=IST"; DB_USER =
-	 * "root"; DB_PASSWORD = "Aa123456";
-	 *
-	 *
-	 */
-
+	/**
+     * Handles the start server button action. Starts the server, initializes the database connection, 
+     * and starts the notification thread.
+     * 
+     * @param event the ActionEvent triggered by the start server button
+     */
 	public void startServerBtn(ActionEvent event) {
 
 		if (!ServerUI.isServerRunning()) {
@@ -147,14 +181,22 @@ public class ServerScreenController {
 		}
 	}
 
-	// import data from external data
+	/**
+     * Handles the import data button action. Imports external data into the server's database.
+     * 
+     * @param event the ActionEvent triggered by the import data button
+     */
 	public void importBtn(ActionEvent event) {
 		ServerUI.sv.dbController.importExternalData();
 		imprt.setDisable(true);
 
 	}
 
-	// Removes the ability to enter new data while the server has started
+	/**
+     * Disables or enables the data input fields based on the provided condition.
+     * 
+     * @param condition if true, disables the input fields; if false, enables them
+     */
 	void disableDataInput(boolean Condition) {
 		ipAddressT.setDisable(Condition);
 		portT.setDisable(Condition);
@@ -163,6 +205,12 @@ public class ServerScreenController {
 		dbPasswordT.setDisable(Condition);
 	}
 
+	/**
+    * Starts the server GUI by loading the FXML file and displaying the scene.
+    * 
+    * @param primaryStage the primary stage for this application
+    * @throws Exception if an error occurs during loading the FXML file
+    */
 	public void start(Stage primaryStage) throws Exception {
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/serverScreen.fxml"));
